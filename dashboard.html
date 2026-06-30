@@ -303,19 +303,41 @@
       text-align: center;
     }
 
-    /* ESTILO COMPACTO DAS TAGS DE ADM */
+    /* ESTILO COMPACTO DAS TAGS DE ADM COM COR CORRIGIDA (#d9b246) */
     .badge-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
       font-size: 11px;
       font-weight: bold;
-      background-color: #e2d9f3;
-      color: #6f42c1;
-      padding: 3px 8px;
+      background-color: #d9b246;
+      color: white;
+      padding: 3px 6px 3px 8px;
       border-radius: 20px;
-      border: 1px solid rgba(111, 66, 193, 0.2);
       white-space: nowrap;
-      max-width: 90px;
+      max-width: 110px;
+    }
+
+    .texto-tag {
       overflow: hidden;
       text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* PEQUENO X PARA DELETAR A TAG */
+    .btn-deletar-tag {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 10px;
+      font-weight: bold;
+      padding: 0 2px;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+
+    .btn-deletar-tag:hover {
+      color: #d93025;
     }
 
     .btn-seta {
@@ -634,7 +656,7 @@
       }
     });
 
-    // Sincronização em tempo real - Administradores (Chave Baseada no Nome)
+    // Sincronização em tempo real - Administradores
     onValue(dbAdmsRef, (snapshot) => {
       const dados = snapshot.val();
       dadosAdmsGlobais = dados || {};
@@ -648,9 +670,15 @@
           const item = document.createElement('div');
           item.className = 'item-usuario';
           
-          // Trata as tags corretamente como array
           const tagsArray = Array.isArray(adm.tags) ? adm.tags : [adm.tag || "Adm"];
-          const badgesHTML = tagsArray.map(t => `<span class="badge-tag" title="${t}">${t}</span>`).join('');
+          
+          // Renderiza cada tag contendo o texto e o mini botão X para remoção individual
+          const badgesHTML = tagsArray.map(t => `
+            <span class="badge-tag">
+              <span class="texto-tag" title="${t}">${t}</span>
+              <button class="btn-deletar-tag" data-id="${id}" data-tag="${t}">✕</button>
+            </span>
+          `).join('');
           
           item.innerHTML = `
             <div class="wrapper-nome">
@@ -699,7 +727,7 @@
       nomeInput.value = "";
     });
 
-    // Adicionar Administrador (CORRIGIDO: Bloqueia Duplicação Usando o Nome Formatado como ID)
+    // Adicionar Administrador
     document.getElementById('btn-adicionar-adm').addEventListener('click', (event) => {
       event.stopPropagation();
       const nomeInput = document.getElementById('input-nome-adm');
@@ -713,24 +741,19 @@
       }
 
       const tagParaAdicionar = novaTag !== "" ? novaTag : "Adm";
-      
-      // Cria uma chave única limpa usando o próprio nome (Ex: "Louise Braga" vira "louise_braga")
       const idChaveNome = nomeOriginal.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "_");
 
-      // Verifica se essa chave exata já existe na nossa cópia global do Firebase
       if (dadosAdmsGlobais[idChaveNome]) {
         let tagsAtuais = Array.isArray(dadosAdmsGlobais[idChaveNome].tags) 
           ? dadosAdmsGlobais[idChaveNome].tags 
           : [dadosAdmsGlobais[idChaveNome].tag || "Adm"];
         
-        // Evita inserir tags idênticas repetidas
         if (!tagsAtuais.includes(tagParaAdicionar)) {
           tagsAtuais.push(tagParaAdicionar);
         }
         
         dadosAdmsGlobais[idChaveNome].tags = tagsAtuais;
       } else {
-        // Se for um novo nome, cria a estrutura inicial em array
         dadosAdmsGlobais[idChaveNome] = {
           nome: nomeOriginal,
           tags: [tagParaAdicionar]
@@ -738,7 +761,7 @@
       }
 
       salvarAdmsNoFirebase(dadosAdmsGlobais);
-      tagInput.value = ""; // Deixa o campo de tag livre para digitar a próxima função
+      tagInput.value = ""; 
     });
 
     function atribuirEventosDinamicos() {
@@ -789,6 +812,7 @@
     }
 
     function atribuirEventosDinamicosAdms() {
+      // EVENTO: Deletar Administrador Inteiro
       document.querySelectorAll('.btn-deletar-adm-fb').forEach(btn => {
         btn.onclick = function(e) {
           e.stopPropagation();
@@ -796,6 +820,32 @@
           const nome = this.getAttribute('data-nome');
           if(confirm(`Tem certeza que deseja remover o Administrador "${nome}" e todas as suas funções?`)) {
             delete dadosAdmsGlobais[id];
+            salvarAdmsNoFirebase(dadosAdmsGlobais);
+          }
+        };
+      });
+
+      // EVENTO NOVO: Deletar Apenas uma Tag Específica
+      document.querySelectorAll('.btn-deletar-tag').forEach(btn => {
+        btn.onclick = function(e) {
+          e.stopPropagation();
+          const id = this.getAttribute('data-id');
+          const tagParaRemover = this.getAttribute('data-tag');
+          
+          if(dadosAdmsGlobais[id]) {
+            let tagsAtuais = Array.isArray(dadosAdmsGlobais[id].tags) 
+              ? dadosAdmsGlobais[id].tags 
+              : [dadosAdmsGlobais[id].tag || "Adm"];
+            
+            // Filtra removendo a tag clicada
+            tagsAtuais = tagsAtuais.filter(t => t !== tagParaRemover);
+            
+            // Se não sobrar nenhuma tag, deixa por padrão "Adm" para manter limpo o layout
+            if(tagsAtuais.length === 0) {
+              tagsAtuais = ["Adm"];
+            }
+            
+            dadosAdmsGlobais[id].tags = tagsAtuais;
             salvarAdmsNoFirebase(dadosAdmsGlobais);
           }
         };
