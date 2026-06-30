@@ -1,132 +1,99 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html>
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Central do Adm</title>
-  <link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
+  <title>Central do Adm</title>
+  <link rel="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
   
   <style>
-    body {
-      font-family: sans-serif;
-      background-color: #12364e; 
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      color: #12364e;
-    }
+    body { font-family: sans-serif; background-color: #12364e; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+    .login-card { background: #e1d8cd; padding: 40px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); width: 100%; max-width: 360px; text-align: center; }
+    .input-group { margin-bottom: 20px; text-align: left; }
+    .input-group label { display: block; margin-bottom: 6px; color: #12364e; }
+    .input-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+    .btn-login { width: 100%; padding: 12px; background-color: #d9b246; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background-color 0.3s ease, transform 0.1s ease; }
+    .btn-login:hover { background-color: #af8a23; }
+    .btn-login:active { transform: scale(0.98); }
 
-    .box-login {
-      background: white;
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-      width: 90%;
-      max-width: 360px;
-      text-align: center;
-    }
-
-    .box-login img { width: 80px; margin-bottom: 15px; }
-    .box-login h2 { margin-bottom: 20px; color: #12364e; font-size: 20px; }
-    
-    .wrapper-senha {
-      position: relative;
-      width: 100%;
-      margin-bottom: 12px;
-    }
-    
-    .box-login input {
-      width: 100%; padding: 12px; margin-bottom: 12px;
-      border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box;
-    }
-
-    .wrapper-senha input {
-      margin-bottom: 0;
-      padding-right: 40px;
-    }
-
-    .btn-ver-senha {
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 18px;
-      padding: 0;
-      color: #12364e;
-    }
-
-    .box-login button {
-      width: 100%; padding: 12px; background: #d9b246;
-      color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;
-      margin-top: 8px;
-    }
-    .box-login button:hover { background: #af8a23; }
+    #mensagem { margin-top: 15px; font-weight: 500; }
+    .erro { color: #d93025; }
+    .sucesso { color: #188038; }
   </style>
 </head>
 <body>
 
-  <div class="box-login">
-    <form id="form-login" onsubmit="return false;">
-      <img src="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" alt="Logo">
-      <h2>Painel Administrativo</h2>
-      <input type="text" id="login-usuario" placeholder="Nome de usuário" required>
-      <div class="wrapper-senha">
-        <input type="password" id="login-senha" placeholder="Senha" required>
-        <button type="button" class="btn-ver-senha" id="btn-toggle-senha">👁️</button>
+  <div class="login-card">
+    <form id="loginForm" onsubmit="event.preventDefault(); executarLogin();">
+      <div class="input-group">
+        <label>Usuário</label>
+        <input type="text" id="usuario" required>
       </div>
-      <button type="submit" id="btn-entrar">Entrar</button>
+      <div class="input-group">
+        <label>Senha</label>
+        <input type="password" id="senha" required>
+      </div>
+      <button type="submit" class="btn-login">Entrar</button>
     </form>
+    <div id="mensagem"></div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-    const firebaseConfig = {
-      databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com/"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const SUFIXO = "@bolafora.internal";
-
-    // Lógica para mostrar/ocultar senha
-    document.getElementById('btn-toggle-senha').onclick = function() {
-      const campoSenha = document.getElementById('login-senha');
-      if (campoSenha.type === "password") {
-        campoSenha.type = "text";
-        this.innerText = "👁️‍🗨️";
-      } else {
-        campoSenha.type = "password";
-        this.innerText = "👁️";
-      }
-    };
-
-    // Executa o login
-    document.getElementById('form-login').addEventListener('submit', function(event) {
-      event.preventDefault();
-
-      const usuarioInput = document.getElementById('login-usuario').value.trim();
-      const senha = document.getElementById('login-senha').value;
+  <script>
+    function executarLogin() {
+      const usuarioDigitado = document.getElementById('usuario').value.trim();
+      const senhaDigitada = document.getElementById('senha').value;
+      const msgEl = document.getElementById('mensagem');
       
-      const emailFalso = usuarioInput + SUFIXO;
-      
-      signInWithEmailAndPassword(auth, emailFalso, senha)
-        .then((userCredential) => {
-          // Login correto: redireciona para a página do painel
-          window.location.href = "https://bolaforavb.github.io/centraldoadm/dashboard";
-        })
-        .catch(error => {
-          console.error(error);
-          alert("Erro: Usuário ou senha incorretos!");
-        });
-    });
+      msgEl.className = '';
+      msgEl.innerText = 'Verificando...';
+
+      // URL do seu Firebase Realtime Database apontando para o nó de 'usuarios'
+      // Certifique-se de que a estrutura no banco de dados esteja mapeada em uma lista de "usuarios"
+      const urlFirebase = "https://central-adm-bolafora-default-rtdb.firebaseio.com/usuarios.json";
+
+      fetch(urlFirebase)
+      .then(response => response.json())
+      .then(usuarios => {
+        
+        if (!usuarios) {
+          throw new Error('Nenhum usuário encontrado no banco de dados.');
+        }
+
+        let usuarioEncontrado = null;
+
+        // O Firebase pode retornar um Objeto ou uma Array dependendo de como você salvou.
+        // Essa lógica funciona para ambos:
+        for (let id in usuarios) {
+          if (usuarios[id] && usuarios[id].usuario === usuarioDigitado) {
+            usuarioEncontrado = usuarios[id];
+            break;
+          }
+        }
+
+        // Validação das credenciais encontradas
+        if (usuarioEncontrado && usuarioEncontrado.senha === senhaDigitada) {
+          msgEl.className = 'sucesso';
+          msgEl.innerText = 'Login realizado com sucesso!';
+          
+          // --- REDIRECIONAMENTO ---
+          // Se houver uma URL de destino cadastrada no próprio usuário do Firebase, ela será usada.
+          // Caso contrário, redireciona para uma página padrão (ex: painel.html)
+          const urlDestino = usuarioEncontrado.urlDestino || 'https://bolaforavb.github.io/centraldoadm/dashboard';
+          
+          setTimeout(function() {
+            window.location.href = urlDestino;
+          }, 1500);
+          
+        } else {
+          msgEl.className = 'erro';
+          msgEl.innerText = 'Usuário ou senha incorretos.';
+        }
+      })
+      .catch(erro => {
+        console.error(erro);
+        msgEl.className = 'erro';
+        msgEl.innerText = 'Erro ao conectar ao banco de dados.';
+      });
+    }
   </script>
 </body>
 </html>
