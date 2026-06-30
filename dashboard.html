@@ -241,9 +241,10 @@
       flex-direction: column;
       gap: 6px;
       width: 100%;
-      max-height: 300px; 
+      max-height: 250px; 
       overflow-y: auto; 
       padding-right: 2px;
+      margin-bottom: 15px;
     }
 
     .item-usuario {
@@ -303,7 +304,7 @@
       text-align: center;
     }
 
-    /* ESTILO COMPACTO DAS TAGS DE ADM COM COR CORRIGIDA (#d9b246) */
+    /* ESTILO COMPACTO DAS TAGS DE ADM COM COR (#d9b246) */
     .badge-tag {
       display: inline-flex;
       align-items: center;
@@ -360,6 +361,54 @@
       padding: 2px 6px;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ESTILOS DA SEÇÃO DE LEGENDA DE TAGS */
+    .container-legenda {
+      margin-top: 20px;
+      border-top: 2px dashed #e1d8cd;
+      padding-top: 15px;
+    }
+
+    .titulo-legenda {
+      font-size: 14px;
+      font-weight: bold;
+      color: #d9b246;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .tabela-legenda {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 12px;
+      font-size: 13px;
+    }
+
+    .tabela-legenda th, .tabela-legenda td {
+      padding: 8px 10px;
+      text-align: left;
+      border-bottom: 1px solid #e1d8cd;
+    }
+
+    .tabela-legenda th {
+      background-color: #f7f5f2;
+      color: #12364e;
+      font-weight: bold;
+    }
+
+    .tabela-legenda td .badge-tag {
+      max-width: 130px;
+    }
+
+    .btn-deletar-linha-legenda {
+      background: none;
+      border: none;
+      color: #d93025;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 0 4px;
     }
 
     #bloco-gerador .btn-sortear {
@@ -577,6 +626,29 @@
           </div>
           
           <div class="lista-usuarios" id="lista-adms"></div>
+
+          <div class="container-legenda">
+            <div class="titulo-legenda">Legenda</div>
+            
+            <table class="tabela-legenda">
+              <thead>
+                <tr>
+                  <th>Tag</th>
+                  <th>Significado</th>
+                  <th style="width: 30px; text-align: center;">✕</th>
+                </tr>
+              </thead>
+              <tbody id="corpo-tabela-legenda">
+                </tbody>
+            </table>
+
+            <div class="form-niveis">
+              <input type="text" id="input-legenda-tag" placeholder="Nome da Tag">
+              <input type="text" id="input-legenda-significado" placeholder="Significado" style="flex: 2;">
+              <button class="btn-add" id="btn-adicionar-legenda">Add</button>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -599,10 +671,12 @@
     const db = getDatabase(app);
     const dbRef = ref(db, 'jogadores');
     const dbAdmsRef = ref(db, 'administradores'); 
+    const dbLegendaRef = ref(db, 'legenda_tags'); // Novo nó no Firebase para as legendas
     const auth = getAuth(app);
 
     let dadosJogadoresGlobais = {};
     let dadosAdmsGlobais = {};
+    let dadosLegendasGlobais = {};
     let timesGeradosParaCompartilhar = null;
 
     onAuthStateChanged(auth, (user) => {
@@ -672,7 +746,6 @@
           
           const tagsArray = Array.isArray(adm.tags) ? adm.tags : [adm.tag || "Adm"];
           
-          // Renderiza cada tag contendo o texto e o mini botão X para remoção individual
           const badgesHTML = tagsArray.map(t => `
             <span class="badge-tag">
               <span class="texto-tag" title="${t}">${t}</span>
@@ -696,13 +769,34 @@
       }
     });
 
-    function salvarNoFirebase(dados) {
-      set(dbRef, dados);
-    }
+    // Sincronização em tempo real - Tabela de Legendas
+    onValue(dbLegendaRef, (snapshot) => {
+      const dados = snapshot.val();
+      dadosLegendasGlobais = dados || {};
+      
+      const corpoTabela = document.getElementById('corpo-tabela-legenda');
+      corpoTabela.innerHTML = '';
+      
+      Object.keys(dadosLegendasGlobais).forEach(id => {
+        const linha = dadosLegendasGlobais[id];
+        const tr = document.createElement('tr');
+        
+        tr.innerHTML = `
+          <td><span class="badge-tag">${linha.tag}</span></td>
+          <td>${linha.significado}</td>
+          <td style="text-align: center;">
+            <button class="btn-deletar-linha-legenda" data-id="${id}">✕</button>
+          </td>
+        `;
+        corpoTabela.appendChild(tr);
+      });
+      
+      atribuirEventosLegenda();
+    });
 
-    function salvarAdmsNoFirebase(dados) {
-      set(dbAdmsRef, dados);
-    }
+    function salvarNoFirebase(dados) { set(dbRef, dados); }
+    function salvarAdmsNoFirebase(dados) { set(dbAdmsRef, dados); }
+    function salvarLegendaNoFirebase(dados) { set(dbLegendaRef, dados); }
 
     // Adicionar Jogador
     document.getElementById('btn-adicionar-jogador').addEventListener('click', (event) => {
@@ -764,6 +858,33 @@
       tagInput.value = ""; 
     });
 
+    // Adicionar Linha de Legenda Manual
+    document.getElementById('btn-adicionar-legenda').addEventListener('click', (event) => {
+      event.stopPropagation();
+      const inputTag = document.getElementById('input-legenda-tag');
+      const inputSignificado = document.getElementById('input-legenda-significado');
+      
+      const tagTexto = inputTag.value.trim();
+      const significadoTexto = inputSignificado.value.trim();
+
+      if (tagTexto === "" || significadoTexto === "") {
+        alert("Preencha o nome da Tag e o seu significado completo!");
+        return;
+      }
+
+      // Gera ID com base no nome limpo da tag para evitar registros idênticos repetidos
+      const idLegenda = 'leg_' + tagTexto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "_");
+
+      dadosLegendasGlobais[idLegenda] = {
+        tag: tagTexto,
+        significado: significadoTexto
+      };
+
+      salvarLegendaNoFirebase(dadosLegendasGlobais);
+      inputTag.value = "";
+      inputSignificado.value = "";
+    });
+
     function atribuirEventosDinamicos() {
       document.querySelectorAll('.btn-visibilidade').forEach(btn => {
         btn.onclick = function(e) {
@@ -812,7 +933,6 @@
     }
 
     function atribuirEventosDinamicosAdms() {
-      // EVENTO: Deletar Administrador Inteiro
       document.querySelectorAll('.btn-deletar-adm-fb').forEach(btn => {
         btn.onclick = function(e) {
           e.stopPropagation();
@@ -825,7 +945,6 @@
         };
       });
 
-      // EVENTO NOVO: Deletar Apenas uma Tag Específica
       document.querySelectorAll('.btn-deletar-tag').forEach(btn => {
         btn.onclick = function(e) {
           e.stopPropagation();
@@ -837,10 +956,8 @@
               ? dadosAdmsGlobais[id].tags 
               : [dadosAdmsGlobais[id].tag || "Adm"];
             
-            // Filtra removendo a tag clicada
             tagsAtuais = tagsAtuais.filter(t => t !== tagParaRemover);
             
-            // Se não sobrar nenhuma tag, deixa por padrão "Adm" para manter limpo o layout
             if(tagsAtuais.length === 0) {
               tagsAtuais = ["Adm"];
             }
@@ -852,12 +969,24 @@
       });
     }
 
+    function atribuirEventosLegenda() {
+      document.querySelectorAll('.btn-deletar-linha-legenda').forEach(btn => {
+        btn.onclick = function(e) {
+          e.stopPropagation();
+          const id = this.getAttribute('data-id');
+          delete dadosLegendasGlobais[id];
+          salvarLegendaNoFirebase(dadosLegendasGlobais);
+        };
+      });
+    }
+
     function gerenciarLayoutBloco(event, idBloco) {
       const bloco = document.getElementById(idBloco);
       if (event.target.closest('input') || 
           event.target.closest('select') || 
           event.target.closest('button') || 
-          event.target.closest('.conteudo-dinamico')) {
+          event.target.closest('.conteudo-dinamico') ||
+          event.target.closest('.container-legenda')) {
         return; 
       }
       if (!bloco.classList.contains('expandido')) {
