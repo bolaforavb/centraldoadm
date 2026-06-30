@@ -375,6 +375,36 @@
       text-align: right;
     }
 
+    /* BOTAO COMPARTILHAR WHATSAPP */
+    .btn-whatsapp {
+      display: none; /* Só aparece após o sorteio ser realizado */
+      background-color: #25d366;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 20px auto 0 auto;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      transition: background-color 0.2s, transform 0.1s;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      max-width: 280px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-whatsapp:hover {
+      background-color: #1ebd59;
+    }
+
+    .btn-whatsapp:active {
+      transform: scale(0.97);
+    }
+
     /* ESTILIZAÇÃO DO BOTÃO DE LOGOUT NO RODAPÉ */
     .btn-logout {
       background-color: #c53929;
@@ -486,6 +516,10 @@
               <div class="resumo-time" id="resumo-roxo"></div>
             </div>
           </div>
+
+          <button id="btn-compartilhar-whatsapp" class="btn-whatsapp">
+            <span>💬</span> Compartilhar no WhatsApp
+          </button>
         </div>
       </div>
 
@@ -499,7 +533,7 @@
     </div>
   </main>
 
-  <button id="btn-logout" class="btn-logout">Sair da Conta</button>
+  <button id="btn-logout" class="btn-logout">Deslogar</button>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -517,6 +551,7 @@
     const auth = getAuth(app);
 
     let dadosJogadoresGlobais = {};
+    let timesGeradosParaCompartilhar = null; // Guarda o estado do último sorteio
 
     onAuthStateChanged(auth, (user) => {
       if (!user) {
@@ -746,6 +781,52 @@
         let somaNivelTime = times[id].reduce((acc, j) => acc + j.nivel, 0);
         resumoUI.innerHTML = `Total: ${somaNivelTime}`;
       });
+
+      // Salva os times globalmente e exibe o botão do WhatsApp
+      timesGeradosParaCompartilhar = times;
+      document.getElementById('btn-compartilhar-whatsapp').style.display = 'flex';
+    });
+
+    // --- LÓGICA DO BOTÃO DE COMPARTILHAR WHATSAPP ---
+    document.getElementById('btn-compartilhar-whatsapp').addEventListener('click', (event) => {
+      event.stopPropagation();
+      
+      if (!timesGeradosParaCompartilhar) {
+        alert("Por favor, realize um sorteio primeiro!");
+        return;
+      }
+
+      // Mapeamento visual estilizado para a mensagem de texto do WhatsApp
+      const configTimes = [
+        { nome: 'Amarelo', emoji: '🟡', chave: 'amarelo' },
+        { nome: 'Azul', emoji: '🔵', chave: 'azul' },
+        { nome: 'Rosa', emoji: '🔴', chave: 'rosa' },
+        { nome: 'Roxo', emoji: '🟣', chave: 'roxo' }
+      ];
+
+      let textoMensagem = `*🏐 TIMES SORTEADOS - BOLA FORA 🏐*\n\n`;
+
+      configTimes.forEach(t => {
+        const listaJogadores = timesGeradosParaCompartilhar[t.chave];
+        const somaNiveis = listaJogadores.reduce((acc, j) => acc + j.nivel, 0);
+        
+        textoMensagem += `${t.emoji} *TIME ${t.nome.toUpperCase()}* (Nível: ${somaNiveis})\n`;
+        
+        listaJogadores.forEach(j => {
+          textoMensagem += `• ${j.nome} (Nív. ${j.nivel})\n`;
+        });
+        
+        textoMensagem += `\n`; // Quebra de linha entre blocos de times
+      });
+
+      textoMensagem += `_Gerado automaticamente pela Central do Adm._`;
+
+      // Encodar string para URL padrão
+      const textoUrl = encodeURIComponent(textoMensagem);
+      const urlWhatsapp = `https://api.whatsapp.com/send?text=${textoUrl}`;
+
+      // Abre o WhatsApp numa nova aba
+      window.open(urlWhatsapp, '_blank');
     });
   </script>
 </body>
