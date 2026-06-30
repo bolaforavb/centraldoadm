@@ -44,14 +44,17 @@
     .main-container {
       width: 100%;
       max-width: 600px; /* Garante tamanho idêntico ao banner */
-      padding: 20px;
+      padding: 16px; /* Ajustado para dar um espaçamento seguro nas laterais mobile */
       flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     .grid-container {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
+      gap: 10px; /* Reduzido levemente para aproveitar melhor o espaço no mobile */
       width: 100%;
       transition: all 0.4s ease-in-out;
     }
@@ -61,11 +64,11 @@
       grid-column: span 3;
       border: 1px solid #d9b246; 
       border-radius: 16px;
-      padding: 16px 12px 12px 12px;
-      margin: 0;
+      padding: 16px 10px 10px 10px;
+      margin: 0 0 4px 0;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
+      gap: 10px;
       width: 100%;
     }
 
@@ -83,19 +86,20 @@
       text-decoration: none;
       color: inherit;
       width: 100%;
+      display: block;
     }
 
     .bloco {
       background-color: white; 
       border-radius: 16px;
       aspect-ratio: 1 / 1; 
-      height: 100%;
-      min-height: 110px; 
+      width: 100%;
+      min-height: 100px; 
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 10px;
+      padding: 8px; /* Compactado para mobile */
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       text-align: center;
       transition: transform 0.1s ease, background-color 0.3s ease;
@@ -110,14 +114,14 @@
     }
 
     .bloco-icon {
-      font-size: 22px;
-      margin-bottom: 6px;
+      font-size: 20px; /* Reduzido levemente para equilibrar espaço */
+      margin-bottom: 4px;
       color: #d9b246; 
       flex-shrink: 0;
     }
 
     .titulo {
-      font-size: 13px;
+      font-size: 11px; /* Ajustado para caber perfeitamente sem quebrar linhas de forma bizarra */
       font-weight: bold;
       line-height: 1.2;
       width: 100%;
@@ -476,8 +480,6 @@
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // ATENÇÃO: Verifique esta chave se o erro persistir. 
-    // Certifique-se de que ela corresponde ao app correto no console do Firebase.
     const firebaseConfig = {
       apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
       databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com/"
@@ -535,7 +537,6 @@
       set(dbRef, dados);
     }
 
-    // Evento Adicionar Jogador
     document.getElementById('btn-adicionar-jogador').addEventListener('click', (event) => {
       event.stopPropagation();
 
@@ -607,7 +608,6 @@
       });
     }
 
-    // --- CONTROLE DE LAYOUT (Abertura/Fechamento dos Blocos) ---
     function gerenciarLayoutBloco(event, idBloco) {
       const bloco = document.getElementById(idBloco);
       if (event.target.closest('input') || 
@@ -640,8 +640,6 @@
       document.getElementById('bloco-gerador').classList.remove('expandido');
     });
 
-
-    // --- GERADOR DE TIMES EQUILIBRADOS ---
     document.getElementById('btn-sortear-times').addEventListener('click', (event) => {
       event.stopPropagation();
       
