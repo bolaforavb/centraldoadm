@@ -474,11 +474,142 @@
     </div>
   </main>
 
-  <script>
-    window.onload = function() {
-      carregarJogadoresSalvos();
+  <!-- SCRIPTS DO FIREBASE PARA CONEXÃO EM NUVEM -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // Configuração oficial utilizando o seu link de banco de dados permanente
+    const firebaseConfig = {
+      databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com/"
     };
 
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const dbRef = ref(db, 'jogadores');
+
+    // Escuta alterações na nuvem em tempo real e renderiza na tela
+    onValue(dbRef, (snapshot) => {
+      const dados = snapshot.val();
+      const listaUI = document.getElementById('lista-usuarios');
+      listaUI.innerHTML = '';
+      
+      if (dados) {
+        Object.keys(dados).forEach(id => {
+          const jogador = dados[id];
+          const item = document.createElement('div');
+          item.className = 'item-usuario' + (jogador.inativo ? ' inativo' : '');
+          const iconeOlho = jogador.inativo ? '👁️‍🗨️' : '👁️';
+          
+          item.innerHTML = `
+            <div class="wrapper-nome">
+              <button class="btn-visibilidade" data-id="${id}" data-inativo="${jogador.inativo}">${iconeOlho}</button>
+              <span class="nome-item" title="${jogador.nome}">${jogador.nome}</span>
+            </div>
+            <div class="controles-nivel">
+              <div class="botoes-setas">
+                <button class="btn-seta-up" data-id="${id}" data-nivel="${jogador.nivel}">▲</button>
+                <span class="valor-nivel">${jogador.nivel}</span>
+                <button class="btn-seta-down" data-id="${id}" data-nivel="${jogador.nivel}">▼</button>
+              </div>
+              <button class="btn-deletar-fb" data-id="${id}" data-nome="${jogador.nome}">✕</button>
+            </div>
+          `;
+          listaUI.appendChild(item);
+        });
+        
+        // Religa os eventos aos botões gerados dinamicamente
+        atribuirEventosDinamicos();
+      }
+    });
+
+    // Envia o estado atualizado dos dados para o Firebase
+    function salvarNoFirebase(dados) {
+      set(dbRef, dados);
+    }
+
+    function obterDadosAtuaisLocais() {
+      const itens = document.querySelectorAll('#lista-usuarios .item-usuario');
+      let dados = {};
+      itens.forEach((item, index) => {
+        const nome = item.querySelector('.nome-item').innerText;
+        const nivel = parseInt(item.querySelector('.valor-nivel').innerText);
+        const inativo = item.classList.contains('inativo');
+        dados['jog_' + index] = { nome, nivel, inativo };
+      });
+      return dados;
+    }
+
+    window.adicionarJogador = function(event) {
+      const nomeInput = document.getElementById('input-nome');
+      const nivelSelect = document.getElementById('select-nivel');
+      
+      if (nomeInput.value.trim() === "") {
+        alert("Por favor, digite um nome!");
+        return;
+      }
+
+      const dadosAtuais = obterDadosAtuaisLocais();
+      const novoId = 'jog_' + Date.now();
+      dadosAtuais[novoId] = {
+        nome: nomeInput.value.trim(),
+        nivel: parseInt(nivelSelect.value),
+        inativo: false
+      };
+
+      salvarNoFirebase(dadosAtuais);
+      nomeInput.value = "";
+    };
+
+    function atribuirEventosDinamicos() {
+      document.querySelectorAll('.btn-visibilidade').forEach(btn => {
+        btn.onclick = function() {
+          const id = this.getAttribute('data-id');
+          const dadosAtuais = obterDadosAtuaisLocais();
+          if(dadosAtuais[id]) {
+            dadosAtuais[id].inativo = !(this.getAttribute('data-inativo') === 'true');
+            salvarNoFirebase(dadosAtuais);
+          }
+        };
+      });
+
+      document.querySelectorAll('.btn-seta-up').forEach(btn => {
+        btn.onclick = function() {
+          const id = this.getAttribute('data-id');
+          const dadosAtuais = obterDadosAtuaisLocais();
+          if(dadosAtuais[id] && dadosAtuais[id].nivel < 5) {
+            dadosAtuais[id].nivel += 1;
+            salvarNoFirebase(dadosAtuais);
+          }
+        };
+      });
+
+      document.querySelectorAll('.btn-seta-down').forEach(btn => {
+        btn.onclick = function() {
+          const id = this.getAttribute('data-id');
+          const dadosAtuais = obterDadosAtuaisLocais();
+          if(dadosAtuais[id] && dadosAtuais[id].nivel > 1) {
+            dadosAtuais[id].nivel -= 1;
+            salvarNoFirebase(dadosAtuais);
+          }
+        };
+      });
+
+      document.querySelectorAll('.btn-deletar-fb').forEach(btn => {
+        btn.onclick = function() {
+          const id = this.getAttribute('data-id');
+          const nome = this.getAttribute('data-nome');
+          if(confirm(`Tem certeza que deseja excluir "${nome}"?`)) {
+            const dadosAtuais = obterDadosAtuaisLocais();
+            delete dadosAtuais[id];
+            salvarNoFirebase(dadosAtuais);
+          }
+        };
+      });
+    }
+  </script>
+
+  <script>
     function gerenciarLayoutBloco(event, idBloco) {
       const bloco = document.getElementById(idBloco);
       
@@ -491,7 +622,6 @@
       
       if (!bloco.classList.contains('expandido')) {
         bloco.classList.add('expandido');
-        
         setTimeout(() => {
           bloco.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }, 200);
@@ -506,118 +636,6 @@
       event.stopPropagation(); 
       const bloco = document.getElementById(idBloco);
       bloco.classList.remove('expandido');
-    }
-
-    function salvarListaNoNavegador() {
-      const itensJogadores = document.querySelectorAll('#lista-usuarios .item-usuario');
-      let dadosParaSalvar = [];
-      
-      itensJogadores.forEach(item => {
-        const nome = item.querySelector('.nome-item').innerText;
-        const nivel = item.querySelector('.valor-nivel').innerText;
-        const inativo = item.classList.contains('inativo');
-        dadosParaSalvar.push({ nome, nivel, inativo });
-      });
-      
-      localStorage.setItem('centralAdm_jogadores', JSON.stringify(dadosParaSalvar));
-    }
-
-    function carregarJogadoresSalvos() {
-      const dadosSalvos = localStorage.getItem('centralAdm_jogadores');
-      if (!dadosSalvos) return;
-      
-      const listaJogadores = JSON.parse(dadosSalvos);
-      const listaUI = document.getElementById('lista-usuarios');
-      
-      listaJogadores.forEach(jogador => {
-        const item = document.createElement('div');
-        item.className = 'item-usuario' + (jogador.inativo ? ' inativo' : '');
-        
-        const iconeOlho = jogador.inativo ? '👁️‍🗨️' : '👁️';
-        
-        item.innerHTML = `
-          <div class="wrapper-nome">
-            <button class="btn-visibilidade" onclick="alternarVisibilidade(this)">${iconeOlho}</button>
-            <span class="nome-item" title="${jogador.nome}">${jogador.nome}</span>
-          </div>
-          <div class="controles-nivel">
-            <div class="botoes-setas">
-              <button class="btn-seta" onclick="alterarNivel(this, 1)">▲</button>
-              <span class="valor-nivel">${jogador.nivel}</span>
-              <button class="btn-seta" onclick="alterarNivel(this, -1)">▼</button>
-            </div>
-            <button class="btn-deletar" onclick="removerJogador(this)">✕</button>
-          </div>
-        `;
-        listaUI.appendChild(item);
-      });
-    }
-
-    function adicionarJogador(event) {
-      const nomeInput = document.getElementById('input-nome');
-      const nivelSelect = document.getElementById('select-nivel');
-      const lista = document.getElementById('lista-usuarios');
-      
-      if (nomeInput.value.trim() === "") {
-        alert("Por favor, digite um nome!");
-        return;
-      }
-
-      const item = document.createElement('div');
-      item.className = 'item-usuario';
-      
-      item.innerHTML = `
-        <div class="wrapper-nome">
-          <button class="btn-visibilidade" onclick="alternarVisibilidade(this)">👁️</button>
-          <span class="nome-item" title="${nomeInput.value}">${nomeInput.value}</span>
-        </div>
-        <div class="controles-nivel">
-          <div class="botoes-setas">
-            <button class="btn-seta" onclick="alterarNivel(this, 1)">▲</button>
-            <span class="valor-nivel">${nivelSelect.value}</span>
-            <button class="btn-seta" onclick="alterarNivel(this, -1)">▼</button>
-          </div>
-          <button class="btn-deletar" onclick="removerJogador(this)">✕</button>
-        </div>
-      `;
-      
-      lista.appendChild(item);
-      nomeInput.value = "";
-      salvarListaNoNavegador(); 
-    }
-
-    function alternarVisibilidade(botao) {
-      const itemUsuario = botao.closest('.item-usuario');
-      itemUsuario.classList.toggle('inativo');
-      
-      if (itemUsuario.classList.contains('inativo')) {
-        botao.innerText = '👁️‍🗨️'; 
-      } else {
-        botao.innerText = '👁️'; 
-      }
-      salvarListaNoNavegador();
-    }
-
-    function alterarNivel(botao, mudanca) {
-      const containerControle = botao.parentElement;
-      const displayValor = containerControle.querySelector('.valor-nivel');
-      let nivelAtual = parseInt(displayValor.innerText);
-      
-      nivelAtual += mudanca;
-      if (nivelAtual >= 1 && nivelAtual <= 5) {
-        displayValor.innerText = nivelAtual;
-        salvarListaNoNavegador(); 
-      }
-    }
-
-    function removerJogador(botao) {
-      const itemUsuario = botao.closest('.item-usuario');
-      const nomeJogador = itemUsuario.querySelector('.nome-item').innerText;
-      const confirmar = confirm(`Tem certeza que deseja excluir "${nomeJogador}" da lista?`);
-      if (confirmar) { 
-        itemUsuario.remove(); 
-        salvarListaNoNavegador(); 
-      }
     }
 
     function generarTimesEquilibrados(event) {
@@ -679,18 +697,13 @@
         const listaUI = document.getElementById(`jogadores-${id}`);
         const resumoUI = document.getElementById(`resumo-${id}`);
         
-        let somaNivelTime = 0;
-
         times[id].forEach(jogador => {
           const li = document.createElement('li');
           li.innerHTML = `<strong>${jogador.nome}</strong>`;
           listaUI.appendChild(li);
-          somaNivelTime += player => jogador.nivel; // Corrigido escopo anterior para evitar erros de render
-          somaNivelTime += jogador.nivel;
         });
         
-        // Correção de duplicidade interna do script original
-        somaNivelTime = times[id].reduce((acc, j) => acc + j.nivel, 0);
+        let somaNivelTime = times[id].reduce((acc, j) => acc + j.nivel, 0);
         resumoUI.innerHTML = `Total: ${somaNivelTime}`;
       });
     }
