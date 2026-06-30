@@ -72,7 +72,7 @@
       letter-spacing: 0.5px;
     }
 
-    /* Linha Superior: Título + Período */
+    /* Linha Superior: Título + Período / Título + Ações */
     .header-resultado-linha {
       display: flex;
       justify-content: space-between;
@@ -269,7 +269,7 @@
       font-size: 13px;
       font-weight: bold;
       color: #12364e;
-      margin-right: 12px;
+      margin-right: 8px;
     }
 
     .btn-deletar-ranking {
@@ -281,6 +281,41 @@
       padding: 2px 4px;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Novo botão para zerar pontos individualmente */
+    .btn-zerar-ranking {
+      background: none;
+      border: none;
+      color: #12364e;
+      font-size: 13px;
+      padding: 2px 4px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    .btn-zerar-ranking:hover {
+      opacity: 1;
+    }
+
+    /* Novo botão para zerar todos globalmente */
+    .btn-zerar-tudo-geral {
+      background-color: #d93025;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: background-color 0.2s;
+    }
+    .btn-zerar-tudo-geral:hover {
+      background-color: #b3241c;
     }
 
     /* Botão Compartilhar WhatsApp idêntico ao Gerador de Times */
@@ -427,7 +462,10 @@
     </div>
 
     <div class="bloco-card">
-      <div class="titulo-secao">Ranking</div>
+      <div class="header-resultado-linha">
+        <div class="titulo-secao">Ranking</div>
+        <button id="btn-zerar-todos" class="btn-zerar-tudo-geral">Zerar Tudo</button>
+      </div>
       <div class="lista-ranking-usuarios" id="tabela-ranking"></div>
       
       <button id="btn-compartilhar-ranking" class="btn-whatsapp">
@@ -489,7 +527,6 @@
         document.getElementById('mes-inicio').value = periodo.inicio || 'Julho';
         document.getElementById('mes-fim').value = periodo.fim || 'Setembro';
       } else {
-        // Se não houver período salvo na nuvem, define Julho a Setembro como padrão global
         db.ref('periodo_ranking').set({ inicio: 'Julho', fim: 'Setembro' });
       }
     });
@@ -550,9 +587,10 @@
             <span class="posicao-badge">${index + 1}º</span>
             <span class="nome-ranking" title="${nome}">${nome}</span>
           </div>
-          <div style="display: flex; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 4px;">
             <span class="pontos-ranking">${pontos} pts</span>
-            <button class="btn-deletar-ranking" onclick="excluirJogador('${nome}')">✕</button>
+            <button class="btn-zerar-ranking" onclick="zerarJogador('${nome}')" title="Zerar pontos deste jogador">🔄</button>
+            <button class="btn-deletar-ranking" onclick="excluirJogador('${nome}')" title="Excluir jogador">✕</button>
           </div>
         `;
         containerRanking.appendChild(item);
@@ -580,6 +618,24 @@
         salvarDados();
       }
     }
+
+    // Função para zerar a pontuação de um jogador individualmente
+    window.zerarJogador = function(nome) {
+      if (confirm(`Deseja zerar os pontos de "${nome}"?`)) {
+        BD_Pontuacao[nome] = 0;
+        salvarDados();
+      }
+    }
+
+    // Evento para zerar a pontuação de TODOS os jogadores de uma vez
+    document.getElementById('btn-zerar-todos').addEventListener('click', function() {
+      if (confirm("🚨 ATENÇÃO: Deseja ZERAR a pontuação de TODOS os competidores? Esta ação mudará os valores na nuvem imediatamente.")) {
+        Object.keys(BD_Pontuacao).forEach(jogador => {
+          BD_Pontuacao[jogador] = 0;
+        });
+        salvarDados();
+      }
+    });
 
     function obterFlagados(nomeInput) {
       const checkboxes = document.querySelectorAll(`input[name="${nomeInput}"]:checked`);
