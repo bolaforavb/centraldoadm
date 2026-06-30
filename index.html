@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
   <meta charset="utf-8">
   <title>Central do Adm</title>
@@ -50,6 +50,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 
+    // Suas credenciais oficiais do Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
       authDomain: "central-adm-bolafora.firebaseapp.com",
@@ -63,7 +64,19 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
+    // --- LÓGICA DE MOSTRAR / OCULTAR SENHA ---
+    const senhaInput = document.getElementById('senha');
+    const btnToggleSenha = document.getElementById('btnToggleSenha');
 
+    btnToggleSenha.addEventListener('click', () => {
+      if (senhaInput.type === 'password') {
+        senhaInput.type = 'text';
+        btnToggleSenha.innerText = '🙈'; // Muda o ícone quando visível
+      } else {
+        senhaInput.type = 'password';
+        btnToggleSenha.innerText = '👁️'; // Volta para o olho quando oculto
+      }
+    });
 
     // --- ENVIO DO FORMULÁRIO ---
     const form = document.getElementById('loginForm');
@@ -72,12 +85,13 @@
       event.preventDefault();
       
       const usuarioDigitado = document.getElementById('usuario').value.trim();
-      const senha = senhaInput.value;
+      const senha = senhaInput.value; // Agora o senhaInput está mapeado corretamente!
       const msgEl = document.getElementById('mensagem');
       
       msgEl.className = '';
       msgEl.innerText = 'Verificando...';
 
+      // Criação automática do email interno caso insira apenas o nome de usuário
       const emailCompleto = usuarioDigitado.includes('@') ? usuarioDigitado : `${usuarioDigitado}@bolafora.internal`;
 
       signInWithEmailAndPassword(auth, emailCompleto, senha)
