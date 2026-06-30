@@ -19,14 +19,14 @@
       padding: 0;
       display: flex;
       flex-direction: column;
-      align-items: center; /* Centraliza todo o conteúdo horizontalmente */
+      align-items: center; 
       min-height: 100vh;
       color: #12364e;
     }
 
     .header-banner {
       width: 100%; 
-      max-width: 600px; /* Alinha o limite com o container principal */
+      max-width: 600px; 
       background-color: #e1d8cd; 
       overflow: hidden;
       display: flex;
@@ -43,8 +43,8 @@
 
     .main-container {
       width: 100%;
-      max-width: 600px; /* Garante tamanho idêntico ao banner */
-      padding: 16px; /* Ajustado para dar um espaçamento seguro nas laterais mobile */
+      max-width: 600px; 
+      padding: 16px; 
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -54,7 +54,7 @@
     .grid-container {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 10px; /* Reduzido levemente para aproveitar melhor o espaço no mobile */
+      gap: 10px; 
       width: 100%;
       transition: all 0.4s ease-in-out;
     }
@@ -99,7 +99,7 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 8px; /* Compactado para mobile */
+      padding: 8px; 
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       text-align: center;
       transition: transform 0.1s ease, background-color 0.3s ease;
@@ -114,14 +114,14 @@
     }
 
     .bloco-icon {
-      font-size: 20px; /* Reduzido levemente para equilibrar espaço */
+      font-size: 20px; 
       margin-bottom: 4px;
       color: #d9b246; 
       flex-shrink: 0;
     }
 
     .titulo {
-      font-size: 11px; /* Ajustado para caber perfeitamente sem quebrar linhas de forma bizarra */
+      font-size: 11px; 
       font-weight: bold;
       line-height: 1.2;
       width: 100%;
@@ -289,6 +289,7 @@
     }
     
     .controles-nivel { display: flex; align-items: center; gap: 8px; }
+    .container-tags { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; max-width: 200px; }
     .botoes-setas { display: flex; align-items: center; gap: 4px; }
 
     .valor-nivel {
@@ -312,7 +313,7 @@
       border-radius: 20px;
       border: 1px solid rgba(111, 66, 193, 0.2);
       white-space: nowrap;
-      max-width: 120px;
+      max-width: 90px;
       overflow: hidden;
       text-overflow: ellipsis;
     }
@@ -395,7 +396,7 @@
 
     /* BOTAO COMPARTILHAR WHATSAPP */
     .btn-whatsapp {
-      display: none; /* Só aparece após o sorteio ser realizado */
+      display: none; 
       background-color: #25d366;
       color: white;
       border: none;
@@ -433,7 +434,7 @@
       font-size: 14px;
       font-weight: bold;
       cursor: pointer;
-      margin: 20px 0 30px 0; /* Margem para afastar do conteúdo superior e do fim da página */
+      margin: 20px 0 30px 0; 
       box-shadow: 0 4px 10px rgba(0,0,0,0.2);
       transition: background-color 0.2s ease, transform 0.1s ease;
       -webkit-tap-highlight-color: transparent;
@@ -575,7 +576,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const dbRef = ref(db, 'jogadores');
-    const dbAdmsRef = ref(db, 'administradores'); // Referência do nó de administradores no FB
+    const dbAdmsRef = ref(db, 'administradores'); 
     const auth = getAuth(app);
 
     let dadosJogadoresGlobais = {};
@@ -588,7 +589,6 @@
       }
     });
 
-    // --- LÓGICA DO BOTÃO DE LOGOUT ---
     document.getElementById('btn-logout').addEventListener('click', () => {
       signOut(auth).then(() => {
         window.location.href = "index.html";
@@ -634,7 +634,7 @@
       }
     });
 
-    // Sincronização em tempo real - Administradores
+    // Sincronização em tempo real - Administradores (Múltiplas Tags)
     onValue(dbAdmsRef, (snapshot) => {
       const dados = snapshot.val();
       dadosAdmsGlobais = dados || {};
@@ -648,12 +648,16 @@
           const item = document.createElement('div');
           item.className = 'item-usuario';
           
+          // Mapeia o array de tags para criar várias badges
+          const tagsArray = Array.isArray(adm.tags) ? adm.tags : [adm.tag || "Adm"];
+          const badgesHTML = tagsArray.map(t => `<span class="badge-tag" title="${t}">${t}</span>`).join('');
+          
           item.innerHTML = `
             <div class="wrapper-nome">
               <span class="nome-item" style="margin-left: 5px;" title="${adm.nome}">${adm.nome}</span>
             </div>
             <div class="controles-nivel">
-              <span class="badge-tag" title="${adm.tag}">${adm.tag}</span>
+              <div class="container-tags">${badgesHTML}</div>
               <button class="btn-deletar-adm-fb" data-id="${id}" data-nome="${adm.nome}">✕</button>
             </div>
           `;
@@ -672,7 +676,7 @@
       set(dbAdmsRef, dados);
     }
 
-    // Ação Adicionar Jogador
+    // Adicionar Jogador
     document.getElementById('btn-adicionar-jogador').addEventListener('click', (event) => {
       event.stopPropagation();
       const nomeInput = document.getElementById('input-nome');
@@ -695,28 +699,49 @@
       nomeInput.value = "";
     });
 
-    // Ação Adicionar Administrador
+    // Adicionar Administrador (Lógica Inteligente de Mesclagem de Tags)
     document.getElementById('btn-adicionar-adm').addEventListener('click', (event) => {
       event.stopPropagation();
       const nomeInput = document.getElementById('input-nome-adm');
       const tagInput = document.getElementById('input-tag-adm');
       const nomeAdm = nomeInput.value.trim();
-      const tagAdm = tagInput.value.trim() || "Adm"; // Default tag caso mande em branco
+      const novaTag = tagInput.value.trim();
 
       if (nomeAdm === "") {
         alert("Por favor, digite o nome do Administrador!");
         return;
       }
 
-      const novoId = 'adm_' + Date.now();
-      dadosAdmsGlobais[novoId] = {
-        nome: nomeAdm,
-        tag: tagAdm
-      };
+      const tagParaAdicionar = novaTag !== "" ? novaTag : "Adm";
+
+      // Verifica se já existe um administrador cadastrado com exatamente esse nome
+      let idExistente = Object.keys(dadosAdmsGlobais).find(
+        id => dadosAdmsGlobais[id].nome.toLowerCase() === nomeAdm.toLowerCase()
+      );
+
+      if (idExistente) {
+        // Se já existe, pega as tags atuais (garante formato array)
+        let tagsAtuais = Array.isArray(dadosAdmsGlobais[idExistente].tags) 
+          ? dadosAdmsGlobais[idExistente].tags 
+          : [dadosAdmsGlobais[idExistente].tag || "Adm"];
+        
+        // Só adiciona a tag se ela já não estiver na lista para evitar duplicadas idênticas
+        if (!tagsAtuais.includes(tagParaAdicionar)) {
+          tagsAtuais.push(tagParaAdicionar);
+        }
+        
+        dadosAdmsGlobais[idExistente].tags = tagsAtuais;
+      } else {
+        // Se for um novo administrador, cria o nó inicial com a tag dentro da array
+        const novoId = 'adm_' + Date.now();
+        dadosAdmsGlobais[novoId] = {
+          nome: nomeAdm,
+          tags: [tagParaAdicionar]
+        };
+      }
 
       salvarAdmsNoFirebase(dadosAdmsGlobais);
-      nomeInput.value = "";
-      tagInput.value = "";
+      tagInput.value = ""; // Limpa a tag para facilitar adicionar outra se quiser
     });
 
     function atribuirEventosDinamicos() {
@@ -772,7 +797,7 @@
           e.stopPropagation();
           const id = this.getAttribute('data-id');
           const nome = this.getAttribute('data-nome');
-          if(confirm(`Tem certeza que deseja remover o Administrador "${nome}"?`)) {
+          if(confirm(`Tem certeza que deseja remover o Administrador "${nome}" e todas as suas funções?`)) {
             delete dadosAdmsGlobais[id];
             salvarAdmsNoFirebase(dadosAdmsGlobais);
           }
@@ -854,7 +879,7 @@
           const k = Math.floor(Math.random() * (j + 1));
           [subGrupo[j], subGrupo[k]] = [subGrupo[k], subGrupo[j]];
         }
-        jogadoresOrdenadosEEmbaralhados = jogadoresOrdenadosEEmbaralhados.concat(subGrupo);
+        jogadoresOrdenadosEEmbaralhados = jugadoresOrdenadosEEmbaralhados.concat(subGrupo);
       }
 
       let times = { amarelo: [], azul: [], rosa: [], roxo: [] };
