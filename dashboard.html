@@ -473,8 +473,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-    // Importações adicionadas para monitorar a sessão do usuário
+    import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -484,11 +483,11 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const dbRef = ref(db, 'jogadores');
-    
-    // Inicializa o Auth do Firebase
     const auth = getAuth(app);
 
-    // Trava de segurança: Se o usuário tentar acessar a URL diretamente sem estar logado, joga para o index.html
+    // Guardamos em uma variável global do módulo o snapshot atual do Firebase
+    let dadosJogadoresGlobais = {};
+
     onAuthStateChanged(auth, (user) => {
       if (!user) {
         window.location.href = "index.html"; 
@@ -497,6 +496,8 @@
 
     onValue(dbRef, (snapshot) => {
       const dados = snapshot.val();
+      dadosJogadoresGlobais = dados || {}; // Mantém atualizado localmente
+      
       const listaUI = document.getElementById('lista-usuarios');
       listaUI.innerHTML = '';
       
@@ -514,9 +515,9 @@
             </div>
             <div class="controles-nivel">
               <div class="botoes-setas">
-                <button class="btn-seta-up" data-id="${id}" data-nivel="${jogador.nivel}">▲</button>
+                <button class="btn-seta-up" data-id="${id}">▲</button>
                 <span class="valor-nivel">${jogador.nivel}</span>
-                <button class="btn-seta-down" data-id="${id}" data-nivel="${jogador.nivel}">▼</button>
+                <button class="btn-seta-down" data-id="${id}">▼</button>
               </div>
               <button class="btn-deletar-fb" data-id="${id}" data-nome="${jogador.nome}">✕</button>
             </div>
@@ -532,81 +533,78 @@
       set(dbRef, dados);
     }
 
-    function obterDadosAtuaisLocais() {
-      const itens = document.querySelectorAll('#lista-usuarios .item-usuario');
-      let dados = {};
-      itens.forEach((item, index) => {
-        const nome = item.querySelector('.nome-item').innerText;
-        const nivel = parseInt(item.querySelector('.valor-nivel').innerText);
-        const inativo = item.classList.contains('inativo');
-        dados['jog_' + index] = { nome, nivel, inativo };
-      });
-      return dados;
-    }
-
+    // CORREÇÃO DA FUNÇÃO ADD: Agora ela adiciona diretamente sem quebrar
     window.adicionarJogador = function(event) {
+      if (event) event.stopPropagation(); // Evita expandir/fechar o bloco ao clicar
+
       const nomeInput = document.getElementById('input-nome');
       const nivelSelect = document.getElementById('select-nivel');
+      const nomeCompleto = nomeInput.value.trim();
       
-      if (nomeInput.value.trim() === "") {
+      if (nomeCompleto === "") {
         alert("Por favor, digite um nome!");
         return;
       }
 
-      const dadosAtuais = obterDadosAtuaisLocLocal();
+      // Cria um ID único usando o timestamp para evitar substituição incorreta
       const novoId = 'jog_' + Date.now();
-      dadosAtuais[novoId] = {
-        nome: nomeInput.value.trim(),
+      
+      // Adiciona o novo jogador na nossa cópia global dos dados atuais
+      dadosJogadoresGlobais[novoId] = {
+        nome: nomeCompleto,
         nivel: parseInt(nivelSelect.value),
         inativo: false
       };
 
-      salvarNoFirebase(dadosAtuais);
+      // Atualiza o Firebase
+      salvarNoFirebase(dadosJogadoresGlobais);
+      
+      // Limpa o input
       nomeInput.value = "";
     };
 
     function atribuirEventosDinamicos() {
       document.querySelectorAll('.btn-visibilidade').forEach(btn => {
-        btn.onclick = function() {
+        btn.onclick = function(e) {
+          e.stopPropagation();
           const id = this.getAttribute('data-id');
-          const dadosAtuais = obterDadosAtuaisLocais();
-          if(dadosAtuais[id]) {
-            dadosAtuais[id].inativo = !(this.getAttribute('data-inativo') === 'true');
-            salvarNoFirebase(dadosAtuais);
+          if(dadosJogadoresGlobais[id]) {
+            dadosJogadoresGlobais[id].inativo = !(dadosJogadoresGlobais[id].inativo);
+            salvarNoFirebase(dadosJogadoresGlobais);
           }
         };
       });
 
       document.querySelectorAll('.btn-seta-up').forEach(btn => {
-        btn.onclick = function() {
+        btn.onclick = function(e) {
+          e.stopPropagation();
           const id = this.getAttribute('data-id');
-          const dadosAtuais = obterDadosAtuaisLocais();
-          if(dadosAtuais[id] && dadosAtuais[id].nivel < 5) {
-            dadosAtuais[id].nivel += 1;
-            salvarNoFirebase(dadosAtuais);
+          if(dadosJogadoresGlobais[id] && dadosJogadoresGlobais[id].nivel < 5) {
+            dadosJogadoresGlobais[id].nivel += 1;
+            salvarNoFirebase(dadosJogadoresGlobais);
           }
         };
       });
 
       document.querySelectorAll('.btn-seta-down').forEach(btn => {
-        btn.onclick = function() {
+        btn.onclick = function(e) {
+          e.stopPropagation();
           const id = this.getAttribute('data-id');
-          const dadosAtuais = obterDadosAtuaisLocais();
-          if(dadosAtuais[id] && dadosAtuais[id].nivel > 1) {
-            dadosAtuais[id].nivel -= 1;
-            salvarNoFirebase(dadosAtuais);
+          if(dadosJogadoresGlobais[id] && dadosJogadoresGlobais[id].nivel > 1) {
+            dadosJogadoresGlobais[id].nivel -= 1;
+            salvarNoFirebase(dadosJogadoresGlobais);
           }
         };
       });
 
       document.querySelectorAll('.btn-deletar-fb').forEach(btn => {
-        btn.onclick = function() {
+        btn.onclick = function(e) {
+          e.stopPropagation();
           const id = this.getAttribute('data-id');
           const nome = this.getAttribute('data-nome');
           if(confirm(`Tem certeza que deseja excluir "${nome}"?`)) {
-            const dadosAtuais = obterDadosAtuaisLocais();
-            delete dadosAtuais[id];
-            salvarNoFirebase(dadosAtuais);
+            delete dadosJogadoresGlobais[id];
+            salvarNoFirebase(dadosJogadoresGlobais);
           }
         };
       });
