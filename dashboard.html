@@ -421,7 +421,7 @@
               <option value="4">4</option>
               <option value="5">5</option>
             </select>
-            <button class="btn-add" onclick="adicionarJogador(event)">Add</button>
+            <button class="btn-add" id="btn-adicionar-jogador">Add</button>
           </div>
           
           <div class="lista-usuarios" id="lista-usuarios"></div>
@@ -533,9 +533,9 @@
       set(dbRef, dados);
     }
 
-    // CORREÇÃO DA FUNÇÃO ADD: Agora ela adiciona diretamente sem quebrar
-    window.adicionarJogador = function(event) {
-      if (event) event.stopPropagation(); // Evita expandir/fechar o bloco ao clicar
+    // Evento do botão Add configurado de forma modular (Evita ReferenceError)
+    document.getElementById('btn-adicionar-jogador').addEventListener('click', (event) => {
+      event.stopPropagation(); // Evita expandir/fechar o bloco ao clicar
 
       const nomeInput = document.getElementById('input-nome');
       const nivelSelect = document.getElementById('select-nivel');
@@ -561,7 +561,7 @@
       
       // Limpa o input
       nomeInput.value = "";
-    };
+    });
 
     function atribuirEventosDinamicos() {
       document.querySelectorAll('.btn-visibilidade').forEach(btn => {
