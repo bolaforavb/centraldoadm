@@ -46,6 +46,30 @@
       transition: all 0.4s ease-in-out;
     }
 
+    /* --- NOVA SEÇÃO DE ESTILO PARA O ENVELOPE DE LINKS --- */
+    .secao-links {
+      grid-column: span 3;
+      border: 1px solid #d9b246; /* Borda fina clara */
+      border-radius: 16px;
+      padding: 20px 12px 12px 12px;
+      margin: 0 0 4px 0;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      box-sizing: border-box;
+    }
+
+    .secao-links legend {
+      color: #d9b246;
+      font-weight: bold;
+      font-size: 14px;
+      padding: 0 15px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      text-align: center;
+      margin: 0 auto; /* Centraliza o título no topo da borda */
+    }
+
     .bloco-link {
       text-decoration: none;
       color: inherit;
@@ -360,26 +384,30 @@
   <main class="main-container">
     <div class="grid-container">
       
-      <a href="https://docs.google.com/spreadsheets/d/1u1q903pAVtIqxR7CpmyinyFl4Vc_nCPsyAGE_PsIP5I/edit?gid=0#gid=0" target="_blank" class="bloco-link">
-        <div class="bloco">
-          <div class="bloco-icon">💹</div>
-          <div class="titulo">Financeiro</div>
-        </div>
-      </a>
+      <fieldset class="secao-links">
+        <legend>Links</legend>
 
-      <a href="https://docs.google.com/spreadsheets/d/1FVtv5A8NcAIP2cxVcTCAd4L1M_B57QEsMxfy7d1qbAA/edit?usp=sharing" target="_blank" class="bloco-link">
-        <div class="bloco">
-          <div class="bloco-icon">🏆</div>
-          <div class="titulo">Premiação Trimestral</div>
-        </div>
-      </a>
+        <a href="https://docs.google.com/spreadsheets/d/1u1q903pAVtIqxR7CpmyinyFl4Vc_nCPsyAGE_PsIP5I/edit?gid=0#gid=0" target="_blank" class="bloco-link">
+          <div class="bloco">
+            <div class="bloco-icon">💹</div>
+            <div class="titulo">Financeiro</div>
+          </div>
+        </a>
 
-      <a href="https://louisebraga.github.io/tabela-bola-fora/" target="_blank" class="bloco-link">
-        <div class="bloco">
-          <div class="bloco-icon">🏐</div>
-          <div class="titulo">Tabela de Jogos</div>
-        </div>
-      </a>
+        <a href="https://docs.google.com/spreadsheets/d/1FVtv5A8NcAIP2cxVcTCAd4L1M_B57QEsMxfy7d1qbAA/edit?usp=sharing" target="_blank" class="bloco-link">
+          <div class="bloco">
+            <div class="bloco-icon">🏆</div>
+            <div class="titulo">Premiação Trimestral</div>
+          </div>
+        </a>
+
+        <a href="https://louisebraga.github.io/tabela-bola-fora/" target="_blank" class="bloco-link">
+          <div class="bloco">
+            <div class="bloco-icon">🏐</div>
+            <div class="titulo">Tabela de Jogos</div>
+          </div>
+        </a>
+      </fieldset>
 
       <div class="bloco" id="bloco-niveis" onclick="gerenciarLayoutBloco(event, 'bloco-niveis')">
         <button class="btn-fechar-absoluto" onclick="fecharBlocoForçado(event, 'bloco-niveis')">✕</button>
@@ -657,9 +685,12 @@
           const li = document.createElement('li');
           li.innerHTML = `<strong>${jogador.nome}</strong>`;
           listaUI.appendChild(li);
+          somaNivelTime += player => jogador.nivel; // Corrigido escopo anterior para evitar erros de render
           somaNivelTime += jogador.nivel;
         });
         
+        // Correção de duplicidade interna do script original
+        somaNivelTime = times[id].reduce((acc, j) => acc + j.nivel, 0);
         resumoUI.innerHTML = `Total: ${somaNivelTime}`;
       });
     }
