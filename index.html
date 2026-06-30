@@ -1,102 +1,496 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <title>Central do Adm</title>
-  <link rel="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel - Central do Adm</title>
+  <link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
   
   <style>
-    body { font-family: sans-serif; background-color: #12364e; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-    .login-card { background: #e1d8cd; padding: 40px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); width: 100%; max-width: 360px; text-align: center; }
-    .input-group { margin-bottom: 20px; text-align: left; }
-    .input-group label { display: block; margin-bottom: 6px; color: #12364e; }
-    
-    /* PREPARA O CAMPO DA SENHA PARA RECEBER O BOTÃO DENTRO DELE */
-    .password-container { position: relative; display: flex; align-items: center; }
-    
-    .input-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-    
-    /* ESTILO DO BOTÃO DE MOSTRAR/OCULTAR SENHA */
-    .btn-toggle-password { position: absolute; right: 10px; background: none; border: none; cursor: pointer; color: #12364e; font-size: 14px; padding: 5px; user-select: none; font-weight: bold; }
-    
-    .btn-login { width: 100%; padding: 12px; background-color: #d9b246; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background-color 0.3s ease, transform 0.1s ease; }
-    .btn-login:hover { background-color: #af8a23; }
-    .btn-login:active { transform: scale(0.98); }
+    body {
+      font-family: sans-serif;
+      background-color: #12364e; 
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      color: #12364e;
+    }
 
-    #mensagem { margin-top: 15px; font-weight: 500; }
-    .erro { color: #d93025; }
-    .sucesso { color: #188038; }
+    /* TELA DE LOGIN */
+    #tela-login {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-color: #12364e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .box-login {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      width: 90%;
+      max-width: 360px;
+      text-align: center;
+    }
+
+    .box-login img { width: 80px; margin-bottom: 15px; }
+    .box-login h2 { margin-bottom: 20px; color: #12364e; font-size: 20px; }
+    .box-login input {
+      width: 100%; padding: 12px; margin-bottom: 12px;
+      border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box;
+    }
+    .box-login button {
+      width: 100%; padding: 12px; background: #d9b246;
+      color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;
+    }
+    .box-login button:hover { background: #af8a23; }
+
+    /* TOPO DE CONTROLE DO ADMIN */
+    .barra-admin {
+      background: #0f2b3e;
+      padding: 10px 20px;
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .barra-admin button {
+      background: #d9b246; color: white; border: none; padding: 6px 12px;
+      border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; margin-left: 5px;
+    }
+    .barra-admin button.btn-sair { background: #d93025; }
+
+    /* CONTEÚDO PRINCIPAL (OCULTO ANTES DO LOGIN) */
+    #conteudo-painel { display: none; flex-direction: column; min-height: 100vh; }
+
+    .header-banner {
+      width: 100%; 
+      background-color: #e1d8cd; 
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .header-banner img { width: 100%; height: 100%; object-fit: cover; }
+    .main-container { padding: 20px; flex: 1; }
+    .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; transition: all 0.4s ease-in-out; }
+
+    .secao-links {
+      grid-column: span 3; border: 1px solid #d9b246; border-radius: 16px;
+      padding: 20px 12px 12px 12px; margin: 0 0 4px 0; display: grid;
+      grid-template-columns: repeat(3, 1fr); gap: 12px; box-sizing: border-box;
+    }
+
+    .secao-links legend {
+      color: #d9b246; font-weight: bold; font-size: 14px; padding: 0 15px;
+      text-transform: uppercase; letter-spacing: 1px; text-align: center; margin: 0 auto;
+    }
+
+    .bloco-link { text-decoration: none; color: inherit; width: 100%; }
+
+    .bloco {
+      background-color: white; border-radius: 16px; aspect-ratio: 1 / 1; 
+      height: 100%; min-height: 110px; display: flex; flex-direction: column;
+      justify-content: center; align-items: center; padding: 10px; box-sizing: border-box;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center;
+      transition: transform 0.1s ease, background-color 0.3s ease; overflow: hidden; position: relative;
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+
+    .bloco:active { transform: scale(0.95); }
+    .bloco-icon { font-size: 22px; margin-bottom: 6px; color: #d9b246; flex-shrink: 0; }
+
+    .titulo {
+      font-size: 13px; font-weight: bold; line-height: 1.2; width: 100%; word-wrap: break-word;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+
+    #bloco-niveis.expandido, #bloco-gerador.expandido {
+      grid-column: span 3; aspect-ratio: auto; height: auto; min-height: 200px;
+      justify-content: flex-start; padding: 20px; cursor: default;
+    }
+
+    #bloco-niveis.expandido:active, #bloco-gerador.expandido:active { transform: none; }
+    #bloco-niveis.expandido .titulo, #bloco-gerador.expandido .titulo { display: block; -webkit-line-clamp: unset; font-size: 16px; margin-bottom: 10px; }
+
+    .btn-fechar-absoluto {
+      display: none; position: absolute; top: 15px; right: 15px; background: #f0f0f0;
+      border: none; font-size: 16px; font-weight: bold; color: #888; width: 30px; height: 30px;
+      border-radius: 50%; justify-content: center; align-items: center; cursor: pointer; z-index: 10;
+      -webkit-tap-highlight-color: transparent; transition: background 0.2s, color 0.2s;
+    }
+    
+    .btn-fechar-absoluto:hover { background: #e0d0d0; color: #d93025; }
+    .expandido .btn-fechar-absoluto { display: flex; }
+    .conteudo-dinamico { display: none; width: 100%; font-weight: normal; text-align: left; margin-top: 15px; box-sizing: border-box; }
+    .expandido .conteudo-dinamico { display: block; padding-top: 15px; }
+
+    .form-niveis { display: flex; gap: 5px; align-items: center; margin-bottom: 12px; width: 100%; }
+    .form-niveis input, .form-niveis select { padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; box-sizing: border-box; }
+    .form-niveis input { flex: 2; min-width: 0; }
+    .form-niveis select { flex: 1; background-color: white; cursor: pointer; }
+
+    .btn-add, .btn-sortear {
+      padding: 8px 14px; background-color: #d9b246; color: white; border: none;
+      border-radius: 6px; font-weight: bold; font-size: 14px; transition: background 0.2s;
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+    .btn-add:hover, .btn-sortear:hover { background-color: #af8a23; }
+
+    .lista-usuarios { display: flex; flex-direction: column; gap: 6px; width: 100%; max-height: 300px; overflow-y: auto; padding-right: 2px; }
+    .item-usuario { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background-color: #f7f5f2; border-radius: 6px; border-left: 3px solid #12364e; transition: opacity 0.2s ease; }
+    .item-usuario.inativo { opacity: 0.5; border-left-color: #aaa; }
+    .wrapper-nome { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .btn-visibilidade { background: none; border: none; font-size: 16px; padding: 0; color: #12364e; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .nome-item { font-size: 13px; font-weight: 500; color: #12364e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
+    .controles-nivel { display: flex; align-items: center; gap: 8px; }
+    .botoes-setas { display: flex; align-items: center; gap: 4px; }
+    .valor-nivel { font-size: 12px; font-weight: bold; background: #12364e; color: white; padding: 2px 6px; border-radius: 3px; min-width: 10px; text-align: center; }
+    .btn-seta { background: none; border: none; color: #d9b246; font-size: 14px; padding: 2px; line-height: 1; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .btn-deletar { background: none; border: none; color: #d93025; font-weight: bold; font-size: 14px; padding: 2px 6px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+
+    #bloco-gerador .btn-sortear { width: 100%; padding: 12px; font-size: 15px; margin-bottom: 20px; }
+    .grid-times { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; width: 100%; }
+    .card-time { display: flex; flex-direction: column; border-radius: 12px; padding: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); min-height: 120px; }
+    .time-amarelo { background-color: #fff3cd; border-left: 5px solid #ffc107; }
+    .time-azul { background-color: #cff4fc; border-left: 5px solid #0dcaf0; }
+    .time-rosa { background-color: #f8d7da; border-left: 5px solid #e27c8d; }
+    .time-roxo { background-color: #e2d9f3; border-left: 5px solid #6f42c1; }
+    .titulo-time { font-weight: bold; font-size: 14px; margin-bottom: 8px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 4px; }
+    .lista-jogadores-time { font-size: 13px; line-height: 1.5; margin: 0; padding-left: 16px; flex: 1; }
+    .resumo-time { margin-top: 10px; padding-top: 6px; border-top: 1px dashed rgba(0,0,0,0.15); font-size: 12px; color: #12364e; font-weight: bold; text-align: right; }
   </style>
 </head>
 <body>
 
-  <div class="login-card">
-    <form id="loginForm" onsubmit="event.preventDefault(); executarLogin();">
-      <div class="input-group">
-        <label>Usuário</label>
-        <input type="text" id="usuario" required>
-      </div>
-      <div class="input-group">
-        <label>Senha</label>
-        <div class="password-container">
-          <input type="password" id="senha" required style="padding-right: 45px;">
-          <button type="button" class="btn-toggle-password" onclick="alternarVisibilidadeSenha()">👁️</button>
-        </div>
-      </div>
-      <button type="submit" class="btn-login">Entrar</button>
-    </form>
-    <div id="mensagem"></div>
+  <div id="tela-login">
+    <div class="box-login">
+      <img src="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" alt="Logo">
+      <h2>Painel Administrativo</h2>
+      <input type="text" id="login-usuario" placeholder="Nome de usuário">
+      <input type="password" id="login-senha" placeholder="Senha">
+      <button id="btn-entrar">Entrar</button>
+    </div>
   </div>
 
-  <script>
-    // FUNÇÃO QUE FAZ A MÁGICA DE MOSTRAR / OCULTAR A SENHA
-    function alternarVisibilidadeSenha() {
-      const senhaInput = document.getElementById('senha');
-      const btnToggle = document.querySelector('.btn-toggle-password');
-      
-      if (senhaInput.type === 'password') {
-        senhaInput.type = 'text';
-        btnToggle.innerText = '🙈'; // Muda o ícone para "esconder"
+  <div id="conteudo-painel">
+    <div class="barra-admin" id="barra-admin">
+      <span style="color: white; font-size: 13px;" id="user-logado"></span>
+      <div>
+        <button id="btn-mudar-senha">Alterar Senha</button>
+        <button id="btn-mudar-usuario">Alterar Usuário</button>
+        <button id="btn-deslogar" class="btn-sair">Sair</button>
+      </div>
+    </div>
+
+    <header class="header-banner">
+      <img src="https://i.ibb.co/twJd6BRq/Whats-App-Image-2026-06-29-at-10-42-05.jpg" alt="Banner Central do Adm">
+    </header>
+
+    <main class="main-container">
+      <div class="grid-container">
+        
+        <fieldset class="secao-links">
+          <legend>Links</legend>
+          <a href="https://docs.google.com/spreadsheets/d/1u1q903pAVtIqxR7CpmyinyFl4Vc_nCPsyAGE_PsIP5I/edit?gid=0#gid=0" target="_blank" class="bloco-link">
+            <div class="bloco">
+              <div class="bloco-icon">💹</div>
+              <div class="titulo">Financeiro</div>
+            </div>
+          </a>
+          <a href="https://docs.google.com/spreadsheets/d/1FVtv5A8NcAIP2cxVcTCAd4L1M_B57QEsMxfy7d1qbAA/edit?usp=sharing" target="_blank" class="bloco-link">
+            <div class="bloco">
+              <div class="bloco-icon">🏆</div>
+              <div class="titulo">Premiação Trimestral</div>
+            </div>
+          </a>
+          <a href="https://louisebraga.github.io/tabela-bola-fora/" target="_blank" class="bloco-link">
+            <div class="bloco">
+              <div class="bloco-icon">🏐</div>
+              <div class="titulo">Tabela de Jogos</div>
+            </div>
+          </a>
+        </fieldset>
+
+        <div class="bloco" id="bloco-niveis" onclick="gerenciarLayoutBloco(event, 'bloco-niveis')">
+          <button class="btn-fechar-absoluto" onclick="fecharBlocoForçado(event, 'bloco-niveis')">✕</button>
+          <div class="bloco-icon">📊</div>
+          <div class="titulo">Relação de Níveis</div>
+          
+          <div class="conteudo-dinamico">
+            <div class="form-niveis">
+              <input type="text" id="input-nome" placeholder="Nome">
+              <select id="select-nivel">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+              <button class="btn-add" onclick="adicionarJogador(event)">Add</button>
+            </div>
+            <div class="lista-usuarios" id="lista-usuarios"></div>
+          </div>
+        </div>
+
+        <div class="bloco" id="bloco-gerador" onclick="gerenciarLayoutBloco(event, 'bloco-gerador')">
+          <button class="btn-fechar-absoluto" onclick="fecharBlocoForçado(event, 'bloco-gerador')">✕</button>
+          <div class="bloco-icon">⚖️</div>
+          <div class="titulo">Gerador de Times</div>
+          
+          <div class="conteudo-dinamico">
+            <button class="btn-sortear" onclick="generarTimesEquilibrados(event)">Sortear</button>
+            <div class="grid-times" id="container-times">
+              <div class="card-time time-amarelo"><div class="titulo-time">🟡 Amarelo</div><ul class="lista-jogadores-time" id="jogadores-amarelo"></ul><div class="resumo-time" id="resumo-amarelo"></div></div>
+              <div class="card-time time-azul"><div class="titulo-time">🔵 Azul</div><ul class="lista-jogadores-time" id="jogadores-azul"></ul><div class="resumo-time" id="resumo-azul"></div></div>
+              <div class="card-time time-rosa"><div class="titulo-time">🔴 Rosa</div><ul class="lista-jogadores-time" id="jogadores-rosa"></ul><div class="resumo-time" id="resumo-rosa"></div></div>
+              <div class="card-time time-roxo"><div class="titulo-time">🟣 Roxo</div><ul class="lista-jogadores-time" id="jogadores-roxo"></ul><div class="resumo-time" id="resumo-roxo"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <a href="#" target="_blank" class="bloco-link">
+          <div class="bloco">
+            <div class="bloco-icon">🛠️</div>
+            <div class="titulo">Suporte</div>
+          </div>
+        </a>
+
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, updatePassword, updateEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com/"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+    const dbRef = ref(db, 'jogadores');
+
+    // Sufixo oculto para manter o Firebase contente trabalhando com e-mails nos bastidores
+    const SUFIXO = "@bolafora.internal";
+
+    // Monitora se o Admin está logado ou não
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById('tela-login').style.display = 'none';
+        document.getElementById('conteudo-painel').style.display = 'flex';
+        document.getElementById('barra-admin').style.display = 'flex';
+        
+        // Remove o sufixo para mostrar apenas o nome de usuário limpo na barra
+        const usuarioLimpo = user.email.replace(SUFIXO, "");
+        document.getElementById('user-logado').innerText = `Logado como: ${usuarioLimpo}`;
       } else {
-        senhaInput.type = 'password';
-        btnToggle.innerText = '👁️'; // Muda o ícone para "olhinho"
+        document.getElementById('tela-login').style.display = 'flex';
+        document.getElementById('conteudo-painel').style.display = 'none';
+        document.getElementById('barra-admin').style.display = 'none';
+      }
+    });
+
+    // Evento de Login (junta o usuário digitado com o nosso sufixo secreto)
+    document.getElementById('btn-entrar').onclick = function() {
+      const usuarioInput = document.getElementById('login-usuario').value.trim();
+      const senha = document.getElementById('login-senha').value;
+      
+      if (!usuarioInput) { alert("Digite o usuário!"); return; }
+      
+      const emailFalso = usuarioInput + SUFIXO;
+      
+      signInWithEmailAndPassword(auth, emailFalso, senha)
+        .catch(error => alert("Erro: Usuário ou senha incorretos!"));
+    };
+
+    // Evento de Logout
+    document.getElementById('btn-deslogar').onclick = function() {
+      signOut(auth);
+    };
+
+    // Alteração de Senha Direto na Tela
+    document.getElementById('btn-mudar-senha').onclick = function() {
+      const novaSenha = prompt("Digite a sua nova senha (mínimo 6 caracteres):");
+      if (novaSenha && novaSenha.length >= 6) {
+        updatePassword(auth.currentUser, novaSenha)
+          .then(() => alert("Senha alterada com sucesso!"))
+          .catch(err => alert("Erro ao alterar senha. Por segurança, saia e entre novamente antes de tentar mudar a senha."));
+      } else if (novaSenha) {
+        alert("A senha precisa ter pelo menos 6 dígitos.");
+      }
+    };
+
+    // Alteração de Usuário Direto na Tela
+    document.getElementById('btn-mudar-usuario').onclick = function() {
+      const novoUsuario = prompt("Digite o novo nome de usuário:");
+      if (novoUsuario) {
+        const novoEmailFalso = novoUsuario.trim() + SUFIXO;
+        updateEmail(auth.currentUser, novoEmailFalso)
+          .then(() => alert("Nome de usuário alterado com sucesso!"))
+          .catch(err => alert("Erro ao alterar o usuário. Faça login novamente antes de tentar mudar."));
+      }
+    };
+
+    // Sincronização da Lista de Jogadores
+    onValue(dbRef, (snapshot) => {
+      const dados = snapshot.val();
+      const listaUI = document.getElementById('lista-usuarios');
+      listaUI.innerHTML = '';
+      
+      if (dados) {
+        Object.keys(dados).forEach(id => {
+          const jogador = dados[id];
+          const item = document.createElement('div');
+          item.className = 'item-usuario' + (jogador.inativo ? ' inativo' : '');
+          const iconeOlho = jogador.inativo ? '👁️‍🗨️' : '👁️';
+          
+          item.innerHTML = `
+            <div class="wrapper-nome">
+              <button class="btn-visibilidade" data-id="${id}" data-inativo="${jogador.inativo}">${iconeOlho}</button>
+              <span class="nome-item" title="${jogador.nome}">${jogador.nome}</span>
+            </div>
+            <div class="controles-nivel">
+              <div class="botoes-setas">
+                <button class="btn-seta-up" data-id="${id}" data-nivel="${jogador.nivel}">▲</button>
+                <span class="valor-nivel">${jogador.nivel}</span>
+                <button class="btn-seta-down" data-id="${id}" data-nivel="${jogador.nivel}">▼</button>
+              </div>
+              <button class="btn-deletar-fb" data-id="${id}" data-nome="${jogador.nome}">✕</button>
+            </div>
+          `;
+          listaUI.appendChild(item);
+        });
+        atribuirEventosDinamicos();
+      }
+    });
+
+    function salvarNoFirebase(dados) { set(dbRef, dados); }
+
+    function obterDadosAtuaisLocais() {
+      const itens = document.querySelectorAll('#lista-usuarios .item-usuario');
+      let dados = {};
+      itens.forEach((item, index) => {
+        const nome = item.querySelector('.nome-item').innerText;
+        const nivel = parseInt(item.querySelector('.valor-nivel').innerText);
+        const inativo = item.classList.contains('inativo');
+        dados['jog_' + index] = { nome, nivel, inativo };
+      });
+      return dados;
+    }
+
+    window.adicionarJogador = function(event) {
+      const nomeInput = document.getElementById('input-nome');
+      const nivelSelect = document.getElementById('select-nivel');
+      if (nomeInput.value.trim() === "") { alert("Por favor, digite um nome!"); return; }
+
+      const dadosAtuais = obterDadosAtuaisLocais();
+      const novoId = 'jog_' + Date.now();
+      dadosAtuais[novoId] = { nome: nomeInput.value.trim(), nivel: parseInt(nivelSelect.value), inativo: false };
+      salvarNoFirebase(dadosAtuais);
+      nomeInput.value = "";
+    };
+
+    function atribuirEventosDinamicos() {
+      document.querySelectorAll('.btn-visibilidade').forEach(btn => {
+        btn.onclick = function() {
+          const id = this.getAttribute('data-id');
+          const dadosAtuais = obterDadosAtuaisLocais();
+          if(dadosAtuais[id]) { dadosAtuais[id].inativo = !(this.getAttribute('data-inativo') === 'true'); salvarNoFirebase(dadosAtuais); }
+        };
+      });
+      document.querySelectorAll('.btn-seta-up').forEach(btn => {
+        btn.onclick = function() {
+          const id = this.getAttribute('data-id');
+          const dadosAtuais = obterDadosAtuaisLocais();
+          if(dadosAtuais[id] && dadosAtuais[id].nivel < 5) { dadosAtuais[id].nivel += 1; salvarNoFirebase(dadosAtuais); }
+        };
+      });
+      document.querySelectorAll('.btn-seta-down').forEach(btn => {
+        btn.onclick = function() {
+          const id = this.getAttribute('data-id');
+          const dadosAtuais = obterDadosAtuaisLocais();
+          if(dadosAtuais[id] && dadosAtuais[id].nivel > 1) { dadosAtuais[id].nivel -= 1; salvarNoFirebase(dadosAtuais); }
+        };
+      });
+      document.querySelectorAll('.btn-deletar-fb').forEach(btn => {
+        btn.onclick = function() {
+          const id = this.getAttribute('data-id');
+          const nome = this.getAttribute('data-nome');
+          if(confirm(`Tem certeza que deseja excluir "${nome}"?`)) { const dadosAtuais = obterDadosAtuaisLocais(); delete dadosAtuais[id]; salvarNoFirebase(dadosAtuais); }
+        };
+      });
+    }
+  </script>
+
+  <script>
+    function gerenciarLayoutBloco(event, idBloco) {
+      const bloco = document.getElementById(idBloco);
+      if (event.target.closest('input') || event.target.closest('select') || event.target.closest('button') || event.target.closest('.conteudo-dinamico')) return; 
+      if (!bloco.classList.contains('expandido')) {
+        bloco.classList.add('expandido');
+        setTimeout(() => { bloco.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 200);
+      } else {
+        if (event.target.closest('.bloco-icon') || event.target.closest('.titulo')) bloco.classList.remove('expandido');
       }
     }
 
-    function executarLogin() {
-      const usuario = document.getElementById('usuario').value;
-      const senha = document.getElementById('senha').value;
-      const msgEl = document.getElementById('mensagem');
-      
-      msgEl.className = '';
-      msgEl.innerText = 'Verificando...';
+    function fecharBlocoForçado(event, idBloco) { event.stopPropagation(); document.getElementById(idBloco).classList.remove('expandido'); }
 
-      // Seu link do Google Apps Script
-      const urlScript = "https://script.google.com/macros/s/AKfycbzuINU1UVuldjvfvgIEbS4msgIT0EASkA9DuQ151ZOBgnHu48SoZOVdzZqe-B8gE3aS/exec";
+    function generarTimesEquilibrados(event) {
+      const itensJogadoresAtivos = document.querySelectorAll('#lista-usuarios .item-usuario:not(.inativo)');
+      const totalAtivos = itensJogadoresAtivos.length;
+      if (totalAtivos < 16) { alert(`Erro: Não há jogadores suficientes visíveis! Você ativou apenas ${totalAtivos} jogadores.`); return; }
+      if (totalAtivos > 16) { alert(`Erro: Jogadores ativos acima do limite permitido! Você ativou ${totalAtivos} jogadores.`); return; }
 
-      fetch(urlScript, {
-        method: 'POST',
-        body: JSON.stringify({ usuario: usuario, senha: senha })
-      })
-      .then(response => response.json())
-      .then(resultado => {
-        if (resultado.sucesso) {
-          msgEl.className = 'sucesso';
-          msgEl.innerText = resultado.mensagem;
-          
-          // --- REDIRECIONAMENTO ---
-          setTimeout(function() {
-            window.location.href = resultado.urlDestino;
-          }, 1500);
-          
-        } else {
-          msgEl.className = 'erro';
-          msgEl.innerText = resultado.mensagem;
+      const IDsTimes = ['amarelo', 'azul', 'rosa', 'roxo'];
+      IDsTimes.forEach(id => { document.getElementById(`jogadores-${id}`).innerHTML = ''; document.getElementById(`resumo-${id}`).innerHTML = ''; });
+
+      let listaJogadores = [];
+      itensJogadoresAtivos.forEach(item => {
+        const nome = item.querySelector('.nome-item').innerText;
+        const nivel = parseInt(item.querySelector('.valor-nivel').innerText);
+        listaJogadores.push({ nome, nivel });
+      });
+      listaJogadores.sort((a, b) => b.nivel - a.nivel);
+
+      let jogadoresOrdenadosEEmbaralhados = [];
+      for (let i = 5; i >= 1; i--) {
+        let subGrupo = listaJogadores.filter(j => j.nivel === i);
+        for (let j = subGrupo.length - 1; j > 0; j--) {
+          const k = Math.floor(Math.random() * (j + 1));
+          [subGrupo[j], subGrupo[k]] = [subGrupo[k], subGrupo[j]];
         }
-      })
-      .catch(erro => {
-        msgEl.className = 'erro';
-        msgEl.innerText = 'Erro ao conectar ao servidor.';
+        jogadoresOrdenadosEEmbaralhados = jogadoresOrdenadosEEmbaralhados.concat(subGrupo);
+      }
+
+      let times = { amarelo: [], azul: [], rosa: [], roxo: [] };
+      let direcaoDireta = true; let indiceTime = 0;
+      jogadoresOrdenadosEEmbaralhados.forEach(jogador => {
+        const chaveTime = IDsTimes[indiceTime]; times[chaveTime].push(jogador);
+        if (direcaoDireta) { indiceTime++; if (indiceTime === 4) { indiceTime = 3; direcaoDireta = false; } } 
+        else { indiceTime--; if (indiceTime === -1) { indiceTime = 0; direcaoDireta = true; } }
+      });
+
+      IDsTimes.forEach(id => {
+        const listaUI = document.getElementById(`jogadores-${id}`);
+        const resumoUI = document.getElementById(`resumo-${id}`);
+        times[id].forEach(jogador => {
+          const li = document.createElement('li'); li.innerHTML = `<strong>${jogador.nome}</strong>`; listaUI.appendChild(li);
+        });
+        let somaNivelTime = times[id].reduce((acc, j) => acc + j.nivel, 0);
+        resumoUI.innerHTML = `Total: ${somaNivelTime}`;
       });
     }
   </script>
