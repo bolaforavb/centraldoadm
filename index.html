@@ -10,7 +10,15 @@
     .login-card { background: #e1d8cd; padding: 40px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); width: 100%; max-width: 360px; text-align: center; }
     .input-group { margin-bottom: 20px; text-align: left; }
     .input-group label { display: block; margin-bottom: 6px; color: #12364e; }
+    
+    /* PREPARA O CAMPO DA SENHA PARA RECEBER O BOTÃO DENTRO DELE */
+    .password-container { position: relative; display: flex; align-items: center; }
+    
     .input-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+    
+    /* ESTILO DO BOTÃO DE MOSTRAR/OCULTAR SENHA */
+    .btn-toggle-password { position: absolute; right: 10px; background: none; border: none; cursor: pointer; color: #12364e; font-size: 14px; padding: 5px; user-select: none; font-weight: bold; }
+    
     .btn-login { width: 100%; padding: 12px; background-color: #d9b246; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background-color 0.3s ease, transform 0.1s ease; }
     .btn-login:hover { background-color: #af8a23; }
     .btn-login:active { transform: scale(0.98); }
@@ -30,7 +38,10 @@
       </div>
       <div class="input-group">
         <label>Senha</label>
-        <input type="password" id="senha" required>
+        <div class="password-container">
+          <input type="password" id="senha" required style="padding-right: 45px;">
+          <button type="button" class="btn-toggle-password" onclick="alternarVisibilidadeSenha()">👁️</button>
+        </div>
       </div>
       <button type="submit" class="btn-login">Entrar</button>
     </form>
@@ -38,6 +49,20 @@
   </div>
 
   <script>
+    // FUNÇÃO QUE FAZ A MÁGICA DE MOSTRAR / OCULTAR A SENHA
+    function alternarVisibilidadeSenha() {
+      const senhaInput = document.getElementById('senha');
+      const btnToggle = document.querySelector('.btn-toggle-password');
+      
+      if (senhaInput.type === 'password') {
+        senhaInput.type = 'text';
+        btnToggle.innerText = '🙈'; // Muda o ícone para "esconder"
+      } else {
+        senhaInput.type = 'password';
+        btnToggle.innerText = '👁️'; // Muda o ícone para "olhinho"
+      }
+    }
+
     function executarLogin() {
       const usuario = document.getElementById('usuario').value;
       const senha = document.getElementById('senha').value;
