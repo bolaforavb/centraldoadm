@@ -41,15 +41,44 @@
 
     .box-login img { width: 80px; margin-bottom: 15px; }
     .box-login h2 { margin-bottom: 20px; color: #12364e; font-size: 20px; }
+    
+    /* Container para alinhar o input de senha e o olho */
+    .wrapper-senha {
+      position: relative;
+      width: 100%;
+      margin-bottom: 12px;
+    }
+    
     .box-login input {
       width: 100%; padding: 12px; margin-bottom: 12px;
       border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box;
     }
-    .box-login button {
+
+    .wrapper-senha input {
+      margin-bottom: 0;
+      padding-right: 40px; /* Espaço para o texto não ficar embaixo do olho */
+    }
+
+    .btn-ver-senha {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      padding: 0;
+      color: #12364e;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .box-login button#btn-entrar {
       width: 100%; padding: 12px; background: #d9b246;
       color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;
+      margin-top: 8px;
     }
-    .box-login button:hover { background: #af8a23; }
+    .box-login button#btn-entrar:hover { background: #af8a23; }
 
     /* TOPO DE CONTROLE DO ADMIN */
     .barra-admin {
@@ -172,13 +201,16 @@
 <body>
 
   <div id="tela-login">
-    <div class="box-login">
+    <form class="box-login" id="form-login" onsubmit="return false;">
       <img src="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" alt="Logo">
       <h2>Painel Administrativo</h2>
-      <input type="text" id="login-usuario" placeholder="Nome de usuário">
-      <input type="password" id="login-senha" placeholder="Senha">
-      <button id="btn-entrar">Entrar</button>
-    </div>
+      <input type="text" id="login-usuario" placeholder="Nome de usuário" required>
+      <div class="wrapper-senha">
+        <input type="password" id="login-senha" placeholder="Senha" required>
+        <button type="button" class="btn-ver-senha" id="btn-toggle-senha">👁️</button>
+      </div>
+      <button type="submit" id="btn-entrar">Entrar</button>
+    </form>
   </div>
 
   <div id="conteudo-painel">
@@ -282,28 +314,47 @@
     const auth = getAuth(app);
     const dbRef = ref(db, 'jogadores');
 
-    // Sufixo oculto para manter o Firebase contente trabalhando com e-mails nos bastidores
     const SUFIXO = "@bolafora.internal";
 
-    // Monitora se o Admin está logado ou não
+    // Lógica do olho para mostrar/ocultar senha
+    document.getElementById('btn-toggle-senha').onclick = function() {
+      const campoSenha = document.getElementById('login-senha');
+      if (campoSenha.type === "password") {
+        campoSenha.type = "text";
+        this.innerText = "👁️‍🗨️";
+      } else {
+        campoSenha.type = "password";
+        this.innerText = "👁️";
+      }
+    };
+
+    // Monitora o estado de autenticação
     onAuthStateChanged(auth, (user) => {
       if (user) {
         document.getElementById('tela-login').style.display = 'none';
         document.getElementById('conteudo-painel').style.display = 'flex';
         document.getElementById('barra-admin').style.display = 'flex';
         
-        // Remove o sufixo para mostrar apenas o nome de usuário limpo na barra
         const usuarioLimpo = user.email.replace(SUFIXO, "");
         document.getElementById('user-logado').innerText = `Logado como: ${usuarioLimpo}`;
       } else {
         document.getElementById('tela-login').style.display = 'flex';
         document.getElementById('conteudo-painel').style.display = 'none';
         document.getElementById('barra-admin').style.display = 'none';
+        
+        // Limpa as credenciais ao deslogar
+        document.getElementById('login-usuario').value = "";
+        const campoSenha = document.getElementById('login-senha');
+        campoSenha.value = "";
+        campoSenha.type = "password";
+        document.getElementById('btn-toggle-senha').innerText = "👁️";
       }
     });
 
-    // Evento de Login (junta o usuário digitado com o nosso sufixo secreto)
-    document.getElementById('btn-entrar').onclick = function() {
+    // Evento de submit do formulário de login de forma segura
+    document.getElementById('form-login').addEventListener('submit', function(event) {
+      event.preventDefault();
+
       const usuarioInput = document.getElementById('login-usuario').value.trim();
       const senha = document.getElementById('login-senha').value;
       
@@ -312,15 +363,18 @@
       const emailFalso = usuarioInput + SUFIXO;
       
       signInWithEmailAndPassword(auth, emailFalso, senha)
-        .catch(error => alert("Erro: Usuário ou senha incorretos!"));
-    };
+        .catch(error => {
+          console.error(error);
+          alert("Erro: Usuário ou senha incorretos!");
+        });
+    });
 
     // Evento de Logout
     document.getElementById('btn-deslogar').onclick = function() {
       signOut(auth);
     };
 
-    // Alteração de Senha Direto na Tela
+    // Alteração de Senha
     document.getElementById('btn-mudar-senha').onclick = function() {
       const novaSenha = prompt("Digite a sua nova senha (mínimo 6 caracteres):");
       if (novaSenha && novaSenha.length >= 6) {
@@ -332,7 +386,7 @@
       }
     };
 
-    // Alteração de Usuário Direto na Tela
+    // Alteração de Usuário
     document.getElementById('btn-mudar-usuario').onclick = function() {
       const novoUsuario = prompt("Digite o novo nome de usuário:");
       if (novoUsuario) {
@@ -406,7 +460,7 @@
       document.querySelectorAll('.btn-visibilidade').forEach(btn => {
         btn.onclick = function() {
           const id = this.getAttribute('data-id');
-          const dadosAtuais = obterDadosAtuaisLocais();
+          const dadosAtuais = obterDadosAtuaisLocais(); // CORRIGIDO AQUI
           if(dadosAtuais[id]) { dadosAtuais[id].inativo = !(this.getAttribute('data-inativo') === 'true'); salvarNoFirebase(dadosAtuais); }
         };
       });
