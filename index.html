@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Central do Adm</title>
+  <link rel="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
+  
+  <style>
+    body { font-family: sans-serif; background-color: #12364e; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+    .login-card { background: #e1d8cd; padding: 40px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); width: 100%; max-width: 360px; text-align: center; }
+    .input-group { margin-bottom: 20px; text-align: left; }
+    .input-group label { display: block; margin-bottom: 6px; color: #12364e; }
+    .input-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+    .btn-login { width: 100%; padding: 12px; background-color: #d9b246; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background-color 0.3s ease, transform 0.1s ease; }
+    .btn-login:hover { background-color: #af8a23; }
+    .btn-login:active { transform: scale(0.98); }
+
+    #mensagem { margin-top: 15px; font-weight: 500; }
+    .erro { color: #d93025; }
+    .sucesso { color: #188038; }
+  </style>
+</head>
+<body>
+
+  <div class="login-card">
+    <form id="loginForm" onsubmit="event.preventDefault(); executarLogin();">
+      <div class="input-group">
+        <label>Usuário</label>
+        <input type="text" id="usuario" required>
+      </div>
+      <div class="input-group">
+        <label>Senha</label>
+        <input type="password" id="senha" required>
+      </div>
+      <button type="submit" class="btn-login">Entrar</button>
+    </form>
+    <div id="mensagem"></div>
+  </div>
+
+  <script>
+    function executarLogin() {
+      const usuario = document.getElementById('usuario').value;
+      const senha = document.getElementById('senha').value;
+      const msgEl = document.getElementById('mensagem');
+      
+      msgEl.className = '';
+      msgEl.innerText = 'Verificando...';
+
+      // Seu link do Google Apps Script
+      const urlScript = "https://script.google.com/macros/s/AKfycbzRjl12a_w43l5wuqNBvFK8CDzLI3uIHfLzzU8ZoFq4tVKX2I1eDKUbFKA3G2zuBlrE/exec";
+
+      fetch(urlScript, {
+        method: 'POST',
+        body: JSON.stringify({ usuario: usuario, senha: senha })
+      })
+      .then(response => response.json())
+      .then(resultado => {
+        if (resultado.sucesso) {
+          msgEl.className = 'sucesso';
+          msgEl.innerText = resultado.mensagem;
+          
+          // --- REDIRECIONAMENTO ---
+          setTimeout(function() {
+            window.location.href = resultado.urlDestino;
+          }, 1500);
+          
+        } else {
+          msgEl.className = 'erro';
+          msgEl.innerText = resultado.mensagem;
+        }
+      })
+      .catch(erro => {
+        msgEl.className = 'erro';
+        msgEl.innerText = 'Erro ao conectar ao servidor.';
+      });
+    }
+  </script>
+</body>
+</html>
