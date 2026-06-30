@@ -11,6 +11,12 @@
     .input-group { margin-bottom: 20px; text-align: left; }
     .input-group label { display: block; margin-bottom: 6px; color: #12364e; }
     .input-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+    
+    /* NOVA ESTILIZAÇÃO PARA O CAMPO DE SENHA */
+    .senha-container { position: relative; display: flex; align-items: center; }
+    .senha-container input { padding-right: 40px; } /* Garante que o texto da senha não fique embaixo do olho */
+    .toggle-senha { position: absolute; right: 12px; cursor: pointer; user-select: none; font-size: 18px; }
+
     .btn-login { width: 100%; padding: 12px; background-color: #d9b246; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background-color 0.3s ease, transform 0.1s ease; }
     .btn-login:hover { background-color: #af8a23; }
     .btn-login:active { transform: scale(0.98); }
@@ -25,12 +31,15 @@
   <div class="login-card">
     <form id="loginForm">
       <div class="input-group">
-        <label>E-mail</label>
-        <input type="email" id="usuario" placeholder="seu-email@dominio.com" required>
+        <label>Usuário</label>
+        <input type="text" id="usuario" placeholder="Ex: admin" required>
       </div>
       <div class="input-group">
         <label>Senha</label>
-        <input type="password" id="senha" required>
+        <div class="senha-container">
+          <input type="password" id="senha" required>
+          <span class="toggle-senha" id="btnToggleSenha">👁️</span>
+        </div>
       </div>
       <button type="submit" class="btn-login">Entrar</button>
     </form>
@@ -38,11 +47,9 @@
   </div>
 
   <script type="module">
-    // 1. Importando as funções oficiais do Firebase (Versão 12.15.0)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 
-    // 2. Suas credenciais reais do Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
       authDomain: "central-adm-bolafora.firebaseapp.com",
@@ -53,44 +60,55 @@
       appId: "1:429477810517:web:3be6c842269cbdfe4b5fdc"
     };
 
-    // 3. Inicializando o Firebase e o serviço de Autenticação
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // 4. Capturando o formulário e monitorando o clique do botão de entrar
+    // --- LÓGICA DE MOSTRAR / OCULTAR A SENHA ---
+    const senhaInput = document.getElementById('senha');
+    const btnToggleSenha = document.getElementById('btnToggleSenha');
+
+    btnToggleSenha.addEventListener('click', () => {
+      if (senhaInput.type === 'password') {
+        senhaInput.type = 'text';
+        btnToggleSenha.innerText = '🙈'; // Muda o ícone para o macaco cobrindo os olhos
+      } else {
+        senhaInput.type = 'password';
+        btnToggleSenha.innerText = '👁️'; // Volta para o olho aberto
+      }
+    });
+
+    // --- ENVIO DO FORMULÁRIO ---
     const form = document.getElementById('loginForm');
     
     form.addEventListener('submit', (event) => {
-      event.preventDefault(); // Impede a página de recarregar
+      event.preventDefault();
       
-      const email = document.getElementById('usuario').value.trim();
-      const senha = document.getElementById('senha').value;
+      const usuarioDigitado = document.getElementById('usuario').value.trim();
+      const senha = senhaInput.value;
       const msgEl = document.getElementById('mensagem');
       
       msgEl.className = '';
       msgEl.innerText = 'Verificando...';
 
-      // 5. Fazendo o login com o Firebase Authentication
-      signInWithEmailAndPassword(auth, email, senha)
+      const emailCompleto = usuarioDigitado.includes('@') ? usuarioDigitado : `${usuarioDigitado}@bolafora.internal`;
+
+      signInWithEmailAndPassword(auth, emailCompleto, senha)
       .then((userCredential) => {
-        // Se der certo:
         msgEl.className = 'sucesso';
         msgEl.innerText = 'Login realizado com sucesso!';
         
         setTimeout(function() {
-          window.location.href = 'dashboard.html'; // Troque aqui pelo link da sua página principal pós-login
+          window.location.href = 'dashboard.html'; 
         }, 1500);
       })
       .catch((error) => {
-        // Se der erro:
         console.error("Código do erro:", error.code);
         msgEl.className = 'erro';
         
-        // Mensagens personalizadas baseadas no erro do Firebase
         if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-          msgEl.innerText = 'E-mail ou senha incorretos.';
+          msgEl.innerText = 'Usuário ou senha incorretos.';
         } else if (error.code === 'auth/invalid-email') {
-          msgEl.innerText = 'Por favor, digite um formato de e-mail válido.';
+          msgEl.innerText = 'Formato de usuário inválido.';
         } else {
           msgEl.innerText = 'Erro ao fazer login. Tente novamente.';
         }
