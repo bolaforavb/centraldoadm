@@ -134,7 +134,8 @@
 
     /* EXPANSÃO CORRIGIDA */
     #bloco-niveis.expandido,
-    #bloco-gerador.expandido {
+    #bloco-gerador.expandido,
+    #bloco-adms.expandido {
       grid-column: span 3;
       aspect-ratio: auto; 
       height: auto;
@@ -145,12 +146,14 @@
     }
 
     #bloco-niveis.expandido:active,
-    #bloco-gerador.expandido:active {
+    #bloco-gerador.expandido:active,
+    #bloco-adms.expandido:active {
       transform: none;
     }
 
     #bloco-niveis.expandido .titulo,
-    #bloco-gerador.expandido .titulo {
+    #bloco-gerador.expandido .titulo,
+    #bloco-adms.expandido .titulo {
       display: block;
       -webkit-line-clamp: unset;
       font-size: 16px;
@@ -297,6 +300,21 @@
       border-radius: 3px;
       min-width: 10px;
       text-align: center;
+    }
+
+    /* ESTILO COMPACTO DAS TAGS DE ADM */
+    .badge-tag {
+      font-size: 11px;
+      font-weight: bold;
+      background-color: #e2d9f3;
+      color: #6f42c1;
+      padding: 3px 8px;
+      border-radius: 20px;
+      border: 1px solid rgba(111, 66, 193, 0.2);
+      white-space: nowrap;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .btn-seta {
@@ -523,12 +541,21 @@
         </div>
       </div>
 
-      <a href="#" target="_blank" class="bloco-link">
-        <div class="bloco">
-          <div class="bloco-icon">🛠️</div>
-          <div class="titulo">Suporte</div>
+      <div class="bloco" id="bloco-adms">
+        <button class="btn-fechar-absoluto" id="btn-fechar-adms">✕</button>
+        <div class="bloco-icon">🛠️</div>
+        <div class="titulo">Adms Atuais</div>
+        
+        <div class="conteudo-dinamico">
+          <div class="form-niveis">
+            <input type="text" id="input-nome-adm" placeholder="Nome do Adm">
+            <input type="text" id="input-tag-adm" placeholder="Tag (ex: Finanças)" style="flex: 1;">
+            <button class="btn-add" id="btn-adicionar-adm">Add</button>
+          </div>
+          
+          <div class="lista-usuarios" id="lista-adms"></div>
         </div>
-      </a>
+      </div>
 
     </div>
   </main>
@@ -548,10 +575,12 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const dbRef = ref(db, 'jogadores');
+    const dbAdmsRef = ref(db, 'administradores'); // Referência do nó de administradores no FB
     const auth = getAuth(app);
 
     let dadosJogadoresGlobais = {};
-    let timesGeradosParaCompartilhar = null; // Guarda o estado do último sorteio
+    let dadosAdmsGlobais = {};
+    let timesGeradosParaCompartilhar = null;
 
     onAuthStateChanged(auth, (user) => {
       if (!user) {
@@ -569,6 +598,7 @@
       });
     });
 
+    // Sincronização em tempo real - Jogadores
     onValue(dbRef, (snapshot) => {
       const dados = snapshot.val();
       dadosJogadoresGlobais = dados || {}; 
@@ -604,13 +634,47 @@
       }
     });
 
+    // Sincronização em tempo real - Administradores
+    onValue(dbAdmsRef, (snapshot) => {
+      const dados = snapshot.val();
+      dadosAdmsGlobais = dados || {};
+      
+      const listaAdmsUI = document.getElementById('lista-adms');
+      listaAdmsUI.innerHTML = '';
+      
+      if (dados) {
+        Object.keys(dados).forEach(id => {
+          const adm = dados[id];
+          const item = document.createElement('div');
+          item.className = 'item-usuario';
+          
+          item.innerHTML = `
+            <div class="wrapper-nome">
+              <span class="nome-item" style="margin-left: 5px;" title="${adm.nome}">${adm.nome}</span>
+            </div>
+            <div class="controles-nivel">
+              <span class="badge-tag" title="${adm.tag}">${adm.tag}</span>
+              <button class="btn-deletar-adm-fb" data-id="${id}" data-nome="${adm.nome}">✕</button>
+            </div>
+          `;
+          listaAdmsUI.appendChild(item);
+        });
+        
+        atribuirEventosDinamicosAdms();
+      }
+    });
+
     function salvarNoFirebase(dados) {
       set(dbRef, dados);
     }
 
+    function salvarAdmsNoFirebase(dados) {
+      set(dbAdmsRef, dados);
+    }
+
+    // Ação Adicionar Jogador
     document.getElementById('btn-adicionar-jogador').addEventListener('click', (event) => {
       event.stopPropagation();
-
       const nomeInput = document.getElementById('input-nome');
       const nivelSelect = document.getElementById('select-nivel');
       const nomeCompleto = nomeInput.value.trim();
@@ -621,7 +685,6 @@
       }
 
       const novoId = 'jog_' + Date.now();
-      
       dadosJogadoresGlobais[novoId] = {
         nome: nomeCompleto,
         nivel: parseInt(nivelSelect.value),
@@ -630,6 +693,30 @@
 
       salvarNoFirebase(dadosJogadoresGlobais);
       nomeInput.value = "";
+    });
+
+    // Ação Adicionar Administrador
+    document.getElementById('btn-adicionar-adm').addEventListener('click', (event) => {
+      event.stopPropagation();
+      const nomeInput = document.getElementById('input-nome-adm');
+      const tagInput = document.getElementById('input-tag-adm');
+      const nomeAdm = nomeInput.value.trim();
+      const tagAdm = tagInput.value.trim() || "Adm"; // Default tag caso mande em branco
+
+      if (nomeAdm === "") {
+        alert("Por favor, digite o nome do Administrador!");
+        return;
+      }
+
+      const novoId = 'adm_' + Date.now();
+      dadosAdmsGlobais[novoId] = {
+        nome: nomeAdm,
+        tag: tagAdm
+      };
+
+      salvarAdmsNoFirebase(dadosAdmsGlobais);
+      nomeInput.value = "";
+      tagInput.value = "";
     });
 
     function atribuirEventosDinamicos() {
@@ -679,6 +766,20 @@
       });
     }
 
+    function atribuirEventosDinamicosAdms() {
+      document.querySelectorAll('.btn-deletar-adm-fb').forEach(btn => {
+        btn.onclick = function(e) {
+          e.stopPropagation();
+          const id = this.getAttribute('data-id');
+          const nome = this.getAttribute('data-nome');
+          if(confirm(`Tem certeza que deseja remover o Administrador "${nome}"?`)) {
+            delete dadosAdmsGlobais[id];
+            salvarAdmsNoFirebase(dadosAdmsGlobais);
+          }
+        };
+      });
+    }
+
     function gerenciarLayoutBloco(event, idBloco) {
       const bloco = document.getElementById(idBloco);
       if (event.target.closest('input') || 
@@ -701,6 +802,7 @@
 
     document.getElementById('bloco-niveis').addEventListener('click', (e) => gerenciarLayoutBloco(e, 'bloco-niveis'));
     document.getElementById('bloco-gerador').addEventListener('click', (e) => gerenciarLayoutBloco(e, 'bloco-gerador'));
+    document.getElementById('bloco-adms').addEventListener('click', (e) => gerenciarLayoutBloco(e, 'bloco-adms'));
 
     document.getElementById('btn-fechar-niveis').addEventListener('click', (e) => {
       e.stopPropagation();
@@ -709,6 +811,10 @@
     document.getElementById('btn-fechar-gerador').addEventListener('click', (e) => {
       e.stopPropagation();
       document.getElementById('bloco-gerador').classList.remove('expandido');
+    });
+    document.getElementById('btn-fechar-adms').addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('bloco-adms').classList.remove('expandido');
     });
 
     document.getElementById('btn-sortear-times').addEventListener('click', (event) => {
@@ -782,12 +888,11 @@
         resumoUI.innerHTML = `Total: ${somaNivelTime}`;
       });
 
-      // Salva os times globalmente e exibe o botão do WhatsApp
       timesGeradosParaCompartilhar = times;
       document.getElementById('btn-compartilhar-whatsapp').style.display = 'flex';
     });
 
-    // --- LÓGICA DO BOTÃO DE COMPARTILHAR WHATSAPP ---
+    // Compartilhar WhatsApp
     document.getElementById('btn-compartilhar-whatsapp').addEventListener('click', (event) => {
       event.stopPropagation();
       
@@ -796,7 +901,6 @@
         return;
       }
 
-      // Mapeamento visual estilizado para a mensagem de texto do WhatsApp
       const configTimes = [
         { nome: 'Amarelo', emoji: '🟡', chave: 'amarelo' },
         { nome: 'Azul', emoji: '🔵', chave: 'azul' },
@@ -816,16 +920,13 @@
           textoMensagem += `• ${j.nome} (Nív. ${j.nivel})\n`;
         });
         
-        textoMensagem += `\n`; // Quebra de linha entre blocos de times
+        textoMensagem += `\n`;
       });
 
       textoMensagem += `_Gerado automaticamente pela Central do Adm._`;
 
-      // Encodar string para URL padrão
       const textoUrl = encodeURIComponent(textoMensagem);
       const urlWhatsapp = `https://api.whatsapp.com/send?text=${textoUrl}`;
-
-      // Abre o WhatsApp numa nova aba
       window.open(urlWhatsapp, '_blank');
     });
   </script>
