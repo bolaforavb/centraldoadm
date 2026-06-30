@@ -474,6 +474,8 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    // Importações adicionadas para monitorar a sessão do usuário
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
       databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com/"
@@ -482,6 +484,16 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const dbRef = ref(db, 'jogadores');
+    
+    // Inicializa o Auth do Firebase
+    const auth = getAuth(app);
+
+    // Trava de segurança: Se o usuário tentar acessar a URL diretamente sem estar logado, joga para o index.html
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "index.html"; 
+      }
+    });
 
     onValue(dbRef, (snapshot) => {
       const dados = snapshot.val();
@@ -541,7 +553,7 @@
         return;
       }
 
-      const dadosAtuais = obterDadosAtuaisLocais();
+      const dadosAtuais = obterDadosAtuaisLocLocal();
       const novoId = 'jog_' + Date.now();
       dadosAtuais[novoId] = {
         nome: nomeInput.value.trim(),
