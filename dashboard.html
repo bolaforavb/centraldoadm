@@ -406,8 +406,8 @@
         </a>
       </fieldset>
 
-      <div class="bloco" id="bloco-niveis" onclick="gerenciarLayoutBloco(event, 'bloco-niveis')">
-        <button class="btn-fechar-absoluto" onclick="fecharBlocoForçado(event, 'bloco-niveis')">✕</button>
+      <div class="bloco" id="bloco-niveis">
+        <button class="btn-fechar-absoluto" id="btn-fechar-niveis">✕</button>
         <div class="bloco-icon">📊</div>
         <div class="titulo">Relação de Níveis</div>
         
@@ -428,13 +428,13 @@
         </div>
       </div>
 
-      <div class="bloco" id="bloco-gerador" onclick="gerenciarLayoutBloco(event, 'bloco-gerador')">
-        <button class="btn-fechar-absoluto" onclick="fecharBlocoForçado(event, 'bloco-gerador')">✕</button>
+      <div class="bloco" id="bloco-gerador">
+        <button class="btn-fechar-absoluto" id="btn-fechar-gerador">✕</button>
         <div class="bloco-icon">⚖️</div>
         <div class="titulo">Gerador de Times</div>
         
         <div class="conteudo-dinamico">
-          <button class="btn-sortear" onclick="generarTimesEquilibrados(event)">Sortear</button>
+          <button class="btn-sortear" id="btn-sortear-times">Sortear</button>
           
           <div class="grid-times" id="container-times">
             <div class="card-time time-amarelo">
@@ -473,9 +473,11 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+    // ATENÇÃO: Verifique esta chave se o erro persistir. 
+    // Certifique-se de que ela corresponde ao app correto no console do Firebase.
     const firebaseConfig = {
       apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
       databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com/"
@@ -486,7 +488,6 @@
     const dbRef = ref(db, 'jogadores');
     const auth = getAuth(app);
 
-    // Guardamos em uma variável global do módulo o snapshot atual do Firebase
     let dadosJogadoresGlobais = {};
 
     onAuthStateChanged(auth, (user) => {
@@ -497,30 +498,30 @@
 
     onValue(dbRef, (snapshot) => {
       const dados = snapshot.val();
-      dadosJogadoresGlobais = dados || {}; // Mantém atualizado localmente
+      dadosJogadoresGlobais = dados || {}; 
       
       const listaUI = document.getElementById('lista-usuarios');
       listaUI.innerHTML = '';
       
       if (dados) {
         Object.keys(dados).forEach(id => {
-          const jogador = dados[id];
+          const player = dados[id];
           const item = document.createElement('div');
-          item.className = 'item-usuario' + (jogador.inativo ? ' inativo' : '');
-          const iconeOlho = jogador.inativo ? '👁️‍🗨️' : '👁️';
+          item.className = 'item-usuario' + (player.inativo ? ' inativo' : '');
+          const iconeOlho = player.inativo ? '👁️‍🗨️' : '👁️';
           
           item.innerHTML = `
             <div class="wrapper-nome">
-              <button class="btn-visibilidade" data-id="${id}" data-inativo="${jogador.inativo}">${iconeOlho}</button>
-              <span class="nome-item" title="${jogador.nome}">${jogador.nome}</span>
+              <button class="btn-visibilidade" data-id="${id}">${iconeOlho}</button>
+              <span class="nome-item" title="${player.nome}">${player.nome}</span>
             </div>
             <div class="controles-nivel">
               <div class="botoes-setas">
                 <button class="btn-seta-up" data-id="${id}">▲</button>
-                <span class="valor-nivel">${jogador.nivel}</span>
+                <span class="valor-nivel">${player.nivel}</span>
                 <button class="btn-seta-down" data-id="${id}">▼</button>
               </div>
-              <button class="btn-deletar-fb" data-id="${id}" data-nome="${jogador.nome}">✕</button>
+              <button class="btn-deletar-fb" data-id="${id}" data-nome="${player.nome}">✕</button>
             </div>
           `;
           listaUI.appendChild(item);
@@ -534,9 +535,9 @@
       set(dbRef, dados);
     }
 
-    // Evento do botão Add configurado de forma modular (Evita ReferenceError)
+    // Evento Adicionar Jogador
     document.getElementById('btn-adicionar-jogador').addEventListener('click', (event) => {
-      event.stopPropagation(); // Evita expandir/fechar o bloco ao clicar
+      event.stopPropagation();
 
       const nomeInput = document.getElementById('input-nome');
       const nivelSelect = document.getElementById('select-nivel');
@@ -547,20 +548,15 @@
         return;
       }
 
-      // Cria um ID único usando o timestamp para evitar substituição incorreta
       const novoId = 'jog_' + Date.now();
       
-      // Adiciona o novo jogador na nossa cópia global dos dados atuais
       dadosJogadoresGlobais[novoId] = {
         nome: nomeCompleto,
         nivel: parseInt(nivelSelect.value),
         inativo: false
       };
 
-      // Atualiza o Firebase
       salvarNoFirebase(dadosJogadoresGlobais);
-      
-      // Limpa o input
       nomeInput.value = "";
     });
 
@@ -610,19 +606,16 @@
         };
       });
     }
-  </script>
 
-  <script>
+    // --- CONTROLE DE LAYOUT (Abertura/Fechamento dos Blocos) ---
     function gerenciarLayoutBloco(event, idBloco) {
       const bloco = document.getElementById(idBloco);
-      
       if (event.target.closest('input') || 
           event.target.closest('select') || 
           event.target.closest('button') || 
           event.target.closest('.conteudo-dinamico')) {
         return; 
       }
-      
       if (!bloco.classList.contains('expandido')) {
         bloco.classList.add('expandido');
         setTimeout(() => {
@@ -635,18 +628,28 @@
       }
     }
 
-    function fecharBlocoForçado(event, idBloco) {
-      event.stopPropagation(); 
-      const bloco = document.getElementById(idBloco);
-      bloco.classList.remove('expandido');
-    }
+    document.getElementById('bloco-niveis').addEventListener('click', (e) => gerenciarLayoutBloco(e, 'bloco-niveis'));
+    document.getElementById('bloco-gerador').addEventListener('click', (e) => gerenciarLayoutBloco(e, 'bloco-gerador'));
 
-    function generarTimesEquilibrados(event) {
+    document.getElementById('btn-fechar-niveis').addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('bloco-niveis').classList.remove('expandido');
+    });
+    document.getElementById('btn-fechar-gerador').addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('bloco-gerador').classList.remove('expandido');
+    });
+
+
+    // --- GERADOR DE TIMES EQUILIBRADOS ---
+    document.getElementById('btn-sortear-times').addEventListener('click', (event) => {
+      event.stopPropagation();
+      
       const itensJogadoresAtivos = document.querySelectorAll('#lista-usuarios .item-usuario:not(.inativo)');
       const totalAtivos = itensJogadoresAtivos.length;
 
       if (totalAtivos < 16) {
-        alert(`Erro: Não há jogadores suficientes visíveis! Você ativou apenas ${totalAtivos} jogadores.`);
+        alert(`Erro: Não há jogadores suficientes visíveis! Você ativou apenas ${totalAtivos} jogadores. (Mínimo e máximo exigido: 16)`);
         return;
       }
       if (totalAtivos > 16) {
@@ -709,7 +712,7 @@
         let somaNivelTime = times[id].reduce((acc, j) => acc + j.nivel, 0);
         resumoUI.innerHTML = `Total: ${somaNivelTime}`;
       });
-    }
+    });
   </script>
 </body>
 </html>
