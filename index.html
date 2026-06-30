@@ -2,26 +2,71 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Central do Adm</title>
   <link rel="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
   
   <style>
-    body { font-family: sans-serif; background-color: #12364e; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-    .login-card { background: #e1d8cd; padding: 40px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); width: 100%; max-width: 360px; text-align: center; }
+    /* Reset global para evitar que bordas e paddings quebrem a largura */
+    * {
+      box-sizing: border-box;
+    }
+
+    body { 
+      font-family: sans-serif; 
+      background-color: #12364e; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      min-height: 100vh; 
+      margin: 0; 
+      padding: 16px; /* Garante margem de segurança caso a tela seja menor que o card */
+    }
+
+    .login-card { 
+      background: #e1d8cd; 
+      padding: 40px 30px; 
+      border-radius: 12px; 
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2); 
+      width: calc(100% - 32px); /* Espaçamento seguro e centralizado nas laterais mobile */
+      max-width: 360px; 
+      text-align: center; 
+    }
+
     .input-group { margin-bottom: 20px; text-align: left; }
-    .input-group label { display: block; margin-bottom: 6px; color: #12364e; }
-    .input-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+    .input-group label { display: block; margin-bottom: 6px; color: #12364e; font-weight: bold; font-size: 14px; }
+    .input-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; }
     
     /* NOVA ESTILIZAÇÃO PARA O CAMPO DE SENHA */
-    .senha-container { position: relative; display: flex; align-items: center; }
+    .senha-container { position: relative; display: flex; align-items: center; width: 100%; }
     .senha-container input { padding-right: 40px; } /* Garante que o texto da senha não fique embaixo do olho */
-    .toggle-senha { position: absolute; right: 12px; cursor: pointer; user-select: none; font-size: 18px; }
+    
+    .toggle-senha { 
+      position: absolute; 
+      right: 12px; 
+      cursor: pointer; 
+      user-select: none; 
+      font-size: 18px; 
+      -webkit-tap-highlight-color: transparent; 
+    }
 
-    .btn-login { width: 100%; padding: 12px; background-color: #d9b246; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background-color 0.3s ease, transform 0.1s ease; }
+    .btn-login { 
+      width: 100%; 
+      padding: 12px; 
+      background-color: #d9b246; 
+      color: white; 
+      border: none; 
+      border-radius: 6px; 
+      font-weight: bold; 
+      font-size: 15px;
+      cursor: pointer; 
+      transition: background-color 0.3s ease, transform 0.1s ease; 
+      -webkit-tap-highlight-color: transparent;
+    }
     .btn-login:hover { background-color: #af8a23; }
     .btn-login:active { transform: scale(0.98); }
 
-    #mensagem { margin-top: 15px; font-weight: 500; }
+    #mensagem { margin-top: 15px; font-weight: 500; font-size: 14px; }
     .erro { color: #d93025; }
     .sucesso { color: #188038; }
   </style>
@@ -85,7 +130,7 @@
       event.preventDefault();
       
       const usuarioDigitado = document.getElementById('usuario').value.trim();
-      const senha = senhaInput.value; // Agora o senhaInput está mapeado corretamente!
+      const senha = senhaInput.value; 
       const msgEl = document.getElementById('mensagem');
       
       msgEl.className = '';
