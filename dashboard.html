@@ -7,6 +7,11 @@
   <link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
   
   <style>
+    /* Reset global para evitar que bordas e paddings quebrem a largura */
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: sans-serif;
       background-color: #12364e; 
@@ -14,12 +19,14 @@
       padding: 0;
       display: flex;
       flex-direction: column;
+      align-items: center; /* Centraliza todo o conteúdo horizontalmente */
       min-height: 100vh;
       color: #12364e;
     }
 
     .header-banner {
       width: 100%; 
+      max-width: 600px; /* Alinha o limite com o container principal */
       background-color: #e1d8cd; 
       overflow: hidden;
       display: flex;
@@ -35,6 +42,8 @@
     }
 
     .main-container {
+      width: 100%;
+      max-width: 600px; /* Garante tamanho idêntico ao banner */
       padding: 20px;
       flex: 1;
     }
@@ -43,31 +52,31 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 12px;
+      width: 100%;
       transition: all 0.4s ease-in-out;
     }
 
-    /* --- NOVA SEÇÃO DE ESTILO PARA O ENVELOPE DE LINKS --- */
+    /* SEÇÃO DE LINKS AJUSTADA COM PADDING EQUILIBRADO */
     .secao-links {
       grid-column: span 3;
-      border: 1px solid #d9b246; /* Borda fina clara */
+      border: 1px solid #d9b246; 
       border-radius: 16px;
-      padding: 20px 12px 12px 12px;
-      margin: 0 0 4px 0;
+      padding: 16px 12px 12px 12px;
+      margin: 0;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 12px;
-      box-sizing: border-box;
+      width: 100%;
     }
 
     .secao-links legend {
       color: #d9b246;
       font-weight: bold;
-      font-size: 14px;
-      padding: 0 15px;
+      font-size: 13px;
+      padding: 0 10px;
       text-transform: uppercase;
       letter-spacing: 1px;
       text-align: center;
-      margin: 0 auto; /* Centraliza o título no topo da borda */
     }
 
     .bloco-link {
@@ -79,25 +88,19 @@
     .bloco {
       background-color: white; 
       border-radius: 16px;
-      
-      /* TAMANHO PADRONIZADO E FIXO PARA TODOS OS BLOCO FECHADOS */
       aspect-ratio: 1 / 1; 
       height: 100%;
       min-height: 110px; 
-      
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       padding: 10px;
-      box-sizing: border-box;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       text-align: center;
       transition: transform 0.1s ease, background-color 0.3s ease;
       overflow: hidden;
       position: relative;
-      
-      /* Correções para o Safari / iOS */
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
     }
@@ -113,7 +116,6 @@
       flex-shrink: 0;
     }
 
-    /* FORMATAÇÃO PADRÃO DO TEXTO DO BLOCO */
     .titulo {
       font-size: 13px;
       font-weight: bold;
@@ -121,12 +123,12 @@
       width: 100%;
       word-wrap: break-word;
       display: -webkit-box;
-      -webkit-line-clamp: 2; /* No máximo 2 linhas, evita quebrar o layout */
+      -webkit-line-clamp: 2; 
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
 
-    /* --- COMPORTAMENTO DE EXPANSÃO INTERROMPENDO O TAMANHO FIXO --- */
+    /* EXPANSÃO CORRIGIDA */
     #bloco-niveis.expandido,
     #bloco-gerador.expandido {
       grid-column: span 3;
@@ -151,7 +153,6 @@
       margin-bottom: 10px;
     }
 
-    /* BOTÃO FECHAR (X) */
     .btn-fechar-absoluto {
       display: none; 
       position: absolute;
@@ -188,7 +189,6 @@
       font-weight: normal;
       text-align: left;
       margin-top: 15px;
-      box-sizing: border-box;
     }
     
     .expandido .conteudo-dinamico {
@@ -196,7 +196,6 @@
       padding-top: 15px; 
     }
 
-    /* --- COMPONENTES DA RELAÇÃO DE NÍVEIS --- */
     .form-niveis {
       display: flex;
       gap: 5px;
@@ -210,7 +209,6 @@
       border: 1px solid #ccc;
       border-radius: 6px;
       font-size: 14px;
-      box-sizing: border-box;
     }
 
     .form-niveis input { flex: 2; min-width: 0; }
@@ -319,7 +317,6 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* --- COMPONENTES DO GERADOR DE TIMES --- */
     #bloco-gerador .btn-sortear {
       width: 100%;
       padding: 12px;
@@ -474,12 +471,10 @@
     </div>
   </main>
 
-  <!-- SCRIPTS DO FIREBASE PARA CONEXÃO EM NUVEM -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // Configuração oficial utilizando o seu link de banco de dados permanente
     const firebaseConfig = {
       databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com/"
     };
@@ -488,7 +483,6 @@
     const db = getDatabase(app);
     const dbRef = ref(db, 'jogadores');
 
-    // Escuta alterações na nuvem em tempo real e renderiza na tela
     onValue(dbRef, (snapshot) => {
       const dados = snapshot.val();
       const listaUI = document.getElementById('lista-usuarios');
@@ -518,12 +512,10 @@
           listaUI.appendChild(item);
         });
         
-        // Religa os eventos aos botões gerados dinamicamente
         atribuirEventosDinamicos();
       }
     });
 
-    // Envia o estado atualizado dos dados para o Firebase
     function salvarNoFirebase(dados) {
       set(dbRef, dados);
     }
