@@ -374,6 +374,30 @@
       font-weight: bold;
       text-align: right;
     }
+
+    /* ESTILIZAÇÃO DO BOTÃO DE LOGOUT NO RODAPÉ */
+    .btn-logout {
+      background-color: #c53929;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 24px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 20px 0 30px 0; /* Margem para afastar do conteúdo superior e do fim da página */
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-logout:hover {
+      background-color: #a82e20;
+    }
+
+    .btn-logout:active {
+      transform: scale(0.96);
+    }
   </style>
 </head>
 <body>
@@ -475,10 +499,12 @@
     </div>
   </main>
 
+  <button id="btn-logout" class="btn-logout">Sair da Conta</button>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
@@ -496,6 +522,16 @@
       if (!user) {
         window.location.href = "index.html"; 
       }
+    });
+
+    // --- LÓGICA DO BOTÃO DE LOGOUT ---
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      signOut(auth).then(() => {
+        window.location.href = "index.html";
+      }).catch((error) => {
+        console.error("Erro ao deslogar:", error);
+        alert("Erro ao sair. Tente novamente.");
+      });
     });
 
     onValue(dbRef, (snapshot) => {
