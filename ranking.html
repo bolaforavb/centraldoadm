@@ -91,13 +91,11 @@
     .campo-periodo {
       display: flex;
       align-items: center;
+      justify-content: flex-end;
       gap: 6px;
       font-size: 13px;
       font-weight: bold;
-    }
-
-    .texto-fixo {
-      color: #12364e;
+      flex-wrap: wrap; /* Evita quebra desordenada no mobile */
     }
 
     /* Inputs e Selects padronizados com o Painel */
@@ -116,6 +114,11 @@
       padding: 6px 10px;
       background-color: white;
       cursor: pointer;
+    }
+
+    .campo-periodo select {
+      max-width: 105px; /* Controla a largura máxima dos meses no mobile */
+      padding: 6px 4px;
     }
 
     /* Seções de Pódio com Checkboxes */
@@ -382,6 +385,22 @@
 
     .btn-voltar-painel:active {
       transform: scale(0.99);
+    }
+
+    /* Media query específica para corrigir empurrões ou quebras em telas estreitas */
+    @media (max-width: 440px) {
+      .header-resultado-linha {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .campo-periodo {
+        justify-content: flex-start;
+        width: 100%;
+      }
+      .campo-periodo select {
+        max-width: 110px;
+      }
     }
   </style>
 </head>
