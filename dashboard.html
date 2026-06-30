@@ -634,7 +634,7 @@
       }
     });
 
-    // Sincronização em tempo real - Administradores (Múltiplas Tags)
+    // Sincronização em tempo real - Administradores (Chave Baseada no Nome)
     onValue(dbAdmsRef, (snapshot) => {
       const dados = snapshot.val();
       dadosAdmsGlobais = dados || {};
@@ -648,7 +648,7 @@
           const item = document.createElement('div');
           item.className = 'item-usuario';
           
-          // Mapeia o array de tags para criar várias badges
+          // Trata as tags corretamente como array
           const tagsArray = Array.isArray(adm.tags) ? adm.tags : [adm.tag || "Adm"];
           const badgesHTML = tagsArray.map(t => `<span class="badge-tag" title="${t}">${t}</span>`).join('');
           
@@ -699,49 +699,46 @@
       nomeInput.value = "";
     });
 
-    // Adicionar Administrador (Lógica Inteligente de Mesclagem de Tags)
+    // Adicionar Administrador (CORRIGIDO: Bloqueia Duplicação Usando o Nome Formatado como ID)
     document.getElementById('btn-adicionar-adm').addEventListener('click', (event) => {
       event.stopPropagation();
       const nomeInput = document.getElementById('input-nome-adm');
       const tagInput = document.getElementById('input-tag-adm');
-      const nomeAdm = nomeInput.value.trim();
+      const nomeOriginal = nomeInput.value.trim();
       const novaTag = tagInput.value.trim();
 
-      if (nomeAdm === "") {
+      if (nomeOriginal === "") {
         alert("Por favor, digite o nome do Administrador!");
         return;
       }
 
       const tagParaAdicionar = novaTag !== "" ? novaTag : "Adm";
+      
+      // Cria uma chave única limpa usando o próprio nome (Ex: "Louise Braga" vira "louise_braga")
+      const idChaveNome = nomeOriginal.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "_");
 
-      // Verifica se já existe um administrador cadastrado com exatamente esse nome
-      let idExistente = Object.keys(dadosAdmsGlobais).find(
-        id => dadosAdmsGlobais[id].nome.toLowerCase() === nomeAdm.toLowerCase()
-      );
-
-      if (idExistente) {
-        // Se já existe, pega as tags atuais (garante formato array)
-        let tagsAtuais = Array.isArray(dadosAdmsGlobais[idExistente].tags) 
-          ? dadosAdmsGlobais[idExistente].tags 
-          : [dadosAdmsGlobais[idExistente].tag || "Adm"];
+      // Verifica se essa chave exata já existe na nossa cópia global do Firebase
+      if (dadosAdmsGlobais[idChaveNome]) {
+        let tagsAtuais = Array.isArray(dadosAdmsGlobais[idChaveNome].tags) 
+          ? dadosAdmsGlobais[idChaveNome].tags 
+          : [dadosAdmsGlobais[idChaveNome].tag || "Adm"];
         
-        // Só adiciona a tag se ela já não estiver na lista para evitar duplicadas idênticas
+        // Evita inserir tags idênticas repetidas
         if (!tagsAtuais.includes(tagParaAdicionar)) {
           tagsAtuais.push(tagParaAdicionar);
         }
         
-        dadosAdmsGlobais[idExistente].tags = tagsAtuais;
+        dadosAdmsGlobais[idChaveNome].tags = tagsAtuais;
       } else {
-        // Se for um novo administrador, cria o nó inicial com a tag dentro da array
-        const novoId = 'adm_' + Date.now();
-        dadosAdmsGlobais[novoId] = {
-          nome: nomeAdm,
+        // Se for um novo nome, cria a estrutura inicial em array
+        dadosAdmsGlobais[idChaveNome] = {
+          nome: nomeOriginal,
           tags: [tagParaAdicionar]
         };
       }
 
       salvarAdmsNoFirebase(dadosAdmsGlobais);
-      tagInput.value = ""; // Limpa a tag para facilitar adicionar outra se quiser
+      tagInput.value = ""; // Deixa o campo de tag livre para digitar a próxima função
     });
 
     function atribuirEventosDinamicos() {
@@ -879,7 +876,7 @@
           const k = Math.floor(Math.random() * (j + 1));
           [subGrupo[j], subGrupo[k]] = [subGrupo[k], subGrupo[j]];
         }
-        jogadoresOrdenadosEEmbaralhados = jugadoresOrdenadosEEmbaralhados.concat(subGrupo);
+        jogadoresOrdenadosEEmbaralhados = jogadoresOrdenadosEEmbaralhados.concat(subGrupo);
       }
 
       let times = { amarelo: [], azul: [], rosa: [], roxo: [] };
