@@ -20,28 +20,29 @@
       padding: 0;
       display: flex;
       flex-direction: column;
-      justify-content: flex-start; /* Alterado de center para flex-start para colar no topo */
+      justify-content: flex-start;
       align-items: center;
       min-height: 100vh;
       color: #12364e;
       overflow: hidden;
     }
 
-    /* Nova barra superior com distribuição dos três botões */
+    /* Barra superior configurada com grid */
     .topo-acoes {
       width: 100%;
       max-width: 900px;
       display: grid;
-      grid-template-columns: 1fr auto 1fr; /* Divide em 3 colunas (Esquerda, Centro, Direita) */
+      grid-template-columns: 1.5fr auto 1fr; /* Expandido o lado esquerdo para caber os dois botões lado a lado */
       align-items: center;
-      padding: 12px 12px 0 12px; /* Adicionado 12px no topo para um respiro fino do navegador */
+      padding: 12px 12px 0 12px;
       margin-bottom: 8px;
     }
 
-    /* Alinhamentos de cada bloco dentro do grid */
+    /* Alinhamentos dos blocos do topo */
     .topo-esquerda {
       display: flex;
       justify-content: flex-start;
+      gap: 8px; /* Espaço entre o botão Voltar e o botão Ir para a tabela */
     }
 
     .topo-centro {
@@ -54,7 +55,7 @@
       justify-content: flex-end;
     }
 
-    /* Botões do topo em estilo discreto (Voltar e Tela Cheia) */
+    /* Botões discretos do topo (Voltar, Tabela e Tela Cheia) */
     .btn-topo-discreto {
       background-color: transparent;
       color: #e1d8cd;
@@ -68,6 +69,7 @@
       letter-spacing: 0.5px;
       transition: background-color 0.2s, color 0.2s;
       cursor: pointer;
+      white-space: nowrap; /* Impede que o texto quebre em duas linhas */
     }
 
     .btn-topo-discreto:hover {
@@ -75,7 +77,7 @@
       color: #12364e;
     }
 
-    /* Botão de Zerar centralizado no topo (estilo vermelho de reset) */
+    /* Botão de Zerar centralizado */
     .btn-zerar-placar {
       background-color: #d93025;
       color: white;
@@ -99,7 +101,7 @@
       transform: scale(0.98);
     }
 
-    /* Container global do placar */
+    /* Container global */
     .container-placar-global {
       width: 100%;
       max-width: 900px;
@@ -107,10 +109,10 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      flex-grow: 1; /* Permite que o container use o espaço restante se necessário */
+      flex-grow: 1;
     }
 
-    /* Estrutura principal dividida ao meio */
+    /* Estrutura principal */
     .estrutura-placar {
       display: flex;
       background-color: white;
@@ -120,7 +122,7 @@
       overflow: hidden;
     }
 
-    /* Divisória vertical no meio do placar */
+    /* Divisória vertical */
     .estrutura-placar::before {
       content: "";
       position: absolute;
@@ -133,7 +135,7 @@
       z-index: 2;
     }
 
-    /* Lados do Placar (Esquerdo e Direito) */
+    /* Lados do Placar */
     .lado-placar {
       flex: 1;
       display: flex;
@@ -151,23 +153,24 @@
       justify-content: center;
       align-items: center;
       cursor: pointer;
-      min-height: 52vh; /* Aumentado ligeiramente para aproveitar o deslocamento para o topo */
+      min-height: 52vh;
       transition: background-color 0.1s;
     }
     
     .area-ponto:active {
-      background-color: rgba(217, 178, 70, 0.1); /* Feedback em dourado */
+      background-color: rgba(217, 178, 70, 0.1);
     }
 
+    /* Aumentado o tamanho máximo do clamp para 250px */
     .numero-pontos {
-      font-size: clamp(80px, 24vh, 220px); /* Aumentado o limite máximo responsivo */
+      font-size: clamp(80px, 26vh, 250px); 
       font-weight: bold;
       color: #12364e;
       margin: 0;
       line-height: 1;
     }
 
-    /* Área inferior de controles individuais */
+    /* Controles individuais */
     .controles-lado {
       width: 100%;
       display: flex;
@@ -176,7 +179,7 @@
       z-index: 3;
     }
 
-    /* Botão -1 padronizado */
+    /* Botão -1 */
     .btn-menos-um {
       background-color: #f7f5f2;
       color: #12364e;
@@ -195,7 +198,7 @@
       background-color: #e1d8cd;
     }
 
-    /* Alerta caso o usuário use em pé */
+    /* Alerta de orientação */
     @media (orientation: portrait) {
       .aviso-orientacao {
         display: flex;
@@ -232,6 +235,7 @@
   <header class="topo-acoes">
     <div class="topo-esquerda">
       <a href="dashboard.html" class="btn-topo-discreto">↩ Voltar</a>
+      <a href="https://louisebraga.github.io/tabela-bola-fora/" class="btn-topo-discreto">Ir para a tabela</a>
     </div>
     
     <div class="topo-centro">
