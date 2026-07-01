@@ -349,7 +349,8 @@
       color: #d93025;
     }
 
-    .btn-seta {
+    /* CORREÇÃO DO CSS PARA AS SETAS */
+    .btn-seta-up, .btn-seta-down {
       background: none;
       border: none;
       color: #d9b246;
@@ -360,7 +361,8 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    .btn-deletar {
+    /* CORREÇÃO DO CSS PARA O BOTÃO EXCLUIR JOGADOR */
+    .btn-deletar-fb, .btn-deletar-adm-fb {
       background: none;
       border: none;
       color: #d93025;
@@ -654,7 +656,7 @@
                 </tr>
               </thead>
               <tbody id="corpo-tabela-legenda">
-                </tbody>
+              </tbody>
             </table>
 
             <div class="form-niveis">
@@ -740,7 +742,7 @@
           listaUI.appendChild(item);
         });
         
-        atribuirEventosDinamicos();
+        distribuirEventosDinamicos();
       }
     });
 
@@ -988,15 +990,20 @@
       });
     }
 
+    // CORREÇÃO DEFINITIVA DO LAYOUT: Removida a verificação genérica de '.conteudo-dinamico'
     function gerenciarLayoutBloco(event, idBloco) {
       const bloco = document.getElementById(idBloco);
+      
+      // Bloqueia a ação apenas em elementos específicos de formulário ou tabelas interativas
       if (event.target.closest('input') || 
           event.target.closest('select') || 
           event.target.closest('button') || 
-          event.target.closest('.conteudo-dinamico') ||
-          event.target.closest('.container-legenda')) {
+          event.target.closest('.item-usuario') ||
+          event.target.closest('.tabela-legenda') ||
+          event.target.closest('.grid-times')) {
         return; 
       }
+      
       if (!bloco.classList.contains('expandido')) {
         bloco.classList.add('expandido');
         setTimeout(() => {
