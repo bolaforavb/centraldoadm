@@ -20,7 +20,7 @@
       padding: 0;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-start; /* Alterado de center para flex-start para colar no topo */
       align-items: center;
       min-height: 100vh;
       color: #12364e;
@@ -34,7 +34,7 @@
       display: grid;
       grid-template-columns: 1fr auto 1fr; /* Divide em 3 colunas (Esquerda, Centro, Direita) */
       align-items: center;
-      padding: 0 12px;
+      padding: 12px 12px 0 12px; /* Adicionado 12px no topo para um respiro fino do navegador */
       margin-bottom: 8px;
     }
 
@@ -107,6 +107,7 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
+      flex-grow: 1; /* Permite que o container use o espaço restante se necessário */
     }
 
     /* Estrutura principal dividida ao meio */
@@ -150,7 +151,7 @@
       justify-content: center;
       align-items: center;
       cursor: pointer;
-      min-height: 48vh; /* Leve aumento para preencher o espaço do antigo rodapé */
+      min-height: 52vh; /* Aumentado ligeiramente para aproveitar o deslocamento para o topo */
       transition: background-color 0.1s;
     }
     
@@ -159,7 +160,7 @@
     }
 
     .numero-pontos {
-      font-size: clamp(80px, 22vh, 200px);
+      font-size: clamp(80px, 24vh, 220px); /* Aumentado o limite máximo responsivo */
       font-weight: bold;
       color: #12364e;
       margin: 0;
@@ -234,7 +235,7 @@
     </div>
     
     <div class="topo-centro">
-      <button class="btn-zerar-placar" onclick="zerarPlacar()">🔄 Zerar Placar</button>
+      <button class="btn-zerar-placar" onclick="zerarPlacar()">Zerar Placar</button>
     </div>
     
     <div class="topo-direita">
