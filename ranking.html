@@ -101,7 +101,7 @@
       flex-wrap: wrap;
     }
 
-    /* Inputs e Selects padronizados com o Painel */
+    /* Inputs e Selects padronizados com O Painel */
     input[type="text"], select {
       padding: 10px;
       border: 1px solid #ccc;
@@ -506,18 +506,33 @@
   </footer>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
   <script>
-    // Configurações do Firebase
+    // Configurações Oficiais do Firebase unificadas da página de Login
     const firebaseConfig = {
       apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
-      databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com/"
+      authDomain: "central-adm-bolafora.firebaseapp.com",
+      databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com",
+      projectId: "central-adm-bolafora",
+      storageBucket: "central-adm-bolafora.firebasestorage.app",
+      messagingSenderId: "429477810517",
+      appId: "1:429477810517:web:3be6c842269cbdfe4b5fdc"
     };
     
     // Inicializa o Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    const auth = firebase.auth();
+
+    // --- VERIFICAÇÃO DE AUTENTICAÇÃO EM TEMPO REAL ---
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        // Redireciona de volta para a página de login se não estiver logado
+        window.location.href = 'index.html'; 
+      }
+    });
 
     // Objeto base local
     let BD_Pontuacao = {
