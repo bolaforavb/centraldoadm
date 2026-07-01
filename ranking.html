@@ -142,6 +142,7 @@
     .podio-ouro { background-color: #fff3cd; border-left: 5px solid #d9b246; }
     .podio-prata { background-color: #f7f5f2; border-left: 5px solid #12364e; }
     .podio-bronze { background-color: #f8d7da; border-left: 5px solid #e27c8d; }
+    .podio-integracao { background-color: #e2f0d9; border-left: 5px solid #70ad47; }
 
     .titulo-podio {
       font-weight: bold;
@@ -472,6 +473,11 @@
             <div id="container-p3" class="lista-checkboxes"></div>
           </div>
 
+          <div class="coluna-podio podio-integracao">
+            <div class="titulo-podio"><span>🧑‍🧒‍🧒 Integração do Time</span> <span>+1 PT</span></div>
+            <div id="container-p4" class="lista-checkboxes"></div>
+          </div>
+
         </div>
         <button type="submit" class="btn-acao-principal">Computar Pontos dos Selecionados</button>
       </form>
@@ -529,7 +535,6 @@
     // --- VERIFICAÇÃO DE AUTENTICAÇÃO EM TEMPO REAL ---
     auth.onAuthStateChanged((user) => {
       if (!user) {
-        // Redireciona de volta para a página de login se não estiver logado
         window.location.href = 'index.html'; 
       }
     });
@@ -580,7 +585,7 @@
     });
 
     function atualizarListasCheckbox() {
-      const pódios = ['p1', 'p2', 'p3'];
+      const pódios = ['p1', 'p2', 'p3', 'p4'];
       const listaJogadores = Object.keys(BD_Pontuacao).sort();
 
       pódios.forEach(prefixo => {
@@ -614,7 +619,7 @@
       }
 
       rankingOrdenado.forEach((jogador, index) => {
-        const nome = player = jogador[0];
+        const nome = jogador[0];
         const pontos = jogador[1];
         const ePrimeiro = index === 0;
 
@@ -658,7 +663,6 @@
       }
     }
 
-    // Função para zerar a pontuação de um jogador individualmente
     window.zerarJogador = function(nome) {
       if (confirm(`Deseja zerar os pontos de "${nome}"?`)) {
         BD_Pontuacao[nome] = 0;
@@ -666,7 +670,6 @@
       }
     }
 
-    // Evento para zerar a pontuação de TODOS os jogadores de uma vez
     document.getElementById('btn-zerar-todos').addEventListener('click', function() {
       if (confirm("🚨 ATENÇÃO: Deseja ZERAR a pontuação de TODOS os competidores? Esta ação mudará os valores na nuvem imediatamente.")) {
         Object.keys(BD_Pontuacao).forEach(jogador => {
@@ -684,33 +687,35 @@
     document.getElementById('form-resultado').addEventListener('submit', function(e) {
       e.preventDefault();
 
-      const mesInicio = document.getElementById('mes-inicio').value;
-      const mesFim = document.getElementById('mes-fim').value;
       const flagadosP1 = obterFlagados('p1_players');
       const flagadosP2 = obterFlagados('p2_players');
       const flagadosP3 = obterFlagados('p3_players');
+      const flagadosP4 = obterFlagados('p4_players'); 
 
-      if (flagadosP1.length === 0 && flagadosP2.length === 0 && flagadosP3.length === 0) {
-        alert("Nenhum jogador foi selecionado para o pódio.");
+      if (flagadosP1.length === 0 && flagadosP2.length === 0 && flagadosP3.length === 0 && flagadosP4.length === 0) {
+        alert("Nenhum jogador foi selecionado.");
         return;
       }
 
-      const todosFlagados = [...flagadosP1, ...flagadosP2, ...flagadosP3];
-      const temDuplicados = todosFlagados.some((jogador, index) => todosFlagados.indexOf(jogador) !== index);
+      // Validação do Pódio: O mesmo competidor NÃO pode estar em duas posições do pódio ao mesmo tempo (1º, 2º ou 3º)
+      const podioApenas = [...flagadosP1, ...flagadosP2, ...flagadosP3];
+      const podioDuplicado = podioApenas.some((jogador, index) => podioApenas.indexOf(jogador) !== index);
 
-      if (temDuplicados) {
-        alert("Erro: O mesmo competidor foi marcado em mais de uma posição do pódio.");
+      if (podioDuplicado) {
+        alert("Erro: O mesmo competidor foi marcado em mais de uma posição do pódio (1º, 2º ou 3º).");
         return;
       }
 
+      // Computa a pontuação normalmente (permitindo acumular pódio + integração)
       flagadosP1.forEach(jogador => BD_Pontuacao[jogador] += 5);
       flagadosP2.forEach(jogador => BD_Pontuacao[jogador] += 3);
       flagadosP3.forEach(jogador => BD_Pontuacao[jogador] += 1);
+      flagadosP4.forEach(jogador => BD_Pontuacao[jogador] += 1);
 
       salvarDados();
       
+      // Limpa as seleções discretamente sem exibir pop-up
       document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-      alert(`Rodada do período (De ${mesInicio} Até ${mesFim}) registrada com sucesso!`);
     });
 
     document.getElementById('btn-compartilhar-ranking').addEventListener('click', () => {
@@ -726,7 +731,7 @@
       textoMensagem += `_Atualizado em: ${new Date().toLocaleDateString('pt-BR')}_\n\n`;
 
       rankingOrdenado.forEach((jogador, index) => {
-        const nome = jogador[0];
+        const nome = diplomat = jogador[0];
         const pontos = jogador[1];
         
         let emojiPosicao = `•`;
