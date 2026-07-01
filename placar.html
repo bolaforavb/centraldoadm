@@ -27,6 +27,36 @@
       overflow: hidden;
     }
 
+    /* Área de topo alterada para centralizar o botão */
+    .topo-acoes {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      justify-content: center; /* Centraliza horizontalmente */
+      padding: 0 12px;
+      margin-bottom: 4px;
+    }
+
+    /* Botão de Tela Cheia estilizado com a cor de apoio areia */
+    .btn-tela-cheia {
+      background-color: transparent;
+      color: #e1d8cd;
+      border: 1px solid #e1d8cd;
+      border-radius: 8px;
+      padding: 6px 16px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    .btn-tela-cheia:hover {
+      background-color: #e1d8cd;
+      color: #12364e;
+    }
+
     /* Forçar/Avisar orientação paisagem se necessário, mas o layout já é otimizado para largura maior */
     .container-placar-global {
       width: 100%;
@@ -87,7 +117,7 @@
     }
 
     .numero-pontos {
-      font-size: clamp(280px, 20vh, 180px);
+      font-size: clamp(80px, 20vh, 180px);
       font-weight: bold;
       color: #12364e;
       margin: 0;
@@ -202,19 +232,20 @@
 </head>
 <body>
 
-  <!-- Tela de bloqueio sugerindo deitar o aparelho -->
   <div class="aviso-orientacao">
     <span>🔄📱</span>
     <h2>Por favor, vire o seu aparelho de lado.</h2>
     <p>O placar foi otimizado para o modo horizontal (paisagem).</p>
   </div>
 
+  <div class="topo-acoes">
+    <button class="btn-tela-cheia" onclick="alternarTelaCheia()" id="btnFullscreen">🔲 Tela Cheia</button>
+  </div>
+
   <div class="container-placar-global">
     
-    <!-- Estrutura do Placar dividida ao Meio -->
     <main class="estrutura-placar">
       
-      <!-- Lado Esquerdo -->
       <div class="lado-placar">
         <div class="area-ponto" onclick="adicionarPonto('esquerda')">
           <div class="numero-pontos" id="pts-esquerda">0</div>
@@ -224,7 +255,6 @@
         </div>
       </div>
 
-      <!-- Lado Direito -->
       <div class="lado-placar">
         <div class="area-ponto" onclick="adicionarPonto('direita')">
           <div class="numero-pontos" id="pts-direita">0</div>
@@ -236,7 +266,6 @@
 
     </main>
 
-    <!-- Botão Centralizado Abaixo do Placar -->
     <footer class="controle-geral">
       <a href="dashboard.html" class="btn-voltar-discreto">↩ Voltar</a>
       
@@ -245,7 +274,6 @@
 
   </div>
 
-  <!-- Bibliotecas Firebase v8 -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -302,6 +330,45 @@
         placarRef.set({ esquerda: 0, direita: 0 });
       }
     }
+
+    // Função para alternar o modo Tela Cheia (Fullscreen API)
+    function alternarTelaCheia() {
+      const botao = document.getElementById('btnFullscreen');
+      
+      if (!document.fullscreenElement && 
+          !document.webkitFullscreenElement && 
+          !document.msFullscreenElement) {
+        const elemento = document.documentElement;
+        if (elemento.requestFullscreen) {
+          elemento.requestFullscreen();
+        } else if (elemento.webkitRequestFullscreen) {
+          elemento.webkitRequestFullscreen();
+        } else if (elemento.msRequestFullscreen) {
+          elemento.msRequestFullscreen();
+        }
+        botao.innerText = "🔳 Sair do Fullscreen";
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+        botao.innerText = "🔲 Tela Cheia";
+      }
+    }
+
+    function monitorarMudancaTelaCheia() {
+      const botao = document.getElementById('btnFullscreen');
+      if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+        botao.innerText = "🔲 Tela Cheia";
+      }
+    }
+
+    document.addEventListener('fullscreenchange', monitorarMudancaTelaCheia);
+    document.addEventListener('webkitfullscreenchange', monitorarMudancaTelaCheia);
+    document.addEventListener('msfullscreenchange', monitorarMudancaTelaCheia);
   </script>
 
 </body>
