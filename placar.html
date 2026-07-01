@@ -152,6 +152,7 @@
     .area-ponto {
       width: 100%;
       display: flex;
+      flex-direction: column; /* Alterado para empilhar o select e o número verticalmente */
       justify-content: center;
       align-items: center;
       cursor: pointer;
@@ -163,8 +164,23 @@
       background-color: rgba(217, 178, 70, 0.1);
     }
 
+    /* Campo de seleção de cor acima da pontuação */
+    .seletor-cor-time {
+      background: #f7f5f2;
+      color: #12364e;
+      border: 1px solid #12364e;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      cursor: pointer;
+      outline: none;
+      z-index: 10; /* Garante que o clique abra o select e não dispare o ponto */
+    }
+
     .numero-pontos {
-      font-size: clamp(250px, 26vh, 250px); 
+      font-size: clamp(230px, 24vh, 250px); /* Ajustado levemente para acomodar o select sem quebras */
       font-weight: bold;
       color: #12364e;
       margin: 0;
@@ -227,14 +243,12 @@
 </head>
 <body>
 
-  <!-- Tela de bloqueio sugerindo deitar o aparelho -->
   <div class="aviso-orientacao">
     <span>🔄📱</span>
     <h2>Por favor, vire o seu aparelho de lado.</h2>
     <p>O placar foi otimizado para o modo horizontal (paisagem).</p>
   </div>
 
-  <!-- Barra de Ações Superior Corrigida e Alinhada -->
   <header class="topo-acoes">
     <div class="topo-esquerda">
       <a href="dashboard.html" class="btn-topo-discreto">Central do Adm</a>
@@ -252,12 +266,17 @@
 
   <div class="container-placar-global">
     
-    <!-- Estrutura do Placar dividida ao Meio -->
     <main class="estrutura-placar">
       
-      <!-- Lado Esquerdo -->
       <div class="lado-placar">
-        <div class="area-ponto" onclick="adicionarPonto('esquerda')">
+        <div class="area-ponto" onclick="adicionarPonto('esquerda', event)">
+          <select class="seletor-cor-time" id="cor-esquerda" onclick="event.stopPropagation()" onchange="mudarCor('esquerda')">
+            <option value="">Selecionar Cor</option>
+            <option value="Amarelo">Amarelo</option>
+            <option value="Azul">Azul</option>
+            <option value="Roxo">Roxo</option>
+            <option value="Rosa">Rosa</option>
+          </select>
           <div class="numero-pontos" id="pts-esquerda">0</div>
         </div>
         <div class="controles-lado">
@@ -265,9 +284,15 @@
         </div>
       </div>
 
-      <!-- Lado Direito -->
       <div class="lado-placar">
-        <div class="area-ponto" onclick="adicionarPonto('direita')">
+        <div class="area-ponto" onclick="adicionarPonto('direita', event)">
+          <select class="seletor-cor-time" id="cor-direita" onclick="event.stopPropagation()" onchange="mudarCor('direita')">
+            <option value="">Selecionar Cor</option>
+            <option value="Amarelo">Amarelo</option>
+            <option value="Azul">Azul</option>
+            <option value="Roxo">Roxo</option>
+            <option value="Rosa">Rosa</option>
+          </select>
           <div class="numero-pontos" id="pts-direita">0</div>
         </div>
         <div class="controles-lado">
@@ -279,7 +304,6 @@
 
   </div>
 
-  <!-- Bibliotecas Firebase v8 -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -297,10 +321,12 @@
     // Referência do nó do placar em tempo real
     const placarRef = db.ref('placar_digital');
 
-    // Estado local sincronizado
+    // Estado local sincronizado incluindo as cores por padrão
     let placarLocal = {
       esquerda: 0,
-      direita: 0
+      direita: 0,
+      corEsquerda: "",
+      corDireita: ""
     };
 
     // Ouvir mudanças na nuvem em tempo real e atualizar a tela
@@ -308,16 +334,22 @@
       const dadosNuvem = snapshot.val();
       if (dadosNuvem) {
         placarLocal = dadosNuvem;
-        document.getElementById('pts-esquerda').innerText = placarLocal.esquerda;
-        document.getElementById('pts-direita').innerText = placarLocal.direita;
+        document.getElementById('pts-esquerda').innerText = placarLocal.esquerda || 0;
+        document.getElementById('pts-direita').innerText = placarLocal.direita || 0;
+        
+        // Atualiza a seleção dos selects na tela caso venha de outro dispositivo
+        document.getElementById('cor-esquerda').value = placarLocal.corEsquerda || "";
+        document.getElementById('cor-direita').value = placarLocal.corDireita || "";
       } else {
-        placarRef.set({ esquerda: 0, derecha: 0 });
+        placarRef.set({ esquerda: 0, direita: 0, corEsquerda: "", corDireita: "" });
       }
     });
 
-    // Função para somar ponto ao clicar na área numérica
-    function adicionarPonto(lado) {
-      placarLocal[lado] += 1;
+    // Função para somar ponto ao clicar na área numérica (ignorando cliques vindos do select)
+    function adicionarPonto(lado, event) {
+      if (event && event.target.tagName === 'SELECT') return;
+      
+      placarLocal[lado] = (placarLocal[lado] || 0) + 1;
       placarRef.set(placarLocal);
     }
 
@@ -329,10 +361,20 @@
       }
     }
 
+    // Função executada ao alterar a cor no select
+    function mudarCor(lado) {
+      if (lado === 'esquerda') {
+        placarLocal.corEsquerda = document.getElementById('cor-esquerda').value;
+      } else {
+        placarLocal.corDireita = document.getElementById('cor-direita').value;
+      }
+      placarRef.set(placarLocal);
+    }
+
     // Função para zerar ambos os lados
     function zerarPlacar() {
       if (confirm("Deseja reiniciar a contagem do placar para 0 x 0?")) {
-        placarRef.set({ esquerda: 0, direita: 0 });
+        placarRef.set({ esquerda: 0, direita: 0, corEsquerda: "", corDireita: "" });
       }
     }
 
