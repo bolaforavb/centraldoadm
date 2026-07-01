@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Placar Digital - Central do Adm</title>
+  <link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
+  
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none; /* Evita selecionar o texto ao clicar rápido nos pontos */
+    }
+
+    body {
+      font-family: sans-serif;
+      background-color: #12364e; 
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: #12364e;
+      overflow: hidden;
+    }
+
+    /* Forçar/Avisar orientação paisagem se necessário, mas o layout já é otimizado para largura maior */
+    .container-placar-global {
+      width: 100%;
+      max-width: 900px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Estrutura principal dividida ao meio */
+    .estrutura-placar {
+      display: flex;
+      background-color: white;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Divisória vertical no meio do placar */
+    .estrutura-placar::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 4px;
+      background-color: #e1d8cd;
+      transform: translateX(-50%);
+      z-index: 2;
+    }
+
+    /* Lados do Placar (Esquerdo e Direito) */
+    .lado-placar {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      position: relative;
+    }
+
+    /* Área de clique do ponto (ocupa boa parte do lado) */
+    .area-ponto {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      min-height: 45vh; /* Otimizado para tela deitada */
+      transition: background-color 0.1s;
+    }
+    
+    .area-ponto:active {
+      background-color: rgba(217, 178, 70, 0.1); /* Feedback visual em tom dourado */
+    }
+
+    .numero-pontos {
+      font-size: clamp(80px, 20vh, 180px);
+      font-weight: bold;
+      color: #12364e;
+      margin: 0;
+      line-height: 1;
+    }
+
+    /* Área inferior de controles individuais */
+    .controles-lado {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      padding-top: 8px;
+      z-index: 3;
+    }
+
+    /* Botão -1 padronizado com estilo do painel */
+    .btn-menos-um {
+      background-color: #f7f5f2;
+      color: #12364e;
+      border: 2px solid #12364e;
+      border-radius: 10px;
+      padding: 8px 24px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    .btn-menos-um:active {
+      transform: scale(0.95);
+      background-color: #e1d8cd;
+    }
+
+    /* Área de controle centralizada abaixo do placar */
+    .controle-geral {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      margin-top: 4px;
+    }
+
+    /* Botão de Zerar centralizado (cor vermelha de reset do painel) */
+    .btn-zerar-placar {
+      background-color: #d93025;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 32px;
+      font-size: 14px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .btn-zerar-placar:hover {
+      background-color: #b3241c;
+    }
+
+    .btn-zerar-placar:active {
+      transform: scale(0.98);
+    }
+
+    /* Link discreto para voltar ao painel */
+    .btn-voltar-discreto {
+      position: absolute;
+      left: 0;
+      color: #e1d8cd;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: bold;
+      border: 1px solid #e1d8cd;
+      padding: 8px 16px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .btn-voltar-discreto:hover {
+      background: #e1d8cd;
+      color: #12364e;
+    }
+
+    /* Alerta caso o usuário use em pé */
+    @media (orientation: portrait) {
+      .aviso-orientacao {
+        display: flex;
+      }
+    }
+
+    .aviso-orientacao {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #12364e;
+      color: #e1d8cd;
+      z-index: 9999;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 24px;
+    }
+    .aviso-orientacao span {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Tela de bloqueio sugerindo deitar o aparelho -->
+  <div class="aviso-orientacao">
+    <span>🔄📱</span>
+    <h2>Por favor, vire o seu aparelho de lado.</h2>
+    <p>O placar foi otimizado para o modo horizontal (paisagem).</p>
+  </div>
+
+  <div class="container-placar-global">
+    
+    <!-- Estrutura do Placar dividida ao Meio -->
+    <main class="estrutura-placar">
+      
+      <!-- Lado Esquerdo -->
+      <div class="lado-placar">
+        <div class="area-ponto" onclick="adicionarPonto('esquerda')">
+          <div class="numero-pontos" id="pts-esquerda">0</div>
+        </div>
+        <div class="controles-lado">
+          <button class="btn-menos-um" onclick="subtrairPonto('esquerda')">-1</button>
+        </div>
+      </div>
+
+      <!-- Lado Direito -->
+      <div class="lado-placar">
+        <div class="area-ponto" onclick="adicionarPonto('direita')">
+          <div class="numero-pontos" id="pts-direita">0</div>
+        </div>
+        <div class="controles-lado">
+          <button class="btn-menos-um" onclick="subtrairPonto('direita')">-1</button>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Botão Centralizado Abaixo do Placar -->
+    <footer class="controle-geral">
+      <a href="dashboard.html" class="btn-voltar-discreto">↩ Voltar</a>
+      
+      <button class="btn-zerar-placar" onclick="zerarPlacar()">Zerar Placar</button>
+    </footer>
+
+  </div>
+
+  <!-- Bibliotecas Firebase v8 -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <script>
+    // Configurações fornecidas do seu Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
+      databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com/"
+    };
+    
+    // Inicializa o Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Referência do nó do placar em tempo real
+    const placarRef = db.ref('placar_digital');
+
+    // Estado local sincronizado
+    let placarLocal = {
+      esquerda: 0,
+      direita: 0
+    };
+
+    // Ouvir mudanças na nuvem em tempo real e atualizar a tela
+    placarRef.on('value', (snapshot) => {
+      const dadosNuvem = snapshot.val();
+      if (dadosNuvem) {
+        placarLocal = dadosNuvem;
+        document.getElementById('pts-esquerda').innerText = placarLocal.esquerda;
+        document.getElementById('pts-direita').innerText = placarLocal.direita;
+      } else {
+        // Inicializa o nó caso esteja vazio na nuvem
+        placarRef.set({ esquerda: 0, direita: 0 });
+      }
+    });
+
+    // Função para somar ponto ao clicar na área numérica
+    function adicionarPonto(lado) {
+      placarLocal[lado] += 1;
+      placarRef.set(placarLocal);
+    }
+
+    // Função para diminuir ponto (travado para não ficar menor que zero)
+    function subtrairPonto(lado) {
+      if (placarLocal[lado] > 0) {
+        placarLocal[lado] -= 1;
+        placarRef.set(placarLocal);
+      }
+    }
+
+    // Função para zerar ambos os lados
+    function zerarPlacar() {
+      if (confirm("Deseja reiniciar a contagem do placar para 0 x 0?")) {
+        placarRef.set({ esquerda: 0, direita: 0 });
+      }
+    }
+  </script>
+
+</body>
+</html>
