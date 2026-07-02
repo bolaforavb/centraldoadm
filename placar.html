@@ -28,7 +28,6 @@
     }
 
     /* Barra superior configurada com 3 colunas de larguras exatamente iguais (1fr) */
-    /* Isso garante a centralização absoluta do bloco do meio, ignorando o tamanho dos lados */
     .topo-acoes {
       width: 100%;
       max-width: 900px;
@@ -39,11 +38,10 @@
       margin-bottom: 8px;
     }
 
-    /* Alinhamentos precisos de cada bloco */
     .topo-esquerda {
       display: flex;
       justify-content: flex-start;
-      gap: 8px; /* Espaço uniforme entre Página Inicial e Ir para a tabela */
+      gap: 8px;
     }
 
     .topo-centro {
@@ -56,14 +54,13 @@
       justify-content: flex-end;
     }
 
-    /* Botões discretos do topo (Página Inicial, Tabela e Tela Cheia) */
     .btn-topo-discreto {
       background-color: transparent;
       color: #e1d8cd;
       border: 1px solid #e1d8cd;
       border-radius: 8px;
       padding: 6px 12px;
-      font-size: 11px; /* Ajuste sutil no tamanho da fonte para não estourar em telas menores */
+      font-size: 11px;
       font-weight: bold;
       text-decoration: none;
       text-transform: uppercase;
@@ -78,7 +75,6 @@
       color: #12364e;
     }
 
-    /* Botão de Zerar centralizado */
     .btn-zerar-placar {
       background-color: #d93025;
       color: white;
@@ -103,7 +99,6 @@
       transform: scale(0.98);
     }
 
-    /* Container global */
     .container-placar-global {
       width: 100%;
       max-width: 900px;
@@ -114,7 +109,6 @@
       flex-grow: 1;
     }
 
-    /* Estrutura principal */
     .estrutura-placar {
       display: flex;
       background-color: white;
@@ -124,7 +118,6 @@
       overflow: hidden;
     }
 
-    /* Divisória vertical */
     .estrutura-placar::before {
       content: "";
       position: absolute;
@@ -137,20 +130,18 @@
       z-index: 2;
     }
 
-    /* Imagem estrita na meiota centralizada */
     .logo-central {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       z-index: 10;
-      width: 90px; /* Tamanho ajustável do logo */
+      width: 90px;
       height: auto;
-      pointer-events: none; /* Garante que cliques passem direto para os botões de ponto */
-      filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2)); /* Destaca o logo sobre a linha */
+      pointer-events: none;
+      filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));
     }
 
-    /* Lados do Placar */
     .lado-placar {
       flex: 1;
       display: flex;
@@ -161,11 +152,10 @@
       position: relative;
     }
 
-    /* Área de clique do ponto */
     .area-ponto {
       width: 100%;
       display: flex;
-      flex-direction: column; /* Alterado para empilhar o select e o número verticalmente */
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       cursor: pointer;
@@ -177,7 +167,7 @@
       background-color: rgba(217, 178, 70, 0.1);
     }
 
-    /* Campo de seleção de cor acima da pontuação */
+    /* Estilização da caixa de seleção de cor */
     .seletor-cor-time {
       background: #f7f5f2;
       color: #12364e;
@@ -189,18 +179,25 @@
       margin-bottom: 10px;
       cursor: pointer;
       outline: none;
-      z-index: 11; /* Garante que o clique abra o select e não dispare o ponto */
+      z-index: 11;
+      transition: background-color 0.3s, color 0.3s;
     }
 
+    /* Cores das opções individuais */
+    .op-amarelo { background-color: #ffeb3b !important; color: #000 !important; }
+    .op-azul { background-color: #2196f3 !important; color: #fff !important; }
+    .op-roxo { background-color: #9c27b0 !important; color: #fff !important; }
+    .op-rosa { background-color: #e91e63 !important; color: #fff !important; }
+    .op-padrao { background-color: #f7f5f2 !important; color: #12364e !important; }
+
     .numero-pontos {
-      font-size: clamp(230px, 24vh, 250px); /* Ajustado levemente para acomodar o select sem quebras */
+      font-size: clamp(230px, 24vh, 250px);
       font-weight: bold;
       color: #12364e;
       margin: 0;
       line-height: 1;
     }
 
-    /* Controles individuais */
     .controles-lado {
       width: 100%;
       display: flex;
@@ -209,7 +206,6 @@
       z-index: 3;
     }
 
-    /* Botão -1 */
     .btn-menos-um {
       background-color: #f7f5f2;
       color: #12364e;
@@ -228,7 +224,6 @@
       background-color: #e1d8cd;
     }
 
-    /* Alerta de orientação */
     @media (orientation: portrait) {
       .aviso-orientacao {
         display: flex;
@@ -281,17 +276,16 @@
     
     <main class="estrutura-placar">
       
-      <!-- Imagem centralizada na meiota -->
       <img src="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" alt="Logo Bola Fora" class="logo-central">
       
       <div class="lado-placar">
         <div class="area-ponto" onclick="adicionarPonto('esquerda', event)">
           <select class="seletor-cor-time" id="cor-esquerda" onclick="event.stopPropagation()" onchange="mudarCor('esquerda')">
-            <option value="">Selecionar Cor</option>
-            <option value="Amarelo">Amarelo</option>
-            <option value="Azul">Azul</option>
-            <option value="Roxo">Roxo</option>
-            <option value="Rosa">Rosa</option>
+            <option value="" class="op-padrao">Selecionar Cor</option>
+            <option value="Amarelo" class="op-amarelo">Amarelo</option>
+            <option value="Azul" class="op-azul">Azul</option>
+            <option value="Roxo" class="op-roxo">Roxo</option>
+            <option value="Rosa" class="op-rosa">Rosa</option>
           </select>
           <div class="numero-pontos" id="pts-esquerda">0</div>
         </div>
@@ -303,11 +297,11 @@
       <div class="lado-placar">
         <div class="area-ponto" onclick="adicionarPonto('direita', event)">
           <select class="seletor-cor-time" id="cor-direita" onclick="event.stopPropagation()" onchange="mudarCor('direita')">
-            <option value="">Selecionar Cor</option>
-            <option value="Amarelo">Amarelo</option>
-            <option value="Azul">Azul</option>
-            <option value="Roxo">Roxo</option>
-            <option value="Rosa">Rosa</option>
+            <option value="" class="op-padrao">Selecionar Cor</option>
+            <option value="Amarelo" class="op-amarelo">Amarelo</option>
+            <option value="Azul" class="op-azul">Azul</option>
+            <option value="Roxo" class="op-roxo">Roxo</option>
+            <option value="Rosa" class="op-rosa">Rosa</option>
           </select>
           <div class="numero-pontos" id="pts-direita">0</div>
         </div>
@@ -324,20 +318,15 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
   <script>
-    // Configurações fornecidas do seu Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
       databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com/"
     };
     
-    // Inicializa o Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
-    // Referência do nó do placar em tempo real
     const placarRef = db.ref('placar_digital');
 
-    // Estado local sincronizado incluindo as cores por padrão
     let placarLocal = {
       esquerda: 0,
       direita: 0,
@@ -345,7 +334,22 @@
       corDireita: ""
     };
 
-    // Ouvir mudanças na nuvem em tempo real e atualizar a tela
+    // Mapeamento prático para atualizar o visual do seletor de acordo com a cor escolhida
+    const estilosCores = {
+      "Amarelo": { bg: "#ffeb3b", text: "#000" },
+      "Azul": { bg: "#2196f3", text: "#fff" },
+      "Roxo": { bg: "#9c27b0", text: "#fff" },
+      "Rosa": { bg: "#e91e63", text: "#fff" },
+      "": { bg: "#f7f5f2", text: "#12364e" }
+    };
+
+    function atualizarAparenciaSeletor(lado, cor) {
+      const select = document.getElementById(`cor-${lado}`);
+      const estilo = estilosCores[cor] || estilosCores[""];
+      select.style.backgroundColor = estilo.bg;
+      select.style.color = estilo.text;
+    }
+
     placarRef.on('value', (snapshot) => {
       const dadosNuvem = snapshot.val();
       if (dadosNuvem) {
@@ -353,15 +357,16 @@
         document.getElementById('pts-esquerda').innerText = placarLocal.esquerda || 0;
         document.getElementById('pts-direita').innerText = placarLocal.direita || 0;
         
-        // Atualiza a seleção dos selects na tela caso venha de outro dispositivo
         document.getElementById('cor-esquerda').value = placarLocal.corEsquerda || "";
         document.getElementById('cor-direita').value = placarLocal.corDireita || "";
+
+        atualizarAparenciaSeletor('esquerda', placarLocal.corEsquerda || "");
+        atualizarAparenciaSeletor('direita', placarLocal.corDireita || "");
       } else {
         placarRef.set({ esquerda: 0, direita: 0, corEsquerda: "", corDireita: "" });
       }
     });
 
-    // Função para somar ponto ao clicar na área numérica (ignorando cliques vindos do select)
     function adicionarPonto(lado, event) {
       if (event && event.target.tagName === 'SELECT') return;
       
@@ -369,7 +374,6 @@
       placarRef.set(placarLocal);
     }
 
-    // Função para diminuir ponto
     function subtrairPonto(lado) {
       if (placarLocal[lado] > 0) {
         placarLocal[lado] -= 1;
@@ -377,33 +381,29 @@
       }
     }
 
-    // Função executada ao alterar a cor no select
     function mudarCor(lado) {
+      const valorCor = document.getElementById(`cor-${lado}`).value;
       if (lado === 'esquerda') {
-        placarLocal.corEsquerda = document.getElementById('cor-esquerda').value;
+        placarLocal.corEsquerda = valorCor;
       } else {
-        placarLocal.corDireita = document.getElementById('cor-direita').value;
+        placarLocal.corDireita = valorCor;
       }
       placarRef.set(placarLocal);
     }
 
-    // Função para zerar ambos os lados
     function zerarPlacar() {
       if (confirm("Deseja reiniciar a contagem do placar para 0 x 0?")) {
         placarRef.set({ esquerda: 0, direita: 0, corEsquerda: "", corDireita: "" });
       }
     }
 
-    // Função para alternar o modo Tela Cheia
     function alternarTelaCheia() {
       const botao = document.getElementById('btnFullscreen');
       
-      if (!document.fullscreenElement && 
-          !document.webkitFullscreenElement && 
-          !document.msFullscreenElement) {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
         const elemento = document.documentElement;
         if (elemento.requestFullscreen) {
-          element.requestFullscreen();
+          elemento.requestFullscreen();
         } else if (elemento.webkitRequestFullscreen) {
           elemento.webkitRequestFullscreen();
         } else if (elemento.msRequestFullscreen) {
