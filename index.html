@@ -14,44 +14,23 @@
 
     body { 
       font-family: sans-serif; 
+      background-color: #12364e; /* Azul original restaurado */
       display: flex; 
       justify-content: center; 
       align-items: center; 
       min-height: 100vh; 
       margin: 0; 
       padding: 16px; /* Garante margem de segurança caso a tela seja menor que o card */
-      position: relative;
-      overflow-x: hidden;
-    }
-
-    /* Camada mágica que rotaciona a imagem de fundo sem afetar o card de login */
-    body::before {
-      content: "";
-      position: fixed;
-      /* Define uma área maior para garantir que as bordas não sumam na rotação */
-      top: -50vh;
-      left: -50vw;
-      width: 200vw;
-      height: 200vh;
-      background-image: url('https://i.ibb.co/twJd6BRq/Whats-App-Image-2026-06-29-at-10-42-05.jpg');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      transform: rotate(90deg); /* Rotaciona a imagem em 90 graus */
-      z-index: -1; /* Joga para trás de tudo */
     }
 
     .login-card { 
-      /* Fundo com leve transparência e desfoque para dar leitura aos textos sobre a foto */
-      background: rgba(225, 216, 205, 0.95); 
-      backdrop-filter: blur(4px);
+      background: #e1d8cd; 
       padding: 40px 30px; 
       border-radius: 12px; 
-      box-shadow: 0 8px 32px rgba(0,0,0,0.3); 
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2); 
       width: calc(100% - 32px); /* Espaçamento seguro e centralizado nas laterais mobile */
       max-width: 360px; 
       text-align: center; 
-      position: relative; /* Mantém o card acima do background */
     }
 
     .input-group { margin-bottom: 20px; text-align: left; }
