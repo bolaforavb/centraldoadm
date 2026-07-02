@@ -137,6 +137,19 @@
       z-index: 2;
     }
 
+    /* Imagem estrita na meiota centralizada */
+    .logo-central {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      width: 90px; /* Tamanho ajustável do logo */
+      height: auto;
+      pointer-events: none; /* Garante que cliques passem direto para os botões de ponto */
+      filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2)); /* Destaca o logo sobre a linha */
+    }
+
     /* Lados do Placar */
     .lado-placar {
       flex: 1;
@@ -176,7 +189,7 @@
       margin-bottom: 10px;
       cursor: pointer;
       outline: none;
-      z-index: 10; /* Garante que o clique abra o select e não dispare o ponto */
+      z-index: 11; /* Garante que o clique abra o select e não dispare o ponto */
     }
 
     .numero-pontos {
@@ -267,6 +280,9 @@
   <div class="container-placar-global">
     
     <main class="estrutura-placar">
+      
+      <!-- Imagem centralizada na meiota -->
+      <img src="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" alt="Logo Bola Fora" class="logo-central">
       
       <div class="lado-placar">
         <div class="area-ponto" onclick="adicionarPonto('esquerda', event)">
@@ -387,7 +403,7 @@
           !document.msFullscreenElement) {
         const elemento = document.documentElement;
         if (elemento.requestFullscreen) {
-          elemento.requestFullscreen();
+          element.requestFullscreen();
         } else if (elemento.webkitRequestFullscreen) {
           elemento.webkitRequestFullscreen();
         } else if (elemento.msRequestFullscreen) {
