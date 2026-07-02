@@ -6,11 +6,11 @@
   <title>Placar Digital - Central do Adm</title>
   <link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
   
-  <style id="estilos-placar">
+  <style>
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
-      user-select: none; /* Evita selecionar o texto ao clicar rápido nos pontos */
+      user-select: none;
     }
 
     body {
@@ -27,7 +27,6 @@
       overflow: hidden;
     }
 
-    /* Barra superior configurada com 3 colunas de larguras exatamente iguais (1fr) */
     .topo-acoes {
       width: 100%;
       max-width: 900px;
@@ -74,6 +73,16 @@
     .btn-topo-discreto:hover {
       background-color: #e1d8cd;
       color: #12364e;
+    }
+
+    .btn-fixar-notif {
+      border-color: #2196f3;
+      color: #2196f3;
+    }
+    
+    .btn-fixar-notif:hover {
+      background-color: #2196f3;
+      color: #fff;
     }
 
     .btn-zerar-placar {
@@ -224,19 +233,6 @@
       background-color: #e1d8cd;
     }
 
-    /* Estilos específicos caso o placar seja jogado dentro do PiP */
-    .pip-ativo .estrutura-placar {
-      height: 100vh;
-      border-radius: 0;
-      box-shadow: none;
-    }
-    .pip-ativo .area-ponto {
-      min-height: 70vh;
-    }
-    .pip-ativo .numero-pontos {
-      font-size: clamp(120px, 35vh, 250px);
-    }
-
     @media (orientation: portrait) {
       .aviso-orientacao {
         display: flex;
@@ -273,7 +269,7 @@
   <header class="topo-acoes">
     <div class="topo-esquerda">
       <a href="dashboard.html" class="btn-topo-discreto">Central do Adm</a>
-      <a href="https://louisebraga.github.io/tabela-bola-fora/" class="btn-topo-discreto" target="_blank">Ir para a tabela</a>
+      <a href="https://louisebraga.github.io/tabela-bola-fora/" class="btn-topo-discreto">Ir para a tabela</a>
     </div>
     
     <div class="topo-centro">
@@ -281,12 +277,12 @@
     </div>
     
     <div class="topo-direita">
-      <button class="btn-topo-discreto" onclick="alternarPiP()" id="btnPip">📺 Pop-up</button>
+      <button class="btn-topo-discreto btn-fixar-notif" onclick="enviarLembreteResultado()">📌 Fixar Resultado</button>
       <button class="btn-topo-discreto" onclick="alternarTelaCheia()" id="btnFullscreen">🔲 Tela Cheia</button>
     </div>
   </header>
 
-  <div class="container-placar-global" id="container-original">
+  <div class="container-placar-global">
     
     <main class="estrutura-placar" id="placar-main">
       
@@ -295,7 +291,7 @@
       <div class="lado-placar">
         <div class="area-ponto" onclick="adicionarPonto('esquerda', event)">
           <select class="seletor-cor-time" id="cor-esquerda" onclick="event.stopPropagation()" onchange="mudarCor('esquerda')">
-            <option value="" class="op-padrao">Selecionar Cor</option>
+            <option value="" class="op-padrao">Time Esq</option>
             <option value="Amarelo" class="op-amarelo">Amarelo</option>
             <option value="Azul" class="op-azul">Azul</option>
             <option value="Roxo" class="op-roxo">Roxo</option>
@@ -311,7 +307,7 @@
       <div class="lado-placar">
         <div class="area-ponto" onclick="adicionarPonto('direita', event)">
           <select class="seletor-cor-time" id="cor-direita" onclick="event.stopPropagation()" onchange="mudarCor('direita')">
-            <option value="" class="op-padrao">Selecionar Cor</option>
+            <option value="" class="op-padrao">Time Dir</option>
             <option value="Amarelo" class="op-amarelo">Amarelo</option>
             <option value="Azul" class="op-azul">Azul</option>
             <option value="Roxo" class="op-roxo">Roxo</option>
@@ -348,8 +344,6 @@
       corDireita: ""
     };
 
-    let pipWindow = null;
-
     const estilosCores = {
       "Amarelo": { bg: "#ffeb3b", text: "#000" },
       "Azul": { bg: "#2196f3", text: "#fff" },
@@ -358,14 +352,8 @@
       "": { bg: "#f7f5f2", text: "#12364e" }
     };
 
-    // Função inteligente para achar elementos onde quer que o placar esteja renderizado
-    function obterContextoDoDocumento() {
-      return pipWindow ? pipWindow.document : document;
-    }
-
     function atualizarAparenciaSeletor(lado, cor) {
-      const contexto = obterContextoDoDocumento();
-      const select = contexto.getElementById(`cor-${lado}`);
+      const select = document.getElementById(`cor-${lado}`);
       const estilo = estilosCores[cor] || estilosCores[""];
       if (select) {
         select.style.backgroundColor = estilo.bg;
@@ -373,28 +361,23 @@
       }
     }
 
-    // Atualiza a tela com os dados vindos do Firebase
-    function forçarAtualizaçãoVisual() {
-      const contexto = obterContextoDoDocumento();
-      const elemEsq = contexto.getElementById('pts-esquerda');
-      const elemDir = contexto.getElementById('pts-direita');
-      const selEsq = contexto.getElementById('cor-esquerda');
-      const selDir = contexto.getElementById('cor-direita');
-
-      if(elemEsq) elemEsq.innerText = placarLocal.esquerda || 0;
-      if(elemDir) elemDir.innerText = placarLocal.direita || 0;
-      if(selEsq) selEsq.value = placarLocal.corEsquerda || "";
-      if(selDir) selDir.value = placarLocal.corDireita || "";
-
-      atualizarAparenciaSeletor('esquerda', placarLocal.corEsquerda || "");
-      atualizarAparenciaSeletor('direita', placarLocal.corDireita || "");
-    }
-
     placarRef.on('value', (snapshot) => {
       const dadosNuvem = snapshot.val();
       if (dadosNuvem) {
         placarLocal = dadosNuvem;
-        forçarAtualizaçãoVisual();
+        
+        const elemEsq = document.getElementById('pts-esquerda');
+        const elemDir = document.getElementById('pts-direita');
+        const selEsq = document.getElementById('cor-esquerda');
+        const selDir = document.getElementById('cor-direita');
+
+        if(elemEsq) elemEsq.innerText = placarLocal.esquerda || 0;
+        if(elemDir) elemDir.innerText = placarLocal.direita || 0;
+        if(selEsq) selEsq.value = placarLocal.corEsquerda || "";
+        if(selDir) selDir.value = placarLocal.corDireita || "";
+
+        atualizarAparenciaSeletor('esquerda', placarLocal.corEsquerda || "");
+        atualizarAparenciaSeletor('direita', placarLocal.corDireita || "");
       } else {
         placarRef.set({ esquerda: 0, direita: 0, corEsquerda: "", corDireita: "" });
       }
@@ -414,8 +397,7 @@
     }
 
     function mudarCor(lado) {
-      const contexto = obterContextoDoDocumento();
-      const valorCor = contexto.getElementById(`cor-${lado}`).value;
+      const valorCor = document.getElementById(`cor-${lado}`).value;
       if (lado === 'esquerda') {
         placarLocal.corEsquerda = valorCor;
       } else {
@@ -430,50 +412,36 @@
       }
     }
 
-    // --- LOGICA DO PICTURE IN PICTURE PARA COMPONENTES ---
-    async function alternarPiP() {
-      if (!('documentPictureInPicture' in window)) {
-        alert("O seu navegador atual não suporta janelas Pop-up PiP para elementos de página. Experimente usar o Google Chrome ou Edge atualizados.");
+    function enviarLembreteResultado() {
+      if (!("Notification" in window)) {
+        alert("Este navegador não suporta notificações de sistema.");
         return;
       }
 
-      if (pipWindow) {
-        pipWindow.close();
-        return;
+      const timeEsq = placarLocal.corEsquerda || "Time Esquerdo";
+      const timeDir = placarLocal.corDireita || "Time Direito";
+      const pontosEsq = placarLocal.esquerda || 0;
+      const pontosDir = placarLocal.direita || 0;
+
+      const titulo = "Bola Fora - Resultado Guardado 📌";
+      const opcoesNotificacao = {
+        body: `${timeEsq} ${pontosEsq} x ${pontosDir} ${timeDir}`,
+        icon: 'https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png',
+        tag: 'resultado-placar', 
+        requireInteraction: true 
+      };
+
+      if (Notification.permission === "granted") {
+        new Notification(titulo, opcoesNotificacao);
+      } else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then(permission => {
+          if (permission === "granted") {
+            new Notification(titulo, opcoesNotificacao);
+          }
+        });
+      } else {
+        alert("As notificações estão bloqueadas no seu navegador. Ative-as nas configurações do site para usar o lembrete.");
       }
-
-      const placarMain = document.getElementById('placar-main');
-      
-      pipWindow = await window.documentPictureInPicture.requestWindow({
-        width: 650,
-        height: 380,
-      });
-
-      // Copia os estilos CSS para o Pop-up
-      const estiloOriginal = document.getElementById('estilos-placar').cloneNode(true);
-      pipWindow.document.head.appendChild(estiloOriginal);
-      pipWindow.document.body.classList.add('pip-ativo');
-
-      // Move o bloco do placar para a janela Pop-up
-      pipWindow.document.body.appendChild(placarMain);
-
-      // Garante que o visual dos números e seletores fique perfeito na hora da transição
-      setTimeout(forçarAtualizaçãoVisual, 20);
-
-      // Trata o fechamento do Pop-up (Devolve o placar para o navegador original)
-      pipWindow.addEventListener("pagehide", (event) => {
-        const containerOriginal = document.getElementById('container-original');
-        const placarRetornado = event.target.body.querySelector('#placar-main');
-        
-        pipWindow = null; // Reseta antes para o contexto mudar de volta para o principal
-        
-        if (placarRetornado) {
-          containerOriginal.appendChild(placarRetornado);
-        }
-        
-        // Sincroniza o visual na volta
-        setTimeout(forçarAtualizaçãoVisual, 20);
-      });
     }
 
     function alternarTelaCheia() {
