@@ -432,15 +432,27 @@
       };
 
       if (Notification.permission === "granted") {
-        new Notification(titulo, opcoesNotificacao);
+        dispararNotificacao(titulo, opcoesNotificacao);
       } else if (Notification.permission !== "denied") {
         Notification.requestPermission().then(permission => {
           if (permission === "granted") {
-            new Notification(titulo, opcoesNotificacao);
+            dispararNotificacao(titulo, opcoesNotificacao);
           }
         });
       } else {
         alert("As notificações estão bloqueadas no seu navegador. Ative-as nas configurações do site para usar o lembrete.");
+      }
+    }
+
+    function dispararNotificacao(titulo, opcoes) {
+      // Se houver suporte e um Service Worker ativo (Mobile), dispara por ele
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.ready.then(registration => {
+          registration.showNotification(titulo, opcoes);
+        });
+      } else {
+        // Método clássico como fallback (PC)
+        new Notification(titulo, opcoes);
       }
     }
 
@@ -470,6 +482,21 @@
     document.addEventListener('fullscreenchange', monitorarMudancaTelaCheia);
     document.addEventListener('webkitfullscreenchange', monitorarMudancaTelaCheia);
     document.addEventListener('msfullscreenchange', monitorarMudancaTelaCheia);
+
+    // Registro automático do Service Worker para permitir notificações nativas em dispositivos móveis
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        const code = "self.addEventListener('notificationclick', function(event) { event.notification.close(); });";
+        const blob = new Blob([code], { type: 'application/javascript' });
+        const workerUrl = URL.createObjectURL(blob);
+        
+        navigator.serviceWorker.register(workerUrl).then(reg => {
+          console.log('Service Worker de notificações ativado.');
+        }).catch(err => {
+          console.error('Erro ao registrar Service Worker:', err);
+        });
+      });
+    }
   </script>
 
 </body>
