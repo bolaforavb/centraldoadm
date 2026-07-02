@@ -21,16 +21,16 @@
       background-color: #12364e; 
       display: flex; 
       flex-direction: column; 
-      justify-content: center; 
+      justify-content: flex-start; /* Mudado de center para flex-start para puxar o conteúdo para cima */
       align-items: center; 
       min-height: 100vh; 
       margin: 0; 
-      padding: 16px; 
+      padding: 40px 16px 16px 16px; /* Ajustado o padding do topo para controlar o espaço em branco */
     }
 
     .login-header {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 15px; /* Reduzido levemente de 20px para 15px */
       width: 100%;
       max-width: 360px;
     }
@@ -38,7 +38,7 @@
       width: 90px;
       height: auto;
       display: block;
-      margin: 0 auto 10px auto;
+      margin: 0 auto 5px auto; /* Reduzido o espaço abaixo da logo */
       filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.4));
     }
     .login-title {
@@ -53,7 +53,7 @@
 
     .login-card { 
       background: #e1d8cd; 
-      padding: 40px 30px 25px 30px; /* Reduzido o padding inferior para compactar o bloco */
+      padding: 40px 30px 25px 30px; 
       border-radius: 12px; 
       box-shadow: 0 8px 24px rgba(0,0,0,0.2); 
       width: calc(100% - 32px); 
@@ -100,7 +100,7 @@
       padding: 12px; 
       background-color: #12364e; 
       color: white; 
-      border: none; /* Borda removida com sucesso */
+      border: none; 
       border-radius: 6px; 
       font-weight: bold; 
       font-size: 15px;
@@ -114,9 +114,9 @@
     }
     .btn-secondary:active { transform: scale(0.98); }
 
-    /* MENSAGEM DINÂMICA (Só ocupa espaço quando ativa) */
+    /* MENSAGEM DINÂMICA */
     #mensagem { font-weight: 500; font-size: 14px; }
-    #mensagem:not(:empty) { margin-top: 15px; } /* Aplica margem apenas se houver texto */
+    #mensagem:not(:empty) { margin-top: 15px; } 
     .erro { color: #d93025; font-weight: bold; }
     .sucesso { color: #188038; font-weight: bold; }
 
@@ -148,7 +148,7 @@
       <button type="button" class="btn-secondary" id="btnIrParaAlterar">Alterar senha padrão</button>
     </form>
 
-    <!-- NOVO FORMULÁRIO DE ALTERAÇÃO DE SENHA (OCULTO POR PADRÃO) -->
+    <!-- NOVO FORMULÁRIO DE ALTERAÇÃO DE SENHA -->
     <form id="alterarForm" class="hidden">
       <div class="input-group">
         <label>Usuário</label>
@@ -196,7 +196,6 @@
 
     const msgEl = document.getElementById('mensagem');
 
-    // --- CONTROLE DE ALTERNÂNCIA DE TELAS ---
     const loginForm = document.getElementById('loginForm');
     const alterarForm = document.getElementById('alterarForm');
     const btnIrParaAlterar = document.getElementById('btnIrParaAlterar');
@@ -214,7 +213,6 @@
       msgEl.innerText = '';
     });
 
-    // --- LÓGICA DE MOSTRAR/OCULTAR OLHOS ---
     function configurarOlho(inputId, btnId) {
       const input = document.getElementById(inputId);
       const btn = document.getElementById(btnId);
@@ -232,8 +230,6 @@
     configurarOlho('altSenhaAtual', 'btnToggleAtual');
     configurarOlho('altNovaSenha', 'btnToggleNova');
 
-
-    // --- ENVIO DO LOGIN ORIGINAL ---
     loginForm.addEventListener('submit', (event) => {
       event.preventDefault();
       const usuarioDigitado = document.getElementById('usuario').value.trim();
@@ -260,8 +256,6 @@
       });
     });
 
-
-    // --- LÓGICA DE ALTERAÇÃO DA SENHA PADRÃO ---
     alterarForm.addEventListener('submit', (event) => {
       event.preventDefault();
       
