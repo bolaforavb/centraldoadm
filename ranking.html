@@ -532,12 +532,20 @@
     const db = firebase.database();
     const auth = firebase.auth();
 
-    // --- VERIFICAÇÃO DE AUTENTICAÇÃO EM TEMPO REAL ---
-    auth.onAuthStateChanged((user) => {
-      if (!user) {
-        window.location.href = 'index.html'; 
-      }
-    });
+    // --- CONFIGURAÇÃO DE PERSISTÊNCIA E VERIFICAÇÃO DE AUTENTICAÇÃO ---
+    // Define a persistência para SESSION (fecha a aba/navegador = desloga)
+    auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
+      .then(() => {
+        // O onAuthStateChanged é engatado após a definição da persistência
+        auth.onAuthStateChanged((user) => {
+          if (!user) {
+            window.location.href = 'index.html'; 
+          }
+        });
+      })
+      .catch((error) => {
+        console.error("Erro ao definir persistência de sessão:", error);
+      });
 
     // Objeto base local
     let BD_Pontuacao = {
@@ -731,7 +739,7 @@
       textoMensagem += `_Atualizado em: ${new Date().toLocaleDateString('pt-BR')}_\n\n`;
 
       rankingOrdenado.forEach((jogador, index) => {
-        const nome = diplomat = jogador[0];
+        const nome = jogador[0];
         const pontos = jogador[1];
         
         let emojiPosicao = `•`;
