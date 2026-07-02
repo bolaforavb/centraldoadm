@@ -6,6 +6,11 @@
   <title>Central do Adm</title>
   <link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
   
+  <!-- IMPORTANDO A FONTE BEBAS NEUE DO GOOGLE FONTS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  
   <style>
     /* Reset global para evitar que bordas e paddings quebrem a largura */
     * {
@@ -16,11 +21,37 @@
       font-family: sans-serif; 
       background-color: #12364e; /* Azul original restaurado */
       display: flex; 
+      flex-direction: column; /* Alinha o cabeçalho acima do card verticalmente */
       justify-content: center; 
       align-items: center; 
       min-height: 100vh; 
       margin: 0; 
       padding: 16px; /* Garante margem de segurança caso a tela seja menor que o card */
+    }
+
+    /* Estilização para o cabeçalho ACIMA do bloco de login */
+    .login-header {
+      text-align: center;
+      margin-bottom: 20px;
+      width: 100%;
+      max-width: 360px;
+    }
+    .login-logo {
+      width: 90px;
+      height: auto;
+      display: block;
+      margin: 0 auto 10px auto;
+      /* Aplica sombra contornando o formato transparente do PNG */
+      filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.4));
+    }
+    .login-title {
+      font-family: 'Bebas Neue', sans-serif; /* Nova fonte aplicada aqui */
+      color: #d9b246; /* Dourado da identidade visual */
+      font-size: 50px; /* Bebas Neue costuma pedir um tamanho levemente maior para destacar */
+      font-weight: normal; /* A Bebas Neue já possui peso único padrão em negrito */
+      margin: 0;
+      letter-spacing: 1px; /* Espaçamento refinado entre as letras */
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Sombreamento forte para destacar no fundo escuro */
     }
 
     .login-card { 
@@ -72,6 +103,12 @@
   </style>
 </head>
 <body>
+
+  <!-- Cabeçalho posicionado acima e fora do bloco de login -->
+  <div class="login-header">
+    <img src="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" alt="Logo" class="login-logo">
+    <h1 class="login-title">Central do Adm</h1>
+  </div>
 
   <div class="login-card">
     <form id="loginForm">
