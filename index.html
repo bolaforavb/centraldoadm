@@ -12,24 +12,22 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
   
   <style>
-    /* Reset global para evitar que bordas e paddings quebrem a largura */
     * {
       box-sizing: border-box;
     }
 
     body { 
       font-family: sans-serif; 
-      background-color: #12364e; /* Azul original restaurado */
+      background-color: #12364e; 
       display: flex; 
-      flex-direction: column; /* Alinha o cabeçalho acima do card verticalmente */
+      flex-direction: column; 
       justify-content: center; 
       align-items: center; 
       min-height: 100vh; 
       margin: 0; 
-      padding: 16px; /* Garante margem de segurança caso a tela seja menor que o card */
+      padding: 16px; 
     }
 
-    /* Estilização para o cabeçalho ACIMA do bloco de login */
     .login-header {
       text-align: center;
       margin-bottom: 20px;
@@ -41,25 +39,24 @@
       height: auto;
       display: block;
       margin: 0 auto 10px auto;
-      /* Aplica sombra contornando o formato transparente do PNG */
       filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.4));
     }
     .login-title {
-      font-family: 'Bebas Neue', sans-serif; /* Nova fonte aplicada aqui */
-      color: #d9b246; /* Dourado da identidade visual */
-      font-size: 50px; /* Bebas Neue costuma pedir um tamanho levemente maior para destacar */
-      font-weight: normal; /* A Bebas Neue já possui peso único padrão em negrito */
+      font-family: 'Bebas Neue', sans-serif; 
+      color: #d9b246; 
+      font-size: 42px; 
+      font-weight: normal; 
       margin: 0;
-      letter-spacing: 1px; /* Espaçamento refinado entre as letras */
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Sombreamento forte para destacar no fundo escuro */
+      letter-spacing: 1px; 
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); 
     }
 
     .login-card { 
       background: #e1d8cd; 
-      padding: 40px 30px; 
+      padding: 40px 30px 25px 30px; /* Reduzido o padding inferior para compactar o bloco */
       border-radius: 12px; 
       box-shadow: 0 8px 24px rgba(0,0,0,0.2); 
-      width: calc(100% - 32px); /* Espaçamento seguro e centralizado nas laterais mobile */
+      width: calc(100% - 32px); 
       max-width: 360px; 
       text-align: center; 
     }
@@ -68,9 +65,8 @@
     .input-group label { display: block; margin-bottom: 6px; color: #12364e; font-weight: bold; font-size: 14px; }
     .input-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; background-color: white; }
     
-    /* NOVA ESTILIZAÇÃO PARA O CAMPO DE SENHA */
     .senha-container { position: relative; display: flex; align-items: center; width: 100%; }
-    .senha-container input { padding-right: 40px; } /* Garante que o texto da senha não fique embaixo do olho */
+    .senha-container input { padding-right: 40px; } 
     
     .toggle-senha { 
       position: absolute; 
@@ -81,6 +77,7 @@
       -webkit-tap-highlight-color: transparent; 
     }
 
+    /* BOTÃO PRINCIPAL (DOURADO) */
     .btn-login { 
       width: 100%; 
       padding: 12px; 
@@ -97,42 +94,91 @@
     .btn-login:hover { background-color: #af8a23; }
     .btn-login:active { transform: scale(0.98); }
 
-    #mensagem { margin-top: 15px; font-weight: 500; font-size: 14px; }
+    /* BOTÃO SECUNDÁRIO ATUALIZADO (SEM BORDA) */
+    .btn-secondary {
+      width: 100%; 
+      padding: 12px; 
+      background-color: #12364e; 
+      color: white; 
+      border: none; /* Borda removida com sucesso */
+      border-radius: 6px; 
+      font-weight: bold; 
+      font-size: 15px;
+      cursor: pointer; 
+      margin-top: 12px; 
+      transition: background-color 0.3s ease, transform 0.1s ease; 
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-secondary:hover { 
+      background-color: #1c4f72; 
+    }
+    .btn-secondary:active { transform: scale(0.98); }
+
+    /* MENSAGEM DINÂMICA (Só ocupa espaço quando ativa) */
+    #mensagem { font-weight: 500; font-size: 14px; }
+    #mensagem:not(:empty) { margin-top: 15px; } /* Aplica margem apenas se houver texto */
     .erro { color: #d93025; font-weight: bold; }
     .sucesso { color: #188038; font-weight: bold; }
+
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
-  <!-- Cabeçalho posicionado acima e fora do bloco de login -->
   <div class="login-header">
     <img src="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" alt="Logo" class="login-logo">
     <h1 class="login-title">Central do Adm</h1>
   </div>
 
   <div class="login-card">
+    <!-- FORMULÁRIO DE LOGIN ORIGINAL -->
     <form id="loginForm">
       <div class="input-group">
         <label>Usuário</label>
-        <input type="text" id="usuario" placeholder="Ex: admin" required>
+        <input type="text" id="usuario" required>
       </div>
       <div class="input-group">
         <label>Senha</label>
         <div class="senha-container">
           <input type="password" id="senha" required>
-          <span class="toggle-senha" id="btnToggleSenha">👁️</span>
+          <span class="toggle-senha" id="btnToggleSenhaLogin">👁️</span>
         </div>
       </div>
       <button type="submit" class="btn-login">Entrar</button>
+      <button type="button" class="btn-secondary" id="btnIrParaAlterar">Alterar senha padrão</button>
     </form>
+
+    <!-- NOVO FORMULÁRIO DE ALTERAÇÃO DE SENHA (OCULTO POR PADRÃO) -->
+    <form id="alterarForm" class="hidden">
+      <div class="input-group">
+        <label>Usuário</label>
+        <input type="text" id="altUsuario" placeholder="Ex: admin" required>
+      </div>
+      <div class="input-group">
+        <label>Senha Atual</label>
+        <div class="senha-container">
+          <input type="password" id="altSenhaAtual" required>
+          <span class="toggle-senha" id="btnToggleAtual">👁️</span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Nova Senha</label>
+        <div class="senha-container">
+          <input type="password" id="altNovaSenha" placeholder="Mínimo 6 caracteres" required>
+          <span class="toggle-senha" id="btnToggleNova">👁️</span>
+        </div>
+      </div>
+      <button type="submit" class="btn-login">Atualizar Senha</button>
+      <button type="button" class="btn-secondary" id="btnVoltarLogin">Voltar para o Login</button>
+    </form>
+
     <div id="mensagem"></div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, updatePassword, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 
-    // Suas credenciais oficiais do Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
       authDomain: "central-adm-bolafora.firebaseapp.com",
@@ -146,59 +192,111 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // Configura a sessão de forma isolada e limpa logo no carregamento
     setPersistence(auth, browserSessionPersistence).catch(err => console.error(err));
 
-    // --- LÓGICA DE MOSTRAR / OCULTAR SENHA ---
-    const senhaInput = document.getElementById('senha');
-    const btnToggleSenha = document.getElementById('btnToggleSenha');
+    const msgEl = document.getElementById('mensagem');
 
-    btnToggleSenha.addEventListener('click', () => {
-      if (senhaInput.type === 'password') {
-        senhaInput.type = 'text';
-        btnToggleSenha.innerText = '🙈'; 
-      } else {
-        senhaInput.type = 'password';
-        btnToggleSenha.innerText = '👁️'; 
-      }
+    // --- CONTROLE DE ALTERNÂNCIA DE TELAS ---
+    const loginForm = document.getElementById('loginForm');
+    const alterarForm = document.getElementById('alterarForm');
+    const btnIrParaAlterar = document.getElementById('btnIrParaAlterar');
+    const btnVoltarLogin = document.getElementById('btnVoltarLogin');
+
+    btnIrParaAlterar.addEventListener('click', () => {
+      loginForm.classList.add('hidden');
+      alterarForm.classList.remove('hidden');
+      msgEl.innerText = '';
     });
 
-    // --- ENVIO DO FORMULÁRIO ---
-    const form = document.getElementById('loginForm');
-    
-    form.addEventListener('submit', (event) => {
+    btnVoltarLogin.addEventListener('click', () => {
+      alterarForm.classList.add('hidden');
+      loginForm.removeAttribute('class'); 
+      msgEl.innerText = '';
+    });
+
+    // --- LÓGICA DE MOSTRAR/OCULTAR OLHOS ---
+    function configurarOlho(inputId, btnId) {
+      const input = document.getElementById(inputId);
+      const btn = document.getElementById(btnId);
+      btn.addEventListener('click', () => {
+        if (input.type === 'password') {
+          input.type = 'text';
+          btn.innerText = '🙈';
+        } else {
+          input.type = 'password';
+          btn.innerText = '👁️';
+        }
+      });
+    }
+    configurarOlho('senha', 'btnToggleSenhaLogin');
+    configurarOlho('altSenhaAtual', 'btnToggleAtual');
+    configurarOlho('altNovaSenha', 'btnToggleNova');
+
+
+    // --- ENVIO DO LOGIN ORIGINAL ---
+    loginForm.addEventListener('submit', (event) => {
       event.preventDefault();
-      
       const usuarioDigitado = document.getElementById('usuario').value.trim();
-      const senha = senhaInput.value; 
-      const msgEl = document.getElementById('mensagem');
+      const senha = document.getElementById('senha').value; 
       
       msgEl.className = '';
       msgEl.innerText = 'Verificando...';
 
-      // Criação automática do email interno caso insira apenas o nome de usuário
       const emailCompleto = usuarioDigitado.includes('@') ? usuarioDigitado : `${usuarioDigitado}@bolafora.internal`;
 
-      // O fluxo de login continua direto, legível e limpo
       signInWithEmailAndPassword(auth, emailCompleto, senha)
-      .then((userCredential) => {
+      .then(() => {
         msgEl.className = 'sucesso';
         msgEl.innerText = 'Login realizado com sucesso!';
-        
-        setTimeout(function() {
-          window.location.href = 'dashboard.html'; 
-        }, 1500);
+        setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
       })
       .catch((error) => {
-        console.error("Código do erro:", error.code);
         msgEl.className = 'erro';
-        
         if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
           msgEl.innerText = 'Usuário ou senha incorretos.';
-        } else if (error.code === 'auth/invalid-email') {
-          msgEl.innerText = 'Formato de usuário inválido.';
         } else {
-          msgEl.innerText = 'Erro ao fazer login. Tente novamente.';
+          msgEl.innerText = 'Erro ao fazer login.';
+        }
+      });
+    });
+
+
+    // --- LÓGICA DE ALTERAÇÃO DA SENHA PADRÃO ---
+    alterarForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      
+      const usuarioDigitado = document.getElementById('altUsuario').value.trim();
+      const senhaAtual = document.getElementById('altSenhaAtual').value;
+      const novaSenha = document.getElementById('altNovaSenha').value;
+
+      if(novaSenha.length < 6) {
+        msgEl.className = 'erro';
+        msgEl.innerText = 'A nova senha precisa ter no mínimo 6 dígitos.';
+        return;
+      }
+
+      msgEl.className = '';
+      msgEl.innerText = 'Validando credenciais atuais...';
+
+      const emailCompleto = usuarioDigitado.includes('@') ? usuarioDigitado : `${usuarioDigitado}@bolafora.internal`;
+
+      signInWithEmailAndPassword(auth, emailCompleto, senhaAtual)
+      .then((userCredential) => {
+        msgEl.innerText = 'Atualizando para a nova senha...';
+        return updatePassword(userCredential.user, novaSenha);
+      })
+      .then(() => {
+        msgEl.className = 'sucesso';
+        msgEl.innerText = 'Senha atualizada! Redirecionando para o painel...';
+        setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
+      })
+      .catch((error) => {
+        msgEl.className = 'erro';
+        console.error(error);
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+          msgEl.innerText = 'Usuário ou senha atual incorretos.';
+        } else {
+          msgEl.innerText = 'Não foi possível alterar. Tente novamente.';
         }
       });
     });
