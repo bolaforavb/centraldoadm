@@ -6,7 +6,7 @@
   <title>Placar Digital - Central do Adm</title>
   <link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
   
-  <style>
+  <style id="estilos-placar">
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
@@ -52,6 +52,7 @@
     .topo-direita {
       display: flex;
       justify-content: flex-end;
+      gap: 6px;
     }
 
     .btn-topo-discreto {
@@ -116,6 +117,7 @@
       box-shadow: 0 8px 24px rgba(0,0,0,0.3);
       position: relative;
       overflow: hidden;
+      width: 100%;
     }
 
     .estrutura-placar::before {
@@ -167,7 +169,6 @@
       background-color: rgba(217, 178, 70, 0.1);
     }
 
-    /* Estilização da caixa de seleção de cor */
     .seletor-cor-time {
       background: #f7f5f2;
       color: #12364e;
@@ -183,7 +184,6 @@
       transition: background-color 0.3s, color 0.3s;
     }
 
-    /* Cores das opções individuais */
     .op-amarelo { background-color: #ffeb3b !important; color: #000 !important; }
     .op-azul { background-color: #2196f3 !important; color: #fff !important; }
     .op-roxo { background-color: #9c27b0 !important; color: #fff !important; }
@@ -224,6 +224,19 @@
       background-color: #e1d8cd;
     }
 
+    /* Estilos específicos caso o placar seja jogado dentro do PiP */
+    .pip-ativo .estrutura-placar {
+      height: 100vh;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .pip-ativo .area-ponto {
+      min-height: 70vh;
+    }
+    .pip-ativo .numero-pontos {
+      font-size: clamp(120px, 35vh, 250px);
+    }
+
     @media (orientation: portrait) {
       .aviso-orientacao {
         display: flex;
@@ -260,7 +273,7 @@
   <header class="topo-acoes">
     <div class="topo-esquerda">
       <a href="dashboard.html" class="btn-topo-discreto">Central do Adm</a>
-      <a href="https://louisebraga.github.io/tabela-bola-fora/" class="btn-topo-discreto">Ir para a tabela</a>
+      <a href="https://louisebraga.github.io/tabela-bola-fora/" class="btn-topo-discreto" target="_blank">Ir para a tabela</a>
     </div>
     
     <div class="topo-centro">
@@ -268,13 +281,14 @@
     </div>
     
     <div class="topo-direita">
+      <button class="btn-topo-discreto" onclick="alternarPiP()" id="btnPip">📺 Pop-up</button>
       <button class="btn-topo-discreto" onclick="alternarTelaCheia()" id="btnFullscreen">🔲 Tela Cheia</button>
     </div>
   </header>
 
-  <div class="container-placar-global">
+  <div class="container-placar-global" id="container-original">
     
-    <main class="estrutura-placar">
+    <main class="estrutura-placar" id="placar-main">
       
       <img src="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" alt="Logo Bola Fora" class="logo-central">
       
@@ -334,7 +348,8 @@
       corDireita: ""
     };
 
-    // Mapeamento prático para atualizar o visual do seletor de acordo com a cor escolhida
+    let pipWindow = null;
+
     const estilosCores = {
       "Amarelo": { bg: "#ffeb3b", text: "#000" },
       "Azul": { bg: "#2196f3", text: "#fff" },
@@ -343,25 +358,43 @@
       "": { bg: "#f7f5f2", text: "#12364e" }
     };
 
+    // Função inteligente para achar elementos onde quer que o placar esteja renderizado
+    function obterContextoDoDocumento() {
+      return pipWindow ? pipWindow.document : document;
+    }
+
     function atualizarAparenciaSeletor(lado, cor) {
-      const select = document.getElementById(`cor-${lado}`);
+      const contexto = obterContextoDoDocumento();
+      const select = contexto.getElementById(`cor-${lado}`);
       const estilo = estilosCores[cor] || estilosCores[""];
-      select.style.backgroundColor = estilo.bg;
-      select.style.color = estilo.text;
+      if (select) {
+        select.style.backgroundColor = estilo.bg;
+        select.style.color = estilo.text;
+      }
+    }
+
+    // Atualiza a tela com os dados vindos do Firebase
+    function forçarAtualizaçãoVisual() {
+      const contexto = obterContextoDoDocumento();
+      const elemEsq = contexto.getElementById('pts-esquerda');
+      const elemDir = contexto.getElementById('pts-direita');
+      const selEsq = contexto.getElementById('cor-esquerda');
+      const selDir = contexto.getElementById('cor-direita');
+
+      if(elemEsq) elemEsq.innerText = placarLocal.esquerda || 0;
+      if(elemDir) elemDir.innerText = placarLocal.direita || 0;
+      if(selEsq) selEsq.value = placarLocal.corEsquerda || "";
+      if(selDir) selDir.value = placarLocal.corDireita || "";
+
+      atualizarAparenciaSeletor('esquerda', placarLocal.corEsquerda || "");
+      atualizarAparenciaSeletor('direita', placarLocal.corDireita || "");
     }
 
     placarRef.on('value', (snapshot) => {
       const dadosNuvem = snapshot.val();
       if (dadosNuvem) {
         placarLocal = dadosNuvem;
-        document.getElementById('pts-esquerda').innerText = placarLocal.esquerda || 0;
-        document.getElementById('pts-direita').innerText = placarLocal.direita || 0;
-        
-        document.getElementById('cor-esquerda').value = placarLocal.corEsquerda || "";
-        document.getElementById('cor-direita').value = placarLocal.corDireita || "";
-
-        atualizarAparenciaSeletor('esquerda', placarLocal.corEsquerda || "");
-        atualizarAparenciaSeletor('direita', placarLocal.corDireita || "");
+        forçarAtualizaçãoVisual();
       } else {
         placarRef.set({ esquerda: 0, direita: 0, corEsquerda: "", corDireita: "" });
       }
@@ -369,7 +402,6 @@
 
     function adicionarPonto(lado, event) {
       if (event && event.target.tagName === 'SELECT') return;
-      
       placarLocal[lado] = (placarLocal[lado] || 0) + 1;
       placarRef.set(placarLocal);
     }
@@ -382,7 +414,8 @@
     }
 
     function mudarCor(lado) {
-      const valorCor = document.getElementById(`cor-${lado}`).value;
+      const contexto = obterContextoDoDocumento();
+      const valorCor = contexto.getElementById(`cor-${lado}`).value;
       if (lado === 'esquerda') {
         placarLocal.corEsquerda = valorCor;
       } else {
@@ -397,27 +430,64 @@
       }
     }
 
+    // --- LOGICA DO PICTURE IN PICTURE PARA COMPONENTES ---
+    async function alternarPiP() {
+      if (!('documentPictureInPicture' in window)) {
+        alert("O seu navegador atual não suporta janelas Pop-up PiP para elementos de página. Experimente usar o Google Chrome ou Edge atualizados.");
+        return;
+      }
+
+      if (pipWindow) {
+        pipWindow.close();
+        return;
+      }
+
+      const placarMain = document.getElementById('placar-main');
+      
+      pipWindow = await window.documentPictureInPicture.requestWindow({
+        width: 650,
+        height: 380,
+      });
+
+      // Copia os estilos CSS para o Pop-up
+      const estiloOriginal = document.getElementById('estilos-placar').cloneNode(true);
+      pipWindow.document.head.appendChild(estiloOriginal);
+      pipWindow.document.body.classList.add('pip-ativo');
+
+      // Move o bloco do placar para a janela Pop-up
+      pipWindow.document.body.appendChild(placarMain);
+
+      // Garante que o visual dos números e seletores fique perfeito na hora da transição
+      setTimeout(forçarAtualizaçãoVisual, 20);
+
+      // Trata o fechamento do Pop-up (Devolve o placar para o navegador original)
+      pipWindow.addEventListener("pagehide", (event) => {
+        const containerOriginal = document.getElementById('container-original');
+        const placarRetornado = event.target.body.querySelector('#placar-main');
+        
+        pipWindow = null; // Reseta antes para o contexto mudar de volta para o principal
+        
+        if (placarRetornado) {
+          containerOriginal.appendChild(placarRetornado);
+        }
+        
+        // Sincroniza o visual na volta
+        setTimeout(forçarAtualizaçãoVisual, 20);
+      });
+    }
+
     function alternarTelaCheia() {
       const botao = document.getElementById('btnFullscreen');
-      
       if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
         const elemento = document.documentElement;
-        if (elemento.requestFullscreen) {
-          elemento.requestFullscreen();
-        } else if (elemento.webkitRequestFullscreen) {
-          elemento.webkitRequestFullscreen();
-        } else if (elemento.msRequestFullscreen) {
-          elemento.msRequestFullscreen();
-        }
+        if (elemento.requestFullscreen) { elemento.requestFullscreen(); } 
+        else if (elemento.webkitRequestFullscreen) { elemento.webkitRequestFullscreen(); } 
+        else if (elemento.msRequestFullscreen) { elemento.msRequestFullscreen(); }
         botao.innerText = "🔳 Sair do Fullscreen";
       } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-          document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) {
-          document.msExitFullscreen();
-        }
+        if (document.exitFullscreen) { document.exitFullscreen(); } 
+        else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); } 
+        else if (document.msExitFullscreen) { document.msExitFullscreen(); }
         botao.innerText = "🔲 Tela Cheia";
       }
     }
