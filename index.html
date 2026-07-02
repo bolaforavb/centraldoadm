@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Central do Adm</title>
-  <link rel="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
+  <link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
   
   <style>
     /* Reset global para evitar que bordas e paddings quebrem a largura */
@@ -14,7 +14,12 @@
 
     body { 
       font-family: sans-serif; 
-      background-color: #12364e; 
+      /* Imagem de fundo configurada para cobrir toda a tela perfeitamente */
+      background-image: url('https://i.ibb.co/twJd6BRq/Whats-App-Image-2026-06-29-at-10-42-05.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
       display: flex; 
       justify-content: center; 
       align-items: center; 
@@ -24,10 +29,12 @@
     }
 
     .login-card { 
-      background: #e1d8cd; 
+      /* Fundo com leve transparência e desfoque para dar leitura aos textos sobre a foto */
+      background: rgba(225, 216, 205, 0.95); 
+      backdrop-filter: blur(4px);
       padding: 40px 30px; 
       border-radius: 12px; 
-      box-shadow: 0 8px 24px rgba(0,0,0,0.2); 
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3); 
       width: calc(100% - 32px); /* Espaçamento seguro e centralizado nas laterais mobile */
       max-width: 360px; 
       text-align: center; 
@@ -35,7 +42,7 @@
 
     .input-group { margin-bottom: 20px; text-align: left; }
     .input-group label { display: block; margin-bottom: 6px; color: #12364e; font-weight: bold; font-size: 14px; }
-    .input-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; }
+    .input-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; background-color: white; }
     
     /* NOVA ESTILIZAÇÃO PARA O CAMPO DE SENHA */
     .senha-container { position: relative; display: flex; align-items: center; width: 100%; }
@@ -67,8 +74,8 @@
     .btn-login:active { transform: scale(0.98); }
 
     #mensagem { margin-top: 15px; font-weight: 500; font-size: 14px; }
-    .erro { color: #d93025; }
-    .sucesso { color: #188038; }
+    .erro { color: #d93025; font-weight: bold; }
+    .sucesso { color: #188038; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -93,7 +100,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 
     // Suas credenciais oficiais do Firebase
     const firebaseConfig = {
@@ -109,6 +116,9 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
+    // Configura a sessão de forma isolada e limpa logo no carregamento
+    setPersistence(auth, browserSessionPersistence).catch(err => console.error(err));
+
     // --- LÓGICA DE MOSTRAR / OCULTAR SENHA ---
     const senhaInput = document.getElementById('senha');
     const btnToggleSenha = document.getElementById('btnToggleSenha');
@@ -116,10 +126,10 @@
     btnToggleSenha.addEventListener('click', () => {
       if (senhaInput.type === 'password') {
         senhaInput.type = 'text';
-        btnToggleSenha.innerText = '🙈'; // Muda o ícone quando visível
+        btnToggleSenha.innerText = '🙈'; 
       } else {
         senhaInput.type = 'password';
-        btnToggleSenha.innerText = '👁️'; // Volta para o olho quando oculto
+        btnToggleSenha.innerText = '👁️'; 
       }
     });
 
@@ -139,6 +149,7 @@
       // Criação automática do email interno caso insira apenas o nome de usuário
       const emailCompleto = usuarioDigitado.includes('@') ? usuarioDigitado : `${usuarioDigitado}@bolafora.internal`;
 
+      // O fluxo de login continua direto, legível e limpo
       signInWithEmailAndPassword(auth, emailCompleto, senha)
       .then((userCredential) => {
         msgEl.className = 'sucesso';
