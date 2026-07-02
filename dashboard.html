@@ -677,7 +677,8 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    // IMPORTANTE: Adicionado o 'browserSessionPersistence' e 'setPersistence' nas importações abaixo
+    import { getAuth, onAuthStateChanged, signOut, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
@@ -690,6 +691,12 @@
     const dbAdmsRef = ref(db, 'administradores'); 
     const dbLegendaRef = ref(db, 'legenda_tags');
     const auth = getAuth(app);
+
+    // CONFIGURAÇÃO DA PERSISTÊNCIA: Força a sessão a expirar quando o navegador ou aba são fechados
+    setPersistence(auth, browserSessionPersistence)
+      .catch((error) => {
+        console.error("Erro ao configurar persistência de sessão:", error);
+      });
 
     let dadosJogadoresGlobais = {};
     let dadosAdmsGlobais = {};
@@ -990,11 +997,9 @@
       });
     }
 
-    // CORREÇÃO DEFINITIVA DO LAYOUT: Removida a verificação genérica de '.conteudo-dinamico'
     function gerenciarLayoutBloco(event, idBloco) {
       const bloco = document.getElementById(idBloco);
       
-      // Bloqueia a ação apenas em elementos específicos de formulário ou tabelas interativas
       if (event.target.closest('input') || 
           event.target.closest('select') || 
           event.target.closest('button') || 
