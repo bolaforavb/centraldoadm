@@ -102,7 +102,7 @@
     }
 
     /* Inputs e Selects padronizados com O Painel */
-    input[type="text"], select {
+    input[type="text"], input[type="date"], select {
       padding: 10px;
       border: 1px solid #ccc;
       border-radius: 8px;
@@ -132,10 +132,19 @@
       margin-bottom: 16px;
     }
 
+    /* Linha lado a lado para o Top 3 */
+    .linha-podio-top3 {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+    }
+
     .coluna-podio {
       border-radius: 12px;
       padding: 12px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      flex: 1; /* Faz as colunas dividirem o espaço igualmente lado a lado */
+      min-width: 0; /* Evita estouro de layout */
     }
 
     /* Cores das colunas herdando os tons dos times do painel */
@@ -150,6 +159,8 @@
       margin-bottom: 8px;
       display: flex;
       justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 2px;
     }
 
     .lista-checkboxes {
@@ -177,10 +188,17 @@
     }
 
     .item-checkbox input {
-      margin-right: 10px;
-      width: 18px;
-      height: 18px;
+      margin-right: 8px;
+      width: 16px;
+      height: 16px;
       cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .item-checkbox span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis; /* Corta nomes longos no mobile de forma elegante */
     }
 
     /* Botão Principal padronizado com o Dourado do Painel */
@@ -392,9 +410,108 @@
       transform: scale(0.99);
     }
 
+    /* --- ESTILOS ADICIONAIS: HISTÓRICO DE PARTIDAS --- */
+    .formulario-historico {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .linha-seletores {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .campo-historico-seletor {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .campo-historico-seletor label {
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+
+    .campo-historico-seletor select {
+      width: 100%;
+      padding: 8px;
+    }
+
+    .linha-acoes-historico {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .linha-acoes-historico input[type="date"] {
+      flex: 1;
+      padding: 8px;
+    }
+
+    .btn-registrar-historico {
+      padding: 10px 16px;
+      background-color: #d9b246;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-registrar-historico:hover { background-color: #af8a23; }
+
+    .lista-historico-container {
+      margin-top: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 250px;
+      overflow-y: auto;
+      border-top: 1px solid rgba(0,0,0,0.1);
+      padding-top: 12px;
+    }
+
+    .item-historico {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #f7f5f2;
+      padding: 10px;
+      border-radius: 8px;
+      border-left: 3px solid #12364e;
+      font-size: 13px;
+    }
+
+    .item-historico .data-hist {
+      font-weight: bold;
+      color: #12364e;
+      font-size: 12px;
+      min-width: 75px;
+    }
+
+    .item-historico .podio-resumo {
+      flex: 1;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding-left: 8px;
+    }
+
+    .item-historico .time-badge {
+      font-weight: 500;
+    }
+
     /* Media query específica para corrigir empurrões ou quebras em telas estreitas */
-    @media (max-width: 440px) {
-      /* Aplica a quebra apenas na seção de premiação/meses se necessário */
+    @media (max-width: 480px) {
+      .linha-podio-top3 {
+        flex-direction: column; /* No mobile estreito, volta a ficar um embaixo do outro para não quebrar */
+        gap: 12px;
+      }
       .bloco-card:first-of-type .header-resultado-linha {
         flex-direction: column;
         align-items: flex-start;
@@ -406,6 +523,13 @@
       }
       .campo-periodo select {
         max-width: 110px;
+      }
+      .linha-seletores {
+        grid-template-columns: 1fr;
+      }
+      .linha-acoes-historico {
+        flex-direction: column;
+        align-items: stretch;
       }
     }
   </style>
@@ -458,21 +582,25 @@
       <form id="form-resultado">
         <div class="secao-podio-container">
           
-          <div class="coluna-podio podio-ouro">
-            <div class="titulo-podio"><span>🏆 1º Lugar</span> <span>+5 PTS</span></div>
-            <div id="container-p1" class="lista-checkboxes"></div>
+          <!-- LINHA QUE COLOCA 1º, 2º e 3º LUGAR LADO A LADO -->
+          <div class="linha-podio-top3">
+            <div class="coluna-podio podio-ouro">
+              <div class="titulo-podio"><span>🏆 1º</span> <span>+5</span></div>
+              <div id="container-p1" class="lista-checkboxes"></div>
+            </div>
+
+            <div class="coluna-podio podio-prata">
+              <div class="titulo-podio"><span>🥈 2º</span> <span>+3</span></div>
+              <div id="container-p2" class="lista-checkboxes"></div>
+            </div>
+
+            <div class="coluna-podio podio-bronze">
+              <div class="titulo-podio"><span>🥉 3º</span> <span>+1</span></div>
+              <div id="container-p3" class="lista-checkboxes"></div>
+            </div>
           </div>
 
-          <div class="coluna-podio podio-prata">
-            <div class="titulo-podio"><span>🥈 2º Lugar</span> <span>+3 PTS</span></div>
-            <div id="container-p2" class="lista-checkboxes"></div>
-          </div>
-
-          <div class="coluna-podio podio-bronze">
-            <div class="titulo-podio"><span>🥉 3º Lugar</span> <span>+1 PT</span></div>
-            <div id="container-p3" class="lista-checkboxes"></div>
-          </div>
-
+          <!-- INTEGRAÇÃO FICA EMBAIXO OCUPANDO A LINHA TODA -->
           <div class="coluna-podio podio-integracao">
             <div class="titulo-podio"><span>🧑‍🧒‍🧒 Integração do Time</span> <span>+1 PT</span></div>
             <div id="container-p4" class="lista-checkboxes"></div>
@@ -501,6 +629,50 @@
       <button id="btn-compartilhar-ranking" class="btn-whatsapp">
         <span>💬</span> Compartilhar Classificação
       </button>
+    </div>
+
+    <div class="bloco-card">
+      <div class="titulo-secao">Histórico de Partidas</div>
+      <form id="form-historico" class="formulario-historico">
+        <div class="linha-seletores">
+          <div class="campo-historico-seletor">
+            <label>🥇 1º Lugar</label>
+            <select id="hist-p1" required>
+              <option value="">Selecione...</option>
+              <option value="Amarelo">Amarelo</option>
+              <option value="Azul">Azul</option>
+              <option value="Rosa">Rosa</option>
+              <option value="Roxo">Roxo</option>
+            </select>
+          </div>
+          <div class="campo-historico-seletor">
+            <label>🥈 2º Lugar</label>
+            <select id="hist-p2" required>
+              <option value="">Selecione...</option>
+              <option value="Amarelo">Amarelo</option>
+              <option value="Azul">Azul</option>
+              <option value="Rosa">Rosa</option>
+              <option value="Roxo">Roxo</option>
+            </select>
+          </div>
+          <div class="campo-historico-seletor">
+            <label>🥉 3º Lugar</label>
+            <select id="hist-p3" required>
+              <option value="">Selecione...</option>
+              <option value="Amarelo">Amarelo</option>
+              <option value="Azul">Azul</option>
+              <option value="Rosa">Rosa</option>
+              <option value="Roxo">Roxo</option>
+            </select>
+          </div>
+        </div>
+        <div class="linha-acoes-historico">
+          <input type="date" id="hist-data" required>
+          <button type="submit" class="btn-registrar-historico">Registrar</button>
+        </div>
+      </form>
+
+      <div id="lista-historico" class="lista-historico-container"></div>
     </div>
 
   </main>
@@ -533,10 +705,8 @@
     const auth = firebase.auth();
 
     // --- CONFIGURAÇÃO DE PERSISTÊNCIA E VERIFICAÇÃO DE AUTENTICAÇÃO ---
-    // Define a persistência para SESSION (fecha a aba/navegador = desloga)
     auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
       .then(() => {
-        // O onAuthStateChanged é engatado após a definição da persistência
         auth.onAuthStateChanged((user) => {
           if (!user) {
             window.location.href = 'index.html'; 
@@ -581,6 +751,12 @@
       } else {
         db.ref('periodo_ranking').set({ inicio: 'Julho', fim: 'Setembro' });
       }
+    });
+
+    // Ouvir histórico de partidas em tempo real
+    db.ref('historico_partidas').on('value', (snapshot) => {
+      const historico = snapshot.val();
+      atualizarHistoricoVisual(historico);
     });
 
     // Escutadores para salvar na nuvem quando os meses forem alterados
@@ -705,7 +881,6 @@
         return;
       }
 
-      // Validação do Pódio: O mesmo competidor NÃO pode estar em duas posições do pódio ao mesmo tempo (1º, 2º ou 3º)
       const podioApenas = [...flagadosP1, ...flagadosP2, ...flagadosP3];
       const podioDuplicado = podioApenas.some((jogador, index) => podioApenas.indexOf(jogador) !== index);
 
@@ -714,7 +889,6 @@
         return;
       }
 
-      // Computa a pontuação normalmente (permitindo acumular pódio + integração)
       flagadosP1.forEach(jogador => BD_Pontuacao[jogador] += 5);
       flagadosP2.forEach(jogador => BD_Pontuacao[jogador] += 3);
       flagadosP3.forEach(jogador => BD_Pontuacao[jogador] += 1);
@@ -722,7 +896,6 @@
 
       salvarDados();
       
-      // Limpa as seleções discretamente sem exibir pop-up
       document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
     });
 
@@ -739,7 +912,7 @@
       textoMensagem += `_Atualizado em: ${new Date().toLocaleDateString('pt-BR')}_\n\n`;
 
       rankingOrdenado.forEach((jogador, index) => {
-        const nome = jogador[0];
+        const nome = filename = jogador[0];
         const pontos = jogador[1];
         
         let emojiPosicao = `•`;
@@ -756,6 +929,81 @@
       const urlWhatsapp = `https://api.whatsapp.com/send?text=${textoUrl}`;
       window.open(urlWhatsapp, '_blank');
     });
+
+    // --- MANIPULAÇÃO DO HISTÓRICO DE PARTIDAS ---
+    document.getElementById('form-historico').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const p1 = document.getElementById('hist-p1').value;
+      const p2 = document.getElementById('hist-p2').value;
+      const p3 = document.getElementById('hist-p3').value;
+      const dataInput = document.getElementById('hist-data').value;
+
+      if (p1 === p2 || p1 === p3 || p2 === p3) {
+        alert("Erro: O mesmo time não pode ocupar mais de uma colocação na partida!");
+        return;
+      }
+
+      const novaPartida = {
+        primeiro: p1,
+        segundo: p2,
+        terceiro: p3,
+        data: dataInput,
+        timestamp: new Date(dataInput + 'T00:00:00').getTime()
+      };
+
+      db.ref('historico_partidas').push(novaPartida)
+        .then(() => {
+          document.getElementById('hist-p1').value = '';
+          document.getElementById('hist-p2').value = '';
+          document.getElementById('hist-p3').value = '';
+          document.getElementById('hist-data').value = '';
+        })
+        .catch((error) => {
+          console.error("Erro ao salvar histórico:", error);
+        });
+    });
+
+    function atualizarHistoricoVisual(historico) {
+      const container = document.getElementById('lista-historico');
+      container.innerHTML = '';
+
+      if (!historico) {
+        container.innerHTML = `<div style="text-align:center; padding: 15px; font-size:13px; opacity:0.6;">Nenhuma partida registrada no histórico.</div>`;
+        return;
+      }
+
+      const listaOrdenada = Object.entries(historico)
+        .map(([id, dados]) => ({ id, ...dados }))
+        .sort((a, b) => b.timestamp - a.timestamp);
+
+      listaOrdenada.forEach(partida => {
+        let dataFormatada = partida.data;
+        if (partida.data.includes('-')) {
+          const partes = partida.data.split('-');
+          dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+
+        const item = document.createElement('div');
+        item.className = 'item-historico';
+        item.innerHTML = `
+          <div class="data-hist">📅 ${dataFormatada}</div>
+          <div class="podio-resumo">
+            <span class="time-badge">🥇 <b>${partida.primeiro}</b></span>
+            <span class="time-badge">🥈 ${partida.segundo}</span>
+            <span class="time-badge">🥉 ${partida.terceiro}</span>
+          </div>
+          <button class="btn-deletar-ranking" onclick="excluirHistorico('${partida.id}')" title="Excluir do Histórico">✕</button>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    window.excluirHistorico = function(id) {
+      if (confirm("Deseja apagar este registro de partida permanentemente do histórico?")) {
+        db.ref(`historico_partidas/${id}`).remove();
+      }
+    }
   </script>
 
 </body>
