@@ -317,11 +317,9 @@
       <div class="container-central">
         <img src="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" alt="Logo Bola Fora" class="logo-central">
         <button class="btn-apito" 
-                onmousedown="iniciarApito()" 
-                onmouseup="pararApito()" 
-                onmouseleave="pararApito()" 
-                ontouchstart="iniciarApito(event)" 
-                ontouchend="pararApito(event)" 
+                onpointerdown="iniciarApito(event)" 
+                onpointerup="pararApito(event)" 
+                onpointerleave="pararApito(event)" 
                 title="Segure para Apitar">📢</button>
       </div>
       
@@ -395,7 +393,6 @@
     let audioSource = null;
     let estaTocando = false;
 
-    // Link do seu arquivo .wav original adicionado aqui:
     fetch('https://bolaforavb.github.io/centraldoadm/apito.wav')
       .then(response => response.arrayBuffer())
       .then(arrayBuffer => {
@@ -408,21 +405,27 @@
       .catch(err => console.error("Erro ao carregar o arquivo .wav do repositório:", err));
 
     function iniciarApito(event) {
-      if (event) event.preventDefault();
+      if (event) {
+        if (event.cancelable) event.preventDefault();
+      }
+      
       if (!audioBuffer || estaTocando) return;
 
-      estaTocando = true;
-
+      // Garante a ativação do áudio no Mobile (essencial para iOS/Android)
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
       if (audioContext && audioContext.state === 'suspended') {
         audioContext.resume();
       }
+
+      estaTocando = true;
 
       audioSource = audioContext.createBufferSource();
       audioSource.buffer = audioBuffer;
       audioSource.loop = true;
 
       // CORTE CIRÚRGICO VIA HARDWARE:
-      // Modifique estes números caso ainda precise ajustar as bordinhas de silêncio:
       audioSource.loopStart = 0.15; // Pula os primeiros 150 milissegundos
       audioSource.loopEnd = audioBuffer.duration - 0.40; // Corta os 400 milissegundos finais
 
@@ -431,7 +434,7 @@
     }
 
     function pararApito(event) {
-      if (event) event.preventDefault();
+      if (event && event.cancelable) event.preventDefault();
       estaTocando = false;
       
       if (audioSource) {
