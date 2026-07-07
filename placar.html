@@ -141,16 +141,44 @@
       z-index: 2;
     }
 
-    .logo-central {
+    .container-central {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo-central {
       width: 90px;
       height: auto;
       pointer-events: none;
       filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));
+    }
+
+    .btn-apito {
+      background-color: #12364e;
+      color: #e1d8cd;
+      border: 2px solid #e1d8cd;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+      transition: transform 0.1s, background-color 0.2s;
+    }
+
+    .btn-apito:active {
+      transform: scale(0.90);
+      background-color: #1d4f71;
     }
 
     .lado-placar {
@@ -286,7 +314,16 @@
     
     <main class="estrutura-placar" id="placar-main">
       
-      <img src="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" alt="Logo Bola Fora" class="logo-central">
+      <div class="container-central">
+        <img src="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" alt="Logo Bola Fora" class="logo-central">
+        <button class="btn-apito" 
+                onmousedown="iniciarApito()" 
+                onmouseup="pararApito()" 
+                onmouseleave="pararApito()" 
+                ontouchstart="iniciarApito(event)" 
+                ontouchend="pararApito(event)" 
+                title="Segure para Apitar">📢</button>
+      </div>
       
       <div class="lado-placar">
         <div class="area-ponto" onclick="adicionarPonto('esquerda', event)">
@@ -352,6 +389,60 @@
       "": { bg: "#f7f5f2", text: "#12364e" }
     };
 
+    // --- ENGENHARIA DE ÁUDIO VIA WEB AUDIO API (ARQUIVO .WAV) ---
+    let audioContext;
+    let audioBuffer;
+    let audioSource = null;
+    let estaTocando = false;
+
+    // Link do seu arquivo .wav original adicionado aqui:
+    fetch('https://bolaforavb.github.io/centraldoadm/apito.wav')
+      .then(response => response.arrayBuffer())
+      .then(arrayBuffer => {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        return audioContext.decodeAudioData(arrayBuffer);
+      })
+      .then(buffer => {
+        audioBuffer = buffer;
+      })
+      .catch(err => console.error("Erro ao carregar o arquivo .wav do repositório:", err));
+
+    function iniciarApito(event) {
+      if (event) event.preventDefault();
+      if (!audioBuffer || estaTocando) return;
+
+      estaTocando = true;
+
+      if (audioContext && audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+
+      audioSource = audioContext.createBufferSource();
+      audioSource.buffer = audioBuffer;
+      audioSource.loop = true;
+
+      // CORTE CIRÚRGICO VIA HARDWARE:
+      // Modifique estes números caso ainda precise ajustar as bordinhas de silêncio:
+      audioSource.loopStart = 0.15; // Pula os primeiros 150 milissegundos
+      audioSource.loopEnd = audioBuffer.duration - 0.40; // Corta os 400 milissegundos finais
+
+      audioSource.connect(audioContext.destination);
+      audioSource.start(0);
+    }
+
+    function pararApito(event) {
+      if (event) event.preventDefault();
+      estaTocando = false;
+      
+      if (audioSource) {
+        try {
+          audioSource.stop();
+        } catch(e) {}
+        audioSource = null;
+      }
+    }
+    // ---------------------------------------------------------------
+
     function atualizarAparenciaSeletor(lado, cor) {
       const select = document.getElementById(`cor-${lado}`);
       const estilo = estilosCores[cor] || estilosCores[""];
@@ -379,7 +470,7 @@
         atualizarAparenciaSeletor('esquerda', placarLocal.corEsquerda || "");
         atualizarAparenciaSeletor('direita', placarLocal.corDireita || "");
       } else {
-        placarRef.set({ esquerda: 0, direita: 0, corEsquerda: "", corDireita: "" });
+        placarRef.set({ esquerda: 0, opacity: 0, direita: 0, corEsquerda: "", corDireita: "" });
       }
     });
 
@@ -445,13 +536,11 @@
     }
 
     function dispararNotificacao(titulo, opcoes) {
-      // Se houver suporte e um Service Worker ativo (Mobile), dispara por ele
       if (navigator.serviceWorker && navigator.serviceWorker.controller) {
         navigator.serviceWorker.ready.then(registration => {
           registration.showNotification(titulo, opcoes);
         });
       } else {
-        // Método clássico como fallback (PC)
         new Notification(titulo, opcoes);
       }
     }
@@ -483,7 +572,6 @@
     document.addEventListener('webkitfullscreenchange', monitorarMudancaTelaCheia);
     document.addEventListener('msfullscreenchange', monitorarMudancaTelaCheia);
 
-    // Registro automático do Service Worker para permitir notificações nativas em dispositivos móveis
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         const code = "self.addEventListener('notificationclick', function(event) { event.notification.close(); });";
