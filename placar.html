@@ -401,6 +401,9 @@
     let audioBuffer;
     let audioSource = null;
     let estaTocando = false;
+    
+    // Elemento HTML5 oculto para contornar/forçar bypass do botão Silencioso do iPhone
+    let iosBypassAudio = null;
 
     fetch('https://bolaforavb.github.io/centraldoadm/apito.wav')
       .then(response => response.arrayBuffer())
@@ -419,6 +422,20 @@
       }
       
       if (!audioBuffer || estaTocando) return;
+
+      // FORÇA BYPASS MUTE SWITH (iOS): Toca áudio silencioso via elemento de mídia nativo
+      if (!iosBypassAudio) {
+        iosBypassAudio = document.createElement("audio");
+        iosBypassAudio.setAttribute("x-webkit-airplay", "deny");
+        iosBypassAudio.preload = "auto";
+        iosBypassAudio.loop = true;
+        // Trilha em formato data-uri contendo um silêncio puro de 1 segundo em mp3
+        iosBypassAudio.src = "data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaW9TcGhlcmUgRGlnaXRhbCBTaWxlbnQgAudioA=";
+      }
+      
+      try {
+        iosBypassAudio.play().catch(e => console.log("Bypass silencioso interceptado:", e));
+      } catch(e) {}
 
       // Garante a ativação do áudio no Mobile (essencial para iOS/Android)
       if (!audioContext) {
@@ -451,6 +468,13 @@
           audioSource.stop();
         } catch(e) {}
         audioSource = null;
+      }
+
+      // Pausa o áudio nativo de fundo para economizar processamento
+      if (iosBypassAudio) {
+        try {
+          iosBypassAudio.pause();
+        } catch(e) {}
       }
     }
     // ---------------------------------------------------------------
