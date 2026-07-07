@@ -141,14 +141,14 @@
       z-index: 2;
     }
 
-    /* --- ENGENHARIA DE TRAVAMENTO INDEPENDENTE (LOGO E APITO SEPARADOS) --- */
+    /* --- ALINHAMENTO DO ESCUDO NO MEIO DOS NÚMEROS --- */
     .container-logo-isolada {
       position: absolute;
-      top: 30%;
+      top: 50%; /* Centro vertical do quadro */
       left: 50%;
-      transform: translate(-50%, -50%);
+      transform: translate(-50%, -60%); /* Move levemente para cima para centralizar visualmente com os números */
       z-index: 10;
-      pointer-events: none; /* Ignora toques para evitar bugs de clique no iOS */
+      pointer-events: none;
     }
 
     .logo-central {
@@ -160,7 +160,7 @@
 
     .container-apito-isolado {
       position: absolute;
-      bottom: 16px; /* Alinha perfeitamente com os botões -1 das laterais */
+      bottom: 16px; 
       left: 50%;
       transform: translateX(-50%);
       z-index: 12;
@@ -323,7 +323,6 @@
     
     <main class="estrutura-placar" id="placar-main">
       
-      <!-- Elementos Centrais Blindados e Separados -->
       <div class="container-logo-isolada">
         <img src="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" alt="Logo Bola Fora" class="logo-central">
       </div>
@@ -337,7 +336,6 @@
                 title="Segure para Apitar">📢</button>
       </div>
       
-      <!-- Lado Esquerdo -->
       <div class="lado-placar">
         <div class="area-ponto" onclick="adicionarPonto('esquerda', event)">
           <select class="seletor-cor-time" id="cor-esquerda" onclick="event.stopPropagation()" onchange="mudarCor('esquerda')">
@@ -354,7 +352,6 @@
         </div>
       </div>
 
-      <!-- Lado Direito -->
       <div class="lado-placar">
         <div class="area-ponto" onclick="adicionarPonto('direita', event)">
           <select class="seletor-cor-time" id="cor-direita" onclick="event.stopPropagation()" onchange="mudarCor('direita')">
