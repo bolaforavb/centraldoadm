@@ -150,12 +150,15 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      height: 160px; /* Força uma altura fixa para impedir oscilações de layout */
+      justify-content: center;
       gap: 16px;
     }
 
     .logo-central {
       width: 90px;
-      height: auto;
+      height: 90px; /* Mantém proporções rígidas de tamanho */
+      object-fit: contain;
       pointer-events: none;
       filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));
     }
@@ -396,63 +399,60 @@
       "": { bg: "#f7f5f2", text: "#12364e" }
     };
 
-    // --- REFORMA GERAL: SISTEMA DE ÁUDIO DE MÍDIA DIRETA (BYPASS ABSOLUTO DO MUTE DO iOS) ---
-    const audioApito = new Audio('https://bolaforavb.github.io/centraldoadm/apito.wav');
-    audioApito.preload = "auto";
-    
+    // --- ENGENHARIA DE ÁUDIO VIA WEB AUDIO API (RESTAURADO E OTIMIZADO) ---
+    let audioContext;
+    let audioBuffer;
+    let audioSource = null;
     let estaTocando = false;
-    let monitorLoopInterval = null;
 
-    // Configurações do corte cirúrgico
-    const corteInicio = 0.15; // Pula os primeiros 150ms
-    const corteFimOffset = 0.40; // Margem para reiniciar o loop antes do silêncio final
+    fetch('https://bolaforavb.github.io/centraldoadm/apito.wav')
+      .then(response => response.arrayBuffer())
+      .then(arrayBuffer => {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        return audioContext.decodeAudioData(arrayBuffer);
+      })
+      .then(buffer => {
+        audioBuffer = buffer;
+      })
+      .catch(err => console.error("Erro ao carregar o arquivo .wav do repositório:", err));
 
     function iniciarApito(event) {
       if (event) event.preventDefault();
       
-      if (estaTocando) return;
-      estaTocando = true;
+      if (!audioBuffer || estaTocando) return;
 
-      // Inicia direto no corte desejado
-      audioApito.currentTime = corteInicio;
-      
-      // Força o iOS a tratar como mídia ativa (isso quebra a barreira do botão silencioso)
-      const playPromise = audioApito.play();
-      
-      if (playPromise !== undefined) {
-        playPromise.catch(error => {
-          console.error("Erro ao reproduzir áudio:", error);
-        });
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioContext && audioContext.state === 'suspended') {
+        audioContext.resume();
       }
 
-      // Cria um monitor manual de altíssima precisão para simular o loop com os cortes
-      if (monitorLoopInterval) clearInterval(monitorLoopInterval);
-      
-      monitorLoopInterval = setInterval(() => {
-        if (!estaTocando) return;
-        
-        const duracaoTotal = audioApito.duration;
-        if (duracaoTotal && audioApito.currentTime >= (duracaoTotal - corteFimOffset)) {
-          // Em vez de deixar acabar, joga de volta instantaneamente para o ponto de loop ativo
-          audioApito.currentTime = corteInicio;
-        }
-      }, 15); // Roda a cada 15ms para não dar delay perceptível
+      estaTocando = true;
+
+      audioSource = audioContext.createBufferSource();
+      audioSource.buffer = audioBuffer;
+      audioSource.loop = true;
+
+      audioSource.loopStart = 0.15; 
+      audioSource.loopEnd = audioBuffer.duration - 0.40; 
+
+      audioSource.connect(audioContext.destination);
+      audioSource.start(0);
     }
 
     function pararApito(event) {
       if (event) event.preventDefault();
       estaTocando = false;
       
-      if (monitorLoopInterval) {
-        clearInterval(monitorLoopInterval);
-        monitorLoopInterval = null;
+      if (audioSource) {
+        try {
+          audioSource.stop();
+        } catch(e) {}
+        audioSource = null;
       }
-      
-      try {
-        audioApito.pause();
-      } catch(e) {}
     }
-    // ---------------------------------------------------------------------------------------
+    // ---------------------------------------------------------------
 
     function atualizarAparenciaSeletor(lado, cor) {
       const select = document.getElementById(`cor-${lado}`);
