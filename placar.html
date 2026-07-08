@@ -141,12 +141,39 @@
       z-index: 2;
     }
 
-    /* --- ALINHAMENTO DO ESCUDO NO MEIO DOS NÚMEROS --- */
+    /* --- ALINHAMENTO DO RELÓGIO COM SEGUNDOS (HH:MM:SS) --- */
+    .container-relogio-isolado {
+      position: absolute;
+      top: 47px; 
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 12;
+      pointer-events: none;
+    }
+
+    .relogio-brasilia {
+      background-color: #12364e;
+      color: #e1d8cd;
+      border: 1px solid #e1d8cd;
+      border-radius: 6px;
+      padding: 0 10px; 
+      font-size: 12px; 
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      white-space: nowrap;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 28px; 
+    }
+
     .container-logo-isolada {
       position: absolute;
-      top: 50%; /* Centro vertical do quadro */
+      top: 50%; 
       left: 50%;
-      transform: translate(-50%, -60%); /* Move levemente para cima para centralizar visualmente com os números */
+      transform: translate(-50%, -60%); 
       z-index: 10;
       pointer-events: none;
     }
@@ -228,6 +255,7 @@
       outline: none;
       z-index: 11;
       transition: background-color 0.3s, color 0.3s;
+      height: 28px; 
     }
 
     .op-amarelo { background-color: #ffeb3b !important; color: #000 !important; }
@@ -261,13 +289,13 @@
       font-size: 18px;
       font-weight: bold;
       cursor: pointer;
-      transition: background-color 0.2s, transform 0.1s;
+      transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.1s;
       box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     }
 
     .btn-menos-um:active {
       transform: scale(0.95);
-      background-color: #e1d8cd;
+      opacity: 0.85;
     }
 
     @media (orientation: portrait) {
@@ -323,6 +351,10 @@
     
     <main class="estrutura-placar" id="placar-main">
       
+      <div class="container-relogio-isolado">
+        <div class="relogio-brasilia" id="relogio">00:00:00</div>
+      </div>
+
       <div class="container-logo-isolada">
         <img src="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" alt="Logo Bola Fora" class="logo-central">
       </div>
@@ -453,14 +485,56 @@
         audioSource = null;
       }
     }
+
+    // --- SINCRO DA HORA OFICIAL DE BRASÍLIA COM SEGUNDOS ---
+    let diferencaTempoServidor = 0;
+
+    function sincronizarRelogio() {
+      fetch('https://worldtimeapi.org/api/timezone/America/Sao_Paulo')
+        .then(res => res.json())
+        .then(data => {
+          const horaServidor = new Date(data.datetime).getTime();
+          const horaLocal = Date.now();
+          diferencaTempoServidor = horaServidor - horaLocal;
+        })
+        .catch(err => console.error("Erro ao sincronizar com o horário de Brasília:", err));
+    }
+
+    function atualizarRelogioVisual() {
+      const agoraCorrigido = new Date(Date.now() + diferencaTempoServidor);
+      const horas = String(agoraCorrigido.getHours()).padStart(2, '0');
+      const minutos = String(agoraCorrigido.getMinutes()).padStart(2, '0');
+      const segundos = String(agoraCorrigido.getSeconds()).padStart(2, '0'); 
+      
+      const elementoRelogio = document.getElementById('relogio');
+      if (elementoRelogio) {
+        elementoRelogio.innerText = `${horas}:${minutos}:${segundos}`;
+      }
+    }
+
+    sincronizarRelogio();
+    setInterval(atualizarRelogioVisual, 100); 
+    setInterval(sincronizarRelogio, 600000); 
     // ---------------------------------------------------------------
 
+    // --- ATUALIZAÇÃO SINCRO DO SELETOR E DO BOTÃO "-1" ---
     function atualizarAparenciaSeletor(lado, cor) {
       const select = document.getElementById(`cor-${lado}`);
       const estilo = estilosCores[cor] || estilosCores[""];
+      
       if (select) {
         select.style.backgroundColor = estilo.bg;
         select.style.color = estilo.text;
+      }
+
+      const ladoContainer = select ? select.closest('.lado-placar') : null;
+      if (ladoContainer) {
+        const btnMenos = ladoContainer.querySelector('.btn-menos-um');
+        if (btnMenos) {
+          btnMenos.style.backgroundColor = estilo.bg;
+          btnMenos.style.color = estilo.text;
+          btnMenos.style.borderColor = cor ? estilo.bg : "#12364e";
+        }
       }
     }
 
