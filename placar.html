@@ -144,7 +144,7 @@
 
     .container-relogio-isolado {
       position: absolute;
-      top: 47px; 
+      top: 12px; 
       left: 50%;
       transform: translateX(-50%);
       z-index: 12;
@@ -153,20 +153,20 @@
 
     .relogio-brasilia {
       background-color: #12364e;
-      color: #e1d8cd;
-      border: 1px solid #e1d8cd;
-      border-radius: 6px;
-      padding: 0 10px; 
-      font-size: 12px; 
+      color: #ffffff; 
+      border: 1.5px solid #e1d8cd; 
+      border-radius: 8px;
+      padding: 0 12px; /* Reduzido o espaçamento lateral interno para aproveitar melhor as bordas */
+      font-size: 58px; /* Aumentado consideravelmente apenas o tamanho do número */
       font-weight: bold;
-      letter-spacing: 0.5px;
+      letter-spacing: 1.5px; /* Espaçamento leve para dar excelente legibilidade aos números gigantes */
       box-shadow: 0 4px 10px rgba(0,0,0,0.15);
       white-space: nowrap;
       text-align: center;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 28px; 
+      height: 85px; /* Mantida a altura anterior do fundo do visor */
     }
 
     .container-logo-isolada {
@@ -394,7 +394,7 @@
   <header class="topo-acoes">
     <div class="topo-esquerda">
       <a href="dashboard.html" class="btn-topo-discreto">Central do Adm</a>
-      <button type="button" class="btn-topo-discreto" onclick="toggleTabela()">Abrir tabela</button>
+      <button type="button" class="btn-topo-discreto" onclick="toggleTabela()">Ir para a tabela</button>
     </div>
     
     <div class="topo-centro">
@@ -574,12 +574,12 @@
     function atualizarRelogioVisual() {
       const agoraCorrigido = new Date(Date.now() + diferencaTempoServidor);
       const horas = String(agoraCorrigido.getHours()).padStart(2, '0');
-      const minutos = String(agoraCorrigido.getMinutes()).padStart(2, '0');
+      const minutes = String(agoraCorrigido.getMinutes()).padStart(2, '0');
       const segundos = String(agoraCorrigido.getSeconds()).padStart(2, '0'); 
       
       const elementoRelogio = document.getElementById('relogio');
       if (elementoRelogio) {
-        elementoRelogio.innerText = `${horas}:${minutos}:${segundos}`;
+        elementoRelogio.innerText = `${horas}:${minutes}:${segundos}`;
       }
     }
 
@@ -674,6 +674,7 @@
       }
     }
 
+    // --- MUDANÇA AUTOMÁTICA DAS CORES ---
     function mudarCor(lado) {
       const valorCor = document.getElementById(`cor-${lado}`).value;
       if (lado === 'esquerda') {
