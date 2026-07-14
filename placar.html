@@ -144,7 +144,7 @@
 
     .container-relogio-isolado {
       position: absolute;
-      top: 12px; 
+      top: 25px; /* Levemente ajustado para o tamanho menor do visor */
       left: 50%;
       transform: translateX(-50%);
       z-index: 12;
@@ -156,17 +156,17 @@
       color: #ffffff; 
       border: 1.5px solid #e1d8cd; 
       border-radius: 8px;
-      padding: 0 12px; /* Reduzido o espaçamento lateral interno para aproveitar melhor as bordas */
-      font-size: 58px; /* Aumentado consideravelmente apenas o tamanho do número */
+      padding: 0 10px; /* Reduzido 20% para manter as laterais proporcionais */
+      font-size: 46px; /* Reduzido 20% (de 58px para 46px) */
       font-weight: bold;
-      letter-spacing: 1.5px; /* Espaçamento leve para dar excelente legibilidade aos números gigantes */
+      letter-spacing: 1.2px; /* Reduzido 20% para manter os números unidos e legíveis */
       box-shadow: 0 4px 10px rgba(0,0,0,0.15);
       white-space: nowrap;
       text-align: center;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 85px; /* Mantida a altura anterior do fundo do visor */
+      height: 68px; /* Reduzido 20% (de 85px para 68px) */
     }
 
     .container-logo-isolada {
