@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diarista Fidelidade - Central do Adm</title>
+  <link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
+  
+  <style>
+    /* Reset global idêntico ao painel */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: sans-serif;
+      background-color: #12364e; 
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center; 
+      min-height: 100vh;
+      color: #12364e;
+    }
+
+    .header-banner {
+      width: 100%; 
+      max-width: 600px;
+      background-color: #e1d8cd; 
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .header-banner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; 
+    }
+
+    .main-container {
+      width: 100%;
+      max-width: 600px;
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Estrutura de Card baseada no design original */
+    .bloco-card {
+      background-color: white; 
+      border-radius: 16px;
+      width: 100%;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    /* Container para colocar blocos lado a lado */
+    .linha-dupla {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .linha-dupla .bloco-card {
+      flex: 1;
+      width: 50%;
+      padding: 14px;
+    }
+
+    .titulo-secao {
+      font-size: 14px;
+      font-weight: bold;
+      color: #12364e;
+      margin: 0 0 12px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      padding-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .header-resultado-linha {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      padding-bottom: 6px;
+      width: 100%;
+    }
+
+    .header-resultado-linha .titulo-secao {
+      margin: 0;
+      border: none;
+      padding: 0;
+      flex: 1;
+      font-size: 13px;
+    }
+
+    /* Inputs padronizados */
+    input[type="text"], input[type="date"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #12364e;
+      outline: none;
+    }
+
+    .form-inline {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .form-inline input {
+      flex: 1;
+    }
+
+    /* Formulário específico para o bloco de Registros */
+    .form-registros {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .form-registros-linha {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .form-registros-linha input {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .datas-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      width: 100%;
+    }
+
+    .campo-data-grupo {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .campo-data-grupo label {
+      font-size: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+      color: #12364e;
+      opacity: 0.8;
+      text-align: center;
+    }
+
+    .campo-data-grupo input[type="date"] {
+      width: 100%;
+      padding: 6px 4px;
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .btn-add-tabela {
+      padding: 10px 16px;
+      background-color: #d9b246;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn-add-tabela:hover { background-color: #af8a23; }
+
+    /* Lista de Diaristas Fidelidade */
+    .lista-fidelidade {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      max-height: 350px;
+      overflow-y: auto;
+    }
+
+    .item-fidelidade {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      background-color: #f7f5f2;
+      border-radius: 8px;
+      border-left: 3px solid #d9b246;
+    }
+
+    /* Estilo específico para itens do bloco Registros */
+    .item-registro {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px;
+      background-color: #f7f5f2;
+      border-radius: 8px;
+      border-left: 3px solid #d9b246;
+      width: 100%;
+    }
+
+    .item-registro-topo {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      position: relative;
+    }
+
+    .nome-diarista-centralizado {
+      font-size: 13px;
+      font-weight: 500;
+      color: #12364e;
+      text-align: center;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding: 0 24px;
+    }
+
+    .item-registro-datas {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      width: 100%;
+      font-size: 11px;
+      background: white;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .badge-data {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .badge-data span:first-child {
+      font-size: 9px;
+      font-weight: bold;
+      text-transform: uppercase;
+      opacity: 0.6;
+    }
+
+    .badge-data span:last-child {
+      font-weight: 500;
+      color: #12364e;
+    }
+
+    .nome-diarista {
+      font-size: 12px;
+      font-weight: 500;
+      color: #12364e;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .bloco-controles {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Estilização exata das setinhas e número centralizado do painel */
+    .botoes-setas { 
+      display: flex; 
+      align-items: center; 
+      gap: 4px; 
+    }
+
+    .btn-seta-up, .btn-seta-down {
+      background: none;
+      border: none;
+      color: #d9b246;
+      font-size: 14px;
+      padding: 2px;
+      line-height: 1;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .valor-presenca {
+      font-size: 12px;
+      font-weight: bold;
+      background: #12364e;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      min-width: 26px;
+      text-align: center;
+    }
+
+    .btn-deletar-ranking {
+      background: none;
+      border: none;
+      color: #d93025;
+      font-weight: bold;
+      font-size: 13px;
+      padding: 2px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .label-presencas-topo {
+      font-size: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+      color: #12364e;
+      opacity: 0.7;
+      text-align: center;
+      min-width: 26px;
+    }
+
+    /* Rodapé com botão Voltar */
+    .footer-navegacao {
+      width: 100%;
+      max-width: 600px;
+      padding: 8px 16px 24px 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .btn-voltar-painel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px;
+      background-color: transparent;
+      color: #e1d8cd;
+      border: 2px solid #e1d8cd;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-voltar-painel:hover {
+      background-color: #e1d8cd;
+      color: #12364e;
+    }
+
+    .btn-voltar-painel:active {
+      transform: scale(0.99);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header-banner">
+    <img src="https://i.ibb.co/twJd6BRq/Whats-App-Image-2026-06-29-at-10-42-05.jpg" alt="Banner Central do Adm">
+  </header>
+
+  <main class="main-container">
+    
+    <div class="bloco-card">
+      <div class="titulo-secao">Novo Diarista</div>
+      <form id="form-nova-diarista" class="form-inline">
+        <input type="text" id="nome-novo" placeholder="Nome do Diarista" required>
+        <button type="submit" class="btn-add-tabela">Add</button>
+      </form>
+    </div>
+
+    <!-- Linha dupla: Contagem de Presenças e Histórico de Diárias Grátis lado a lado -->
+    <div class="linha-dupla">
+      <div class="bloco-card">
+        <div class="header-resultado-linha">
+          <div class="titulo-secao">Presenças</div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <div class="label-presencas-topo">Qtd</div>
+            </div>
+          </div>
+        </div>
+        <div class="lista-fidelidade" id="tabela-diaristas"></div>
+      </div>
+
+      <div class="bloco-card">
+        <div class="header-resultado-linha">
+          <div class="titulo-secao">Diárias Grátis</div>
+          <div class="label-presencas-topo">Total</div>
+        </div>
+        <div class="lista-fidelidade" id="tabela-diarias-gratis"></div>
+      </div>
+    </div>
+
+    <!-- Bloco de Registros -->
+    <div class="bloco-card">
+      <div class="titulo-secao">Registros</div>
+      <form id="form-novo-registro" class="form-registros">
+        <div class="form-registros-linha">
+          <input type="text" id="reg-nome" placeholder="Nome do Diarista" required>
+          <button type="submit" class="btn-add-tabela">Add</button>
+        </div>
+        <div class="datas-grid">
+          <div class="campo-data-grupo">
+            <label for="reg-p1">Presença 1</label>
+            <input type="date" id="reg-p1">
+          </div>
+          <div class="campo-data-grupo">
+            <label for="reg-p2">Presença 2</label>
+            <input type="date" id="reg-p2">
+          </div>
+          <div class="campo-data-grupo">
+            <label for="reg-p3">Presença 3</label>
+            <input type="date" id="reg-p3">
+          </div>
+          <div class="campo-data-grupo">
+            <label for="reg-gratis">Dia Grátis</label>
+            <input type="date" id="reg-gratis">
+          </div>
+        </div>
+      </form>
+
+      <div style="margin-top: 15px;" class="lista-fidelidade" id="tabela-registros"></div>
+    </div>
+
+  </main>
+
+  <footer class="footer-navegacao">
+    <a href="dashboard.html" class="btn-voltar-painel">
+      <span>↩</span> Voltar
+    </a>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
+      authDomain: "central-adm-bolafora.firebaseapp.com",
+      databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com",
+      projectId: "central-adm-bolafora",
+      storageBucket: "central-adm-bolafora.firebasestorage.app",
+      messagingSenderId: "429477810517",
+      appId: "1:429477810517:web:3be6c842269cbdfe4b5fdc"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
+
+    auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
+      .then(() => {
+        auth.onAuthStateChanged((user) => {
+          if (!user) {
+            window.location.href = 'index.html'; 
+          }
+        });
+      })
+      .catch((error) => {
+        console.error("Erro ao definir persistência de sessão:", error);
+      });
+
+    let BD_Diaristas = {
+      "Ana Beatriz": 0, "Camila Souza": 0, "Fernanda Lima": 0,
+      "Juliana Mendes": 0, "Larissa Oliveira": 0, "Mariana Costa": 0,
+      "Patrícia Santos": 0, "Renata Almeida": 0, "Tatiane Rocha": 0,
+      "Vanessa Martins": 0
+    };
+
+    let BD_DiariasGratis = {};
+    let BD_Registros = {};
+
+    function salvarDados() {
+      db.ref('diarista_fidelidade').set(BD_Diaristas);
+      db.ref('diarias_gratis').set(BD_DiariasGratis);
+      db.ref('registros_diaristas').set(BD_Registros);
+    }
+
+    db.ref('diarista_fidelidade').on('value', (snapshot) => {
+      const dadosNuvem = snapshot.val();
+      if (dadosNuvem) {
+        BD_Diaristas = dadosNuvem;
+      } else {
+        salvarDados();
+      }
+      atualizarTabelaVisual();
+    });
+
+    db.ref('diarias_gratis').on('value', (snapshot) => {
+      const dadosNuvem = snapshot.val();
+      if (dadosNuvem) {
+        BD_DiariasGratis = dadosNuvem;
+      }
+      atualizarTabelaVisual();
+    });
+
+    db.ref('registros_diaristas').on('value', (snapshot) => {
+      const dadosNuvem = snapshot.val();
+      if (dadosNuvem) {
+        BD_Registros = dadosNuvem;
+      }
+      atualizarTabelaRegistrosVisual();
+    });
+
+    function atualizarTabelaVisual() {
+      const container = document.getElementById('tabela-diaristas');
+      container.innerHTML = '';
+
+      const diaristasOrdenadas = Object.entries(BD_Diaristas).sort();
+
+      if (diaristasOrdenadas.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding: 15px; font-size:12px; opacity:0.6;">Nenhuma diarista cadastrada.</div>`;
+      } else {
+        diaristasOrdenadas.forEach(([nome, presencas]) => {
+          const item = document.createElement('div');
+          item.className = 'item-fidelidade';
+          
+          item.innerHTML = `
+            <div style="display: flex; align-items: center; min-width: 0; flex: 1; margin-right: 6px;">
+              <span class="nome-diarista" title="${nome}">${nome}</span>
+            </div>
+            <div class="bloco-controles">
+              <div class="botoes-setas">
+                <button class="btn-seta-up" onclick="alterarPresenca('${nome}', 1)">▲</button>
+                <span class="valor-presenca">${presencas}</span>
+                <button class="btn-seta-down" onclick="alterarPresenca('${nome}', -1)">▼</button>
+              </div>
+              <button class="btn-deletar-ranking" onclick="excluirDiarista('${nome}')" title="Excluir diarista">✕</button>
+            </div>
+          `;
+          container.appendChild(item);
+        });
+      }
+
+      atualizarTabelaGratisVisual();
+    }
+
+    function atualizarTabelaGratisVisual() {
+      const containerGratis = document.getElementById('tabela-diarias-gratis');
+      containerGratis.innerHTML = '';
+
+      const gratisOrdenado = Object.entries(BD_DiariasGratis).sort((a, b) => b[1] - a[1]);
+
+      if (gratisOrdenado.length === 0) {
+        containerGratis.innerHTML = `<div style="text-align:center; padding: 15px; font-size:12px; opacity:0.6;">Nenhuma diária grátis ainda.</div>`;
+        return;
+      }
+
+      gratisOrdenado.forEach(([nome, totalGratis]) => {
+        const item = document.createElement('div');
+        item.className = 'item-fidelidade';
+        
+        item.innerHTML = `
+          <div style="display: flex; align-items: center; min-width: 0; flex: 1; margin-right: 6px;">
+            <span class="nome-diarista" title="${nome}">${nome}</span>
+          </div>
+          <div class="bloco-controles">
+            <span class="valor-presenca" style="background-color: #d9b246;">${totalGratis}</span>
+            <button class="btn-deletar-ranking" onclick="excluirDiariaGratis('${nome}')" title="Excluir do histórico">✕</button>
+          </div>
+        `;
+        containerGratis.appendChild(item);
+      });
+    }
+
+    function formatarDataBR(dataStr) {
+      if (!dataStr) return '-';
+      const partes = dataStr.split('-');
+      if (partes.length === 3) {
+        return `${partes[2]}/${partes[1]}/${partes[0]}`;
+      }
+      return dataStr;
+    }
+
+    function atualizarTabelaRegistrosVisual() {
+      const containerRegistros = document.getElementById('tabela-registros');
+      containerRegistros.innerHTML = '';
+
+      const registrosOrdenados = Object.entries(BD_Registros).sort((a, b) => a[0].localeCompare(b[0]));
+
+      if (registrosOrdenados.length === 0) {
+        containerRegistros.innerHTML = `<div style="text-align:center; padding: 20px; font-size:13px; opacity:0.6;">Nenhum registro cadastrado.</div>`;
+        return;
+      }
+
+      registrosOrdenados.forEach(([id, reg]) => {
+        const item = document.createElement('div');
+        item.className = 'item-registro';
+        
+        item.innerHTML = `
+          <div class="item-registro-topo">
+            <div style="width: 24px;"></div>
+            <span class="nome-diarista-centralizado" title="${reg.nome}">${reg.nome}</span>
+            <button class="btn-deletar-ranking" onclick="excluirRegistro('${id}')" title="Excluir registro">✕</button>
+          </div>
+          <div class="item-registro-datas">
+            <div class="badge-data">
+              <span>Presença 1</span>
+              <span>${formatarDataBR(reg.p1)}</span>
+            </div>
+            <div class="badge-data">
+              <span>Presença 2</span>
+              <span>${formatarDataBR(reg.p2)}</span>
+            </div>
+            <div class="badge-data">
+              <span>Presença 3</span>
+              <span>${formatarDataBR(reg.p3)}</span>
+            </div>
+            <div class="badge-data">
+              <span>Dia Grátis</span>
+              <span>${formatarDataBR(reg.gratis)}</span>
+            </div>
+          </div>
+        `;
+        containerRegistros.appendChild(item);
+      });
+    }
+
+    window.alterarPresenca = function(nome, delta) {
+      let valorAtual = BD_Diaristas[nome] !== undefined ? BD_Diaristas[nome] : 0;
+      let novoValor = valorAtual + delta;
+
+      if (novoValor < 0) novoValor = 0;
+
+      if (novoValor >= 3) {
+        novoValor = 0; 
+        BD_DiariasGratis[nome] = (BD_DiariasGratis[nome] || 0) + 1;
+      }
+
+      BD_Diaristas[nome] = novoValor;
+      salvarDados();
+    }
+
+    document.getElementById('form-nova-diarista').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const input = document.getElementById('nome-novo');
+      const nome = input.value.trim();
+
+      if (BD_Diaristas.hasOwnProperty(nome)) {
+        alert("Esta diarista já está cadastrada!");
+        return;
+      }
+
+      BD_Diaristas[nome] = 0;
+      salvarDados();
+      input.value = '';
+    });
+
+    document.getElementById('form-novo-registro').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const nome = document.getElementById('reg-nome').value.trim();
+      const p1 = document.getElementById('reg-p1').value;
+      const p2 = document.getElementById('reg-p2').value;
+      const p3 = document.getElementById('reg-p3').value;
+      const gratis = document.getElementById('reg-gratis').value;
+
+      const idUnico = 'reg_' + Date.now();
+      BD_Registros[idUnico] = { nome, p1, p2, p3, gratis };
+
+      salvarDados();
+
+      // Limpar formulário
+      document.getElementById('reg-nome').value = '';
+      document.getElementById('reg-p1').value = '';
+      document.getElementById('reg-p2').value = '';
+      document.getElementById('reg-p3').value = '';
+      document.getElementById('reg-gratis').value = '';
+    });
+
+    window.excluirDiarista = function(nome) {
+      if (confirm(`Remover "${nome}" permanentemente da lista?`)) {
+        delete BD_Diaristas[nome];
+        delete BD_DiariasGratis[nome];
+        salvarDados();
+      }
+    }
+
+    window.excluirDiariaGratis = function(nome) {
+      if (confirm(`Remover "${nome}" do histórico de diárias grátis?`)) {
+        delete BD_DiariasGratis[nome];
+        salvarDados();
+      }
+    }
+
+    window.excluirRegistro = function(id) {
+      if (confirm(`Remover este registro?`)) {
+        delete BD_Registros[id];
+        salvarDados();
+      }
+    }
+  </script>
+
+</body>
+</html>
