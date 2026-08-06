@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Placar Digital - Central do Adm</title>
+  <link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
+  
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      font-family: sans-serif;
+      background-color: #12364e; 
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      min-height: 100vh;
+      color: #12364e;
+      /* Alterado para permitir rolar a tela e ver a tabela abaixo */
+      overflow-y: auto; 
+    }
+
+    .topo-acoes {
+      width: 100%;
+      max-width: 900px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr; 
+      align-items: center;
+      padding: 12px 12px 0 12px;
+      margin-bottom: 8px;
+    }
+
+    .topo-esquerda {
+      display: flex;
+      justify-content: flex-start;
+      gap: 8px;
+    }
+
+    .topo-centro {
+      display: flex;
+      justify-content: center;
+    }
+
+    .topo-direita {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+
+    .btn-topo-discreto {
+      background-color: transparent;
+      color: #e1d8cd;
+      border: 1px solid #e1d8cd;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: bold;
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: background-color 0.2s, color 0.2s;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-topo-discreto:hover {
+      background-color: #e1d8cd;
+      color: #12364e;
+    }
+
+    .btn-fixar-notif {
+      border-color: #2196f3;
+      color: #2196f3;
+    }
+    
+    .btn-fixar-notif:hover {
+      background-color: #2196f3;
+      color: #fff;
+    }
+
+    .btn-zerar-placar {
+      background-color: #d93025;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 20px;
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      transition: background-color 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    .btn-zerar-placar:hover {
+      background-color: #b3241c;
+    }
+
+    .btn-zerar-placar:active {
+      transform: scale(0.98);
+    }
+
+    .container-placar-global {
+      width: 100%;
+      max-width: 900px;
+      padding: 0 12px 12px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      /* flex-grow removido para evitar esticar verticalmente com a rolagem */
+    }
+
+    .estrutura-placar {
+      display: flex;
+      background-color: white;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .estrutura-placar::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 4px;
+      background-color: #e1d8cd;
+      transform: translateX(-50%);
+      z-index: 2;
+    }
+
+    .container-relogio-isolado {
+      position: absolute;
+      top: 4px; /* Levemente ajustado para o tamanho menor do visor */
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 12;
+      pointer-events: none;
+    }
+
+    .relogio-brasilia {
+      background-color: #12364e;
+      color: #ffffff; 
+      border: 1.5px solid #e1d8cd; 
+      border-radius: 8px;
+      padding: 0 10px; /* Reduzido 20% para manter as laterais proporcionais */
+      font-size: 46px; /* Reduzido 20% (de 58px para 46px) */
+      font-weight: bold;
+      letter-spacing: 1.2px; /* Reduzido 20% para manter os números unidos e legíveis */
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      white-space: nowrap;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 68px; /* Reduzido 20% (de 85px para 68px) */
+    }
+
+    .container-logo-isolada {
+      position: absolute;
+      top: 50%; 
+      left: 50%;
+      transform: translate(-50%, -60%); 
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .logo-central {
+      width: 90px;
+      height: 90px;
+      object-fit: contain;
+      filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));
+    }
+
+    .container-apito-isolado {
+      position: absolute;
+      bottom: 16px; 
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 12;
+    }
+
+    .btn-apito {
+      background-color: #12364e;
+      color: #e1d8cd;
+      border: 2px solid #e1d8cd;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+      transition: transform 0.1s, background-color 0.2s;
+      -webkit-touch-callout: none; 
+      -webkit-user-select: none;   
+      user-select: none;           
+    }
+
+    .btn-apito:active {
+      transform: scale(0.90);
+      background-color: #1d4f71;
+    }
+
+    .lado-placar {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      position: relative;
+    }
+
+    /* Borda lateral externa aumentada em mais 100% (de 16px para 32px) */
+    .borda-lateral-esquerda,
+    .borda-lateral-direita {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 32px; 
+      background-color: transparent;
+      transition: background-color 0.3s;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .borda-lateral-esquerda {
+      left: 0;
+    }
+
+    .borda-lateral-direita {
+      right: 0;
+    }
+
+    .area-ponto {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      min-height: 52vh;
+      transition: background-color 0.1s;
+    }
+    
+    .area-ponto:active {
+      background-color: rgba(217, 178, 70, 0.1);
+    }
+
+    .seletor-cor-time {
+      background: #f7f5f2;
+      color: #12364e;
+      border: 1px solid #12364e;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      cursor: pointer;
+      outline: none;
+      z-index: 11;
+      transition: background-color 0.3s, color 0.3s;
+      height: 28px; 
+    }
+
+    .op-amarelo { background-color: #ffeb3b !important; color: #000 !important; }
+    .op-azul { background-color: #2196f3 !important; color: #fff !important; }
+    .op-roxo { background-color: #9c27b0 !important; color: #fff !important; }
+    .op-rosa { background-color: #e91e63 !important; color: #fff !important; }
+    .op-padrao { background-color: #f7f5f2 !important; color: #12364e !important; }
+
+    .numero-pontos {
+      font-size: clamp(230px, 24vh, 250px);
+      font-weight: bold;
+      color: #12364e;
+      margin: 0;
+      line-height: 1;
+    }
+
+    .controles-lado {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      padding-top: 8px;
+      z-index: 3;
+    }
+
+    .btn-menos-um {
+      background-color: #f7f5f2;
+      color: #12364e;
+      border: 2px solid #12364e;
+      border-radius: 10px;
+      padding: 8px 24px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.1s;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    .btn-menos-um:active {
+      transform: scale(0.95);
+      opacity: 0.85;
+    }
+
+    @media (orientation: portrait) {
+      .aviso-orientacao {
+        display: flex;
+      }
+    }
+
+    .aviso-orientacao {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #12364e;
+      color: #e1d8cd;
+      z-index: 9999;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 24px;
+    }
+    .aviso-orientacao span {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+
+    /* --- ESTILOS DA JANELA DA TABELA (IFRAME) --- */
+    .janela-tabela {
+      display: none;
+      width: 100%;
+      max-width: 900px;
+      background-color: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      margin: 12px 0 24px 0;
+      overflow: hidden;
+    }
+
+    .janela-tabela-barra {
+      background-color: #12364e;
+      border-bottom: 1px solid #e1d8cd;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #e1d8cd;
+    }
+
+    .janela-tabela-titulo {
+      font-weight: bold;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .janela-tabela-botoes {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-janela {
+      background: transparent;
+      border: none;
+      color: #e1d8cd;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 2px;
+      transition: transform 0.1s;
+    }
+
+    .btn-janela:active {
+      transform: scale(0.85);
+    }
+
+    .janela-tabela-conteudo {
+      width: 100%;
+      height: 70vh; /* Ocupa 70% da altura da tela */
+      border: none;
+      transition: height 0.2s ease-out;
+    }
+
+    /* Classe aplicada ao minimizar */
+    .janela-tabela-conteudo.minimizado {
+      height: 0px !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="aviso-orientacao">
+    <span>🔄📱</span>
+    <h2>Por favor, vire o seu aparelho de lado.</h2>
+    <p>O placar foi otimizado para o modo horizontal (paisagem).</p>
+  </div>
+
+  <header class="topo-acoes">
+    <div class="topo-esquerda">
+      <a href="dashboard.html" class="btn-topo-discreto">Central do Adm</a>
+      <button type="button" class="btn-topo-discreto" onclick="toggleTabela()">Abrir Tabela</button>
+    </div>
+    
+    <div class="topo-centro">
+      <button class="btn-zerar-placar" onclick="zerarPlacar()">Zerar Placar</button>
+    </div>
+    
+    <div class="topo-direita">
+      <button class="btn-topo-discreto btn-fixar-notif" onclick="enviarLembreteResultado()">Fixar (iOS)</button>
+      <button class="btn-topo-discreto" onclick="alternarTelaCheia()" id="btnFullscreen">Tela Cheia (Android)</button>
+    </div>
+  </header>
+
+  <div class="container-placar-global">
+    
+    <main class="estrutura-placar" id="placar-main">
+      
+      <div class="container-relogio-isolado">
+        <div class="relogio-brasilia" id="relogio">00:00:00</div>
+      </div>
+
+      <div class="container-logo-isolada">
+        <img src="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" alt="Logo Bola Fora" class="logo-central">
+      </div>
+
+      <div class="container-apito-isolado">
+        <button class="btn-apito" 
+                onpointerdown="iniciarApito(event)" 
+                onpointerup="pararApito(event)" 
+                onpointerleave="pararApito(event)"
+                oncontextmenu="event.preventDefault()" 
+                title="Segure para Apitar">📢</button>
+      </div>
+      
+      <div class="lado-placar">
+        <div class="borda-lateral-esquerda" id="borda-esquerda"></div>
+        <div class="area-ponto" onclick="adicionarPonto('esquerda', event)">
+          <select class="seletor-cor-time" id="cor-esquerda" onclick="event.stopPropagation()" onchange="mudarCor('esquerda')">
+            <option value="" class="op-padrao">Cor</option>
+            <option value="Amarelo" class="op-amarelo">Amarelo</option>
+            <option value="Azul" class="op-azul">Azul</option>
+            <option value="Roxo" class="op-roxo">Roxo</option>
+            <option value="Rosa" class="op-rosa">Rosa</option>
+          </select>
+          <div class="numero-pontos" id="pts-esquerda">0</div>
+        </div>
+        <div class="controles-lado">
+          <button class="btn-menos-um" onclick="subtrairPonto('esquerda')">-1</button>
+        </div>
+      </div>
+
+      <div class="lado-placar">
+        <div class="borda-lateral-direita" id="borda-direita"></div>
+        <div class="area-ponto" onclick="adicionarPonto('direita', event)">
+          <select class="seletor-cor-time" id="cor-direita" onclick="event.stopPropagation()" onchange="mudarCor('direita')">
+            <option value="" class="op-padrao">Cor</option>
+            <option value="Amarelo" class="op-amarelo">Amarelo</option>
+            <option value="Azul" class="op-azul">Azul</option>
+            <option value="Roxo" class="op-roxo">Roxo</option>
+            <option value="Rosa" class="op-rosa">Rosa</option>
+          </select>
+          <div class="numero-pontos" id="pts-direita">0</div>
+        </div>
+        <div class="controles-lado">
+          <button class="btn-menos-um" onclick="subtrairPonto('direita')">-1</button>
+        </div>
+      </div>
+
+    </main>
+
+    <div class="janela-tabela" id="container-tabela">
+      <div class="janela-tabela-barra">
+        <span class="janela-tabela-titulo">📋 Tabela Bola Fora</span>
+        <div class="janela-tabela-botoes">
+          <button class="btn-janela" onclick="minimizarTabela()" title="Minimizar">➖</button>
+          <button class="btn-janela" onclick="fecharTabela()" title="Fechar">❌</button>
+        </div>
+      </div>
+      <iframe src="https://bolaforavb.github.io/centraldoadm/tabela_bola_fora.html" class="janela-tabela-conteudo" id="iframe-tabela"></iframe>
+    </div>
+
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
+      databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com/"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const placarRef = db.ref('placar_digital');
+
+    let placarLocal = {
+      esquerda: 0,
+      direita: 0,
+      corEsquerda: "",
+      corDireita: ""
+    };
+
+    const estilosCores = {
+      "Amarelo": { bg: "#ffeb3b", text: "#000" },
+      "Azul": { bg: "#2196f3", text: "#fff" },
+      "Roxo": { bg: "#9c27b0", text: "#fff" },
+      "Rosa": { bg: "#e91e63", text: "#fff" },
+      "": { bg: "#f7f5f2", text: "#12364e" }
+    };
+
+    // --- ENGENHARIA DE ÁUDIO VIA WEB AUDIO API ---
+    let audioContext;
+    let audioBuffer;
+    let audioSource = null;
+    let estaTocando = false;
+
+    fetch('https://bolaforavb.github.io/centraldoadm/apito.wav')
+      .then(response => response.arrayBuffer())
+      .then(arrayBuffer => {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        return audioContext.decodeAudioData(arrayBuffer);
+      })
+      .then(buffer => {
+        audioBuffer = buffer;
+      })
+      .catch(err => console.error("Erro ao carregar o arquivo .wav do repositório:", err));
+
+    function iniciarApito(event) {
+      if (event) event.preventDefault();
+      
+      if (!audioBuffer || estaTocando) return;
+
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioContext && audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+
+      estaTocando = true;
+
+      audioSource = audioContext.createBufferSource();
+      audioSource.buffer = audioBuffer;
+      audioSource.loop = true;
+
+      audioSource.loopStart = 0.15; 
+      audioSource.loopEnd = audioBuffer.duration - 0.40; 
+
+      audioSource.connect(audioContext.destination);
+      audioSource.start(0);
+    }
+
+    function pararApito(event) {
+      if (event) event.preventDefault();
+      estaTocando = false;
+      
+      if (audioSource) {
+        try {
+          audioSource.stop();
+        } catch(e) {}
+        audioSource = null;
+      }
+    }
+
+    // --- SINCRO DA HORA OFICIAL DE BRASÍLIA COM SEGUNDOS ---
+    let diferencaTempoServidor = 0;
+
+    function sincronizarRelogio() {
+      fetch('https://worldtimeapi.org/api/timezone/America/Sao_Paulo')
+        .then(res => res.json())
+        .then(data => {
+          const horaServidor = new Date(data.datetime).getTime();
+          const horaLocal = Date.now();
+          diferencaTempoServidor = horaServidor - horaLocal;
+        })
+        .catch(err => console.error("Erro ao sincronizar com o horário de Brasília:", err));
+    }
+
+    function atualizarRelogioVisual() {
+      const agoraCorrigido = new Date(Date.now() + diferencaTempoServidor);
+      const horas = String(agoraCorrigido.getHours()).padStart(2, '0');
+      const minutes = String(agoraCorrigido.getMinutes()).padStart(2, '0');
+      const segundos = String(agoraCorrigido.getSeconds()).padStart(2, '0'); 
+      
+      const elementoRelogio = document.getElementById('relogio');
+      if (elementoRelogio) {
+        elementoRelogio.innerText = `${horas}:${minutes}:${segundos}`;
+      }
+    }
+
+    sincronizarRelogio();
+    setInterval(atualizarRelogioVisual, 100); 
+    setInterval(sincronizarRelogio, 600000); 
+    // ---------------------------------------------------------------
+
+    // --- CONTROLES DE EXIBIÇÃO DA JANELA DA TABELA ---
+    function toggleTabela() {
+      const container = document.getElementById('container-tabela');
+      const iframe = document.getElementById('iframe-tabela');
+      
+      // Se tiver totalmente escondido ou minimizado, ele abre/restaura
+      if (container.style.display === 'none' || container.style.display === '') {
+        container.style.display = 'block';
+        iframe.classList.remove('minimizado');
+        // Rola a tela suavemente para focar na tabela
+        setTimeout(() => { container.scrollIntoView({ behavior: 'smooth' }); }, 100);
+      } else if (iframe.classList.contains('minimizado')) {
+        iframe.classList.remove('minimizado');
+      } else {
+        // Se clicar de novo com ela aberta, minimiza
+        iframe.classList.add('minimizado');
+      }
+    }
+
+    function minimizarTabela() {
+      const iframe = document.getElementById('iframe-tabela');
+      iframe.classList.toggle('minimizado');
+    }
+
+    function fecharTabela() {
+      const container = document.getElementById('container-tabela');
+      container.style.display = 'none';
+    }
+    // ---------------------------------------------------------------
+
+    // --- ATUALIZAÇÃO SINCRO DO SELETOR, DO BOTÃO "-1" E DA BORDA LATERAL ABSOLUTA ---
+    function atualizarAparenciaSeletor(lado, cor) {
+      const select = document.getElementById(`cor-${lado}`);
+      const estilo = estilosCores[cor] || estilosCores[""];
+      
+      if (select) {
+        select.style.backgroundColor = estilo.bg;
+        select.style.color = estilo.text;
+      }
+
+      const ladoContainer = select ? select.closest('.lado-placar') : null;
+      if (ladoContainer) {
+        const btnMenos = ladoContainer.querySelector('.btn-menos-um');
+        if (btnMenos) {
+          btnMenos.style.backgroundColor = estilo.bg;
+          btnMenos.style.color = estilo.text;
+          btnMenos.style.borderColor = cor ? estilo.bg : "#12364e";
+        }
+
+        // Atualiza a borda lateral posicionada absolutamente
+        const bordaEsq = document.getElementById('borda-esquerda');
+        const bordaDir = document.getElementById('borda-direita');
+
+        if (bordaEsq && lado === 'esquerda') {
+          bordaEsq.style.backgroundColor = cor ? estilo.bg : "transparent";
+        }
+        if (bordaDir && lado === 'direita') {
+          bordaDir.style.backgroundColor = cor ? estilo.bg : "transparent";
+        }
+      }
+    }
+
+    placarRef.on('value', (snapshot) => {
+      const dadosNuvem = snapshot.val();
+      if (dadosNuvem) {
+        placarLocal = dadosNuvem;
+        
+        const elemEsq = document.getElementById('pts-esquerda');
+        const elemDir = document.getElementById('pts-direita');
+        const selEsq = document.getElementById('cor-esquerda');
+        const selDir = document.getElementById('cor-direita');
+
+        if(elemEsq) elemEsq.innerText = placarLocal.esquerda || 0;
+        if(elemDir) elemDir.innerText = placarLocal.direita || 0;
+        if(selEsq) selEsq.value = placarLocal.corEsquerda || "";
+        if(selDir) selDir.value = placarLocal.corDireita || "";
+
+        atualizarAparenciaSeletor('esquerda', placarLocal.corEsquerda || "");
+        atualizarAparenciaSeletor('direita', placarLocal.corDireita || "");
+      } else {
+        placarRef.set({ esquerda: 0, opacity: 0, direita: 0, corEsquerda: "", corDireita: "" });
+      }
+    });
+
+    function adicionarPonto(lado, event) {
+      if (event && event.target.tagName === 'SELECT') return;
+      placarLocal[lado] = (placarLocal[lado] || 0) + 1;
+      placarRef.set(placarLocal);
+    }
+
+    function subtrairPonto(lado) {
+      if (placarLocal[lado] > 0) {
+        placarLocal[lado] -= 1;
+        placarRef.set(placarLocal);
+      }
+    }
+
+    // --- MUDANÇA AUTOMÁTICA DAS CORES ---
+    function mudarCor(lado) {
+      const valorCor = document.getElementById(`cor-${lado}`).value;
+      if (lado === 'esquerda') {
+        placarLocal.corEsquerda = valorCor;
+      } else {
+        placarLocal.corDireita = valorCor;
+      }
+      placarRef.set(placarLocal);
+    }
+
+    function zerarPlacar() {
+      if (confirm("Deseja reiniciar a contagem do placar para 0 x 0?")) {
+        placarRef.set({ esquerda: 0, direita: 0, corEsquerda: "", corDireita: "" });
+      }
+    }
+
+    function enviarLembreteResultado() {
+      if (!("Notification" in window)) {
+        alert("Este navegador não suporta notificações de sistema.");
+        return;
+      }
+
+      const timeEsq = placarLocal.corEsquerda || "Time Esquerdo";
+      const timeDir = placarLocal.corDireita || "Time Direito";
+      const pontosEsq = placarLocal.esquerda || 0;
+      const pontosDir = placarLocal.direita || 0;
+
+      const titulo = "Bola Fora - Resultado Guardado 📌";
+      const opcoesNotificacao = {
+        body: `${timeEsq} ${pontosEsq} x ${pontosDir} ${timeDir}`,
+        icon: 'https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png',
+        tag: 'resultado-placar', 
+        requireInteraction: true 
+      };
+
+      if (Notification.permission === "granted") {
+        dispararNotificacao(titulo, opcoesNotificacao);
+      } else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then(permission => {
+          if (permission === "granted") {
+            dispararNotificacao(titulo, opcoesNotificacao);
+          }
+        });
+      } else {
+        alert("As notificações estão bloqueadas no seu navegador. Ative-as nas configurações do site para usar o lembrete.");
+      }
+    }
+
+    function dispararNotificacao(titulo, opcoes) {
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.ready.then(registration => {
+          registration.showNotification(titulo, opcoes);
+        });
+      } else {
+        new Notification(titulo, opcoes);
+      }
+    }
+
+    function alternarTelaCheia() {
+      const botao = document.getElementById('btnFullscreen');
+      if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+        const elemento = document.documentElement;
+        if (elemento.requestFullscreen) { elemento.requestFullscreen(); } 
+        else if (elemento.webkitRequestFullscreen) { elemento.webkitRequestFullscreen(); } 
+        else if (elemento.msRequestFullscreen) { elemento.msRequestFullscreen(); }
+        botao.innerText = "🔳 Sair do Fullscreen";
+      } else {
+        if (document.exitFullscreen) { document.exitFullscreen(); } 
+        else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); } 
+        else if (document.msExitFullscreen) { document.msExitFullscreen(); }
+        botao.innerText = "🔲 Tela Cheia";
+      }
+    }
+
+    function monitorarMudancaTelaCheia() {
+      const botao = document.getElementById('btnFullscreen');
+      if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+        botao.innerText = "🔲 Tela Cheia";
+      }
+    }
+
+    document.addEventListener('fullscreenchange', monitorarMudancaTelaCheia);
+    document.addEventListener('webkitfullscreenchange', monitorarMudancaTelaCheia);
+    document.addEventListener('msfullscreenchange', monitorarMudancaTelaCheia);
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        const code = "self.addEventListener('notificationclick', function(event) { event.notification.close(); });";
+        const blob = new Blob([code], { type: 'application/javascript' });
+        const workerUrl = URL.createObjectURL(blob);
+        
+        navigator.serviceWorker.register(workerUrl).then(reg => {
+          console.log('Service Worker de notificações ativado.');
+        }).catch(err => {
+          console.error('Erro ao registrar Service Worker:', err);
+        });
+      });
+    }
+  </script>
+
+</body>
+</html>
