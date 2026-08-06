@@ -24,7 +24,6 @@
       align-items: center;
       min-height: 100vh;
       color: #12364e;
-      /* Alterado para permitir rolar a tela e ver a tabela abaixo */
       overflow-y: auto; 
     }
 
@@ -117,7 +116,6 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      /* flex-grow removido para evitar esticar verticalmente com a rolagem */
     }
 
     .estrutura-placar {
@@ -144,7 +142,7 @@
 
     .container-relogio-isolado {
       position: absolute;
-      top: 4px; /* Levemente ajustado para o tamanho menor do visor */
+      top: 4px; 
       left: 50%;
       transform: translateX(-50%);
       z-index: 12;
@@ -156,33 +154,59 @@
       color: #ffffff; 
       border: 1.5px solid #e1d8cd; 
       border-radius: 8px;
-      padding: 0 10px; /* Reduzido 20% para manter as laterais proporcionais */
-      font-size: 46px; /* Reduzido 20% (de 58px para 46px) */
+      padding: 0 10px; 
+      font-size: 46px; 
       font-weight: bold;
-      letter-spacing: 1.2px; /* Reduzido 20% para manter os números unidos e legíveis */
+      letter-spacing: 1.2px; 
       box-shadow: 0 4px 10px rgba(0,0,0,0.15);
       white-space: nowrap;
       text-align: center;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 68px; /* Reduzido 20% (de 85px para 68px) */
+      height: 68px; 
     }
 
-    .container-logo-isolada {
+    .container-centro-elementos {
       position: absolute;
-      top: 50%; 
+      top: 41%; 
       left: 50%;
-      transform: translate(-50%, -60%); 
+      transform: translate(-50%, -50%); 
       z-index: 10;
-      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-inverter-lados {
+      background-color: #12364e;
+      color: #e1d8cd;
+      border: 1.5px solid #e1d8cd;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      font-size: 18px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
+      transition: transform 0.1s, background-color 0.2s;
+      pointer-events: auto;
+    }
+
+    .btn-inverter-lados:active {
+      transform: scale(0.90);
+      background-color: #1d4f71;
     }
 
     .logo-central {
-      width: 90px;
-      height: 90px;
+      width: 80px;
+      height: 80px;
       object-fit: contain;
       filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));
+      pointer-events: none;
     }
 
     .container-apito-isolado {
@@ -191,6 +215,10 @@
       left: 50%;
       transform: translateX(-50%);
       z-index: 12;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
     }
 
     .btn-apito {
@@ -209,7 +237,7 @@
       transition: transform 0.1s, background-color 0.2s;
       -webkit-touch-callout: none; 
       -webkit-user-select: none;   
-      user-select: none;           
+      user-select: none;            
     }
 
     .btn-apito:active {
@@ -227,7 +255,6 @@
       position: relative;
     }
 
-    /* Borda lateral externa aumentada em mais 100% (de 16px para 32px) */
     .borda-lateral-esquerda,
     .borda-lateral-direita {
       position: absolute;
@@ -343,7 +370,6 @@
       margin-bottom: 12px;
     }
 
-    /* --- ESTILOS DA JANELA DA TABELA (IFRAME) --- */
     .janela-tabela {
       display: none;
       width: 100%;
@@ -393,12 +419,11 @@
 
     .janela-tabela-conteudo {
       width: 100%;
-      height: 70vh; /* Ocupa 70% da altura da tela */
+      height: 70vh; 
       border: none;
       transition: height 0.2s ease-out;
     }
 
-    /* Classe aplicada ao minimizar */
     .janela-tabela-conteudo.minimizado {
       height: 0px !important;
     }
@@ -436,7 +461,8 @@
         <div class="relogio-brasilia" id="relogio">00:00:00</div>
       </div>
 
-      <div class="container-logo-isolada">
+      <div class="container-centro-elementos">
+        <button class="btn-inverter-lados" onclick="inverterLados()" title="Inverter Cores">⇄</button>
         <img src="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" alt="Logo Bola Fora" class="logo-central">
       </div>
 
@@ -609,23 +635,19 @@
     sincronizarRelogio();
     setInterval(atualizarRelogioVisual, 100); 
     setInterval(sincronizarRelogio, 600000); 
-    // ---------------------------------------------------------------
 
     // --- CONTROLES DE EXIBIÇÃO DA JANELA DA TABELA ---
     function toggleTabela() {
       const container = document.getElementById('container-tabela');
       const iframe = document.getElementById('iframe-tabela');
       
-      // Se tiver totalmente escondido ou minimizado, ele abre/restaura
       if (container.style.display === 'none' || container.style.display === '') {
         container.style.display = 'block';
         iframe.classList.remove('minimizado');
-        // Rola a tela suavemente para focar na tabela
         setTimeout(() => { container.scrollIntoView({ behavior: 'smooth' }); }, 100);
       } else if (iframe.classList.contains('minimizado')) {
         iframe.classList.remove('minimizado');
       } else {
-        // Se clicar de novo com ela aberta, minimiza
         iframe.classList.add('minimizado');
       }
     }
@@ -639,9 +661,8 @@
       const container = document.getElementById('container-tabela');
       container.style.display = 'none';
     }
-    // ---------------------------------------------------------------
 
-    // --- ATUALIZAÇÃO SINCRO DO SELETOR, DO BOTÃO "-1" E DA BORDA LATERAL ABSOLUTA ---
+    // --- ATUALIZAÇÃO DA APARÊNCIA E RESTRIÇÃO DE OPÇÕES DOS SELECTS ---
     function atualizarAparenciaSeletor(lado, cor) {
       const select = document.getElementById(`cor-${lado}`);
       const estilo = estilosCores[cor] || estilosCores[""];
@@ -660,7 +681,6 @@
           btnMenos.style.borderColor = cor ? estilo.bg : "#12364e";
         }
 
-        // Atualiza a borda lateral posicionada absolutamente
         const bordaEsq = document.getElementById('borda-esquerda');
         const bordaDir = document.getElementById('borda-direita');
 
@@ -673,6 +693,31 @@
       }
     }
 
+    function atualizarOpcoesDisponiveis() {
+      const selEsq = document.getElementById('cor-esquerda');
+      const selDir = document.getElementById('cor-direita');
+      
+      const valEsq = placarLocal.corEsquerda || "";
+      const valDir = placarLocal.corDireita || "";
+
+      for (let option of selEsq.options) {
+        if (option.value === "") {
+          option.style.display = "block";
+        } else {
+          option.style.display = (option.value === valDir) ? "none" : "block";
+        }
+      }
+
+      for (let option of selDir.options) {
+        if (option.value === "") {
+          option.style.display = "block";
+        } else {
+          option.style.display = (option.value === valEsq) ? "none" : "block";
+        }
+      }
+    }
+
+    // --- CORREÇÃO DO FIREBASE (INICIALIZAÇÃO SEGURA) ---
     placarRef.on('value', (snapshot) => {
       const dadosNuvem = snapshot.val();
       if (dadosNuvem) {
@@ -690,8 +735,10 @@
 
         atualizarAparenciaSeletor('esquerda', placarLocal.corEsquerda || "");
         atualizarAparenciaSeletor('direita', placarLocal.corDireita || "");
+        atualizarOpcoesDisponiveis();
       } else {
-        placarRef.set({ esquerda: 0, opacity: 0, direita: 0, corEsquerda: "", corDireita: "" });
+        const estadoInicial = { esquerda: 0, direita: 0, corEsquerda: "", corDireita: "" };
+        placarRef.set(estadoInicial);
       }
     });
 
@@ -708,14 +755,18 @@
       }
     }
 
-    // --- MUDANÇA AUTOMÁTICA DAS CORES ---
     function mudarCor(lado) {
-      const valorCor = document.getElementById(`cor-${lado}`).value;
-      if (lado === 'esquerda') {
-        placarLocal.corEsquerda = valorCor;
-      } else {
-        placarLocal.corDireita = valorCor;
-      }
+      placarLocal.corEsquerda = document.getElementById('cor-esquerda').value;
+      placarLocal.corDireita = document.getElementById('cor-direita').value;
+      placarRef.set(placarLocal);
+    }
+
+    function inverterLados() {
+      const corEsquerdaTemp = placarLocal.corEsquerda;
+      
+      placarLocal.corEsquerda = placarLocal.corDireita;
+      placarLocal.corDireita = corEsquerdaTemp;
+
       placarRef.set(placarLocal);
     }
 
