@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ranking - Central do Adm</title>
+  <link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
+  
+  <style>
+    /* Reset global idêntico ao painel */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: sans-serif;
+      background-color: #12364e; 
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center; 
+      min-height: 100vh;
+      color: #12364e;
+    }
+
+    .header-banner {
+      width: 100%; 
+      max-width: 600px;
+      background-color: #e1d8cd; 
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .header-banner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; 
+    }
+
+    .main-container {
+      width: 100%;
+      max-width: 600px;
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Estrutura de Card baseada no design original */
+    .bloco-card {
+      background-color: white; 
+      border-radius: 16px;
+      width: 100%;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .titulo-secao {
+      font-size: 15px;
+      font-weight: bold;
+      color: #12364e;
+      margin: 0 0 15px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      padding-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Linha Superior: Título + Período / Título + Ações */
+    .header-resultado-linha {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      padding-bottom: 6px;
+      width: 100%;
+    }
+
+    .header-resultado-linha .titulo-secao {
+      margin: 0;
+      border: none;
+      padding: 0;
+      flex: 1; /* Permite que o título ocupe o espaço necessário sem empurrar agressivamente */
+      white-space: nowrap; /* Evita que a palavra quebre */
+    }
+
+    .campo-periodo {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: bold;
+      flex-wrap: wrap;
+    }
+
+    /* Inputs e Selects padronizados com O Painel */
+    input[type="text"], input[type="date"], select {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #12364e;
+      outline: none;
+    }
+
+    select {
+      font-family: sans-serif;
+      font-weight: bold;
+      padding: 6px 10px;
+      background-color: white;
+      cursor: pointer;
+    }
+
+    .campo-periodo select {
+      max-width: 105px;
+      padding: 6px 4px;
+    }
+
+    /* Seções de Pódio com Checkboxes */
+    .secao-podio-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    /* Linha lado a lado para o Top 3 */
+    .linha-podio-top3 {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .coluna-podio {
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      flex: 1; /* Faz as colunas dividirem o espaço igualmente lado a lado */
+      min-width: 0; /* Evita estouro de layout */
+    }
+
+    /* Cores das colunas herdando os tons dos times do painel */
+    .podio-ouro { background-color: #fff3cd; border-left: 5px solid #d9b246; }
+    .podio-prata { background-color: #f7f5f2; border-left: 5px solid #12364e; }
+    .podio-bronze { background-color: #f8d7da; border-left: 5px solid #e27c8d; }
+    .podio-integracao { background-color: #e2f0d9; border-left: 5px solid #70ad47; }
+
+    .titulo-podio {
+      font-weight: bold;
+      font-size: 13px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 2px;
+    }
+
+    .lista-checkboxes {
+      max-height: 140px;
+      overflow-y: auto;
+      background: white;
+      padding: 4px;
+      border-radius: 8px;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+
+    /* Item de flag otimizado para clique mobile */
+    .item-checkbox {
+      display: flex;
+      align-items: center;
+      padding: 8px 6px;
+      cursor: pointer;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 13px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .item-checkbox:last-child {
+      border-bottom: none;
+    }
+
+    .item-checkbox input {
+      margin-right: 8px;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .item-checkbox span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis; /* Corta nomes longos no mobile de forma elegante */
+    }
+
+    /* Botão Principal padronizado com o Dourado do Painel */
+    .btn-acao-principal {
+      width: 100%;
+      padding: 12px;
+      background-color: #d9b246;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      transition: background 0.2s, transform 0.1s;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .btn-acao-principal:hover { background-color: #af8a23; }
+    .btn-acao-principal:active { transform: scale(0.98); }
+
+    /* Layout inline para adicionar jogador */
+    .form-inline {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .form-inline input {
+      flex: 1;
+    }
+
+    .btn-add-tabela {
+      padding: 10px 16px;
+      background-color: #d9b246;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn-add-tabela:hover { background-color: #af8a23; }
+
+    /* Lista de Usuários do Ranking */
+    .lista-ranking-usuarios {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+      max-height: 350px; 
+      overflow-y: auto; 
+      margin-bottom: 15px;
+    }
+
+    .item-ranking {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      background-color: #f7f5f2;
+      border-radius: 8px;
+      border-left: 3px solid #d9b246;
+    }
+
+    /* Destacar o Top 1 */
+    .item-ranking.primeiro-lugar {
+      border-left: 5px solid #d9b246;
+      background-color: #fff3cd;
+    }
+
+    .posicao-badge {
+      font-size: 12px;
+      font-weight: bold;
+      background: #12364e;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-right: 6px;
+    }
+
+    .primeiro-lugar .posicao-badge {
+      background: #d9b246;
+    }
+
+    .nome-ranking {
+      font-size: 13px;
+      font-weight: 500;
+      color: #12364e;
+    }
+
+    .pontos-ranking {
+      font-size: 13px;
+      font-weight: bold;
+      color: #12364e;
+      margin-right: 8px;
+    }
+
+    .btn-deletar-ranking {
+      background: none;
+      border: none;
+      color: #d93025;
+      font-weight: bold;
+      font-size: 14px;
+      padding: 2px 4px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Novo botão para zerar pontos individualmente */
+    .btn-zerar-ranking {
+      background: none;
+      border: none;
+      color: #12364e;
+      font-size: 13px;
+      padding: 2px 4px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    .btn-zerar-ranking:hover {
+      opacity: 1;
+    }
+
+    /* Novo botão para zerar todos globalmente */
+    .btn-zerar-tudo-geral {
+      background-color: #d93025;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: background-color 0.2s;
+      flex-shrink: 0; /* Impede o botão de esmagar ou quebrar */
+    }
+    .btn-zerar-tudo-geral:hover {
+      background-color: #b3241c;
+    }
+
+    /* Botão Compartilhar WhatsApp idêntico ao Gerador de Times */
+    .btn-whatsapp {
+      background-color: #25d366;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      transition: background-color 0.2s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-whatsapp:hover {
+      background-color: #1ebd59;
+    }
+
+    .btn-whatsapp:active {
+      transform: scale(0.97);
+    }
+
+    /* Rodapé com botão Voltar */
+    .footer-navegacao {
+      width: 100%;
+      max-width: 600px;
+      padding: 8px 16px 24px 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .btn-voltar-painel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px;
+      background-color: transparent;
+      color: #e1d8cd;
+      border: 2px solid #e1d8cd;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-voltar-painel:hover {
+      background-color: #e1d8cd;
+      color: #12364e;
+    }
+
+    .btn-voltar-painel:active {
+      transform: scale(0.99);
+    }
+
+    /* --- ESTILOS ADICIONAIS: HISTÓRICO DE PARTIDAS --- */
+    .formulario-historico {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .linha-seletores {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .campo-historico-seletor {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .campo-historico-seletor label {
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+
+    .campo-historico-seletor select {
+      width: 100%;
+      padding: 8px;
+    }
+
+    .linha-acoes-historico {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .linha-acoes-historico input[type="date"] {
+      flex: 1;
+      padding: 8px;
+    }
+
+    .btn-registrar-historico {
+      padding: 10px 16px;
+      background-color: #d9b246;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-registrar-historico:hover { background-color: #af8a23; }
+
+    .lista-historico-container {
+      margin-top: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 250px;
+      overflow-y: auto;
+      border-top: 1px solid rgba(0,0,0,0.1);
+      padding-top: 12px;
+    }
+
+    .item-historico {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #f7f5f2;
+      padding: 10px;
+      border-radius: 8px;
+      border-left: 3px solid #12364e;
+      font-size: 13px;
+    }
+
+    .item-historico .data-hist {
+      font-weight: bold;
+      color: #12364e;
+      font-size: 12px;
+      min-width: 75px;
+    }
+
+    .item-historico .podio-resumo {
+      flex: 1;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding-left: 8px;
+    }
+
+    .item-historico .time-badge {
+      font-weight: 500;
+    }
+
+    /* Media query específica para corrigir empurrões ou quebras em telas estreitas */
+    @media (max-width: 480px) {
+      .linha-podio-top3 {
+        flex-direction: column; /* No mobile estreito, volta a ficar um embaixo do outro para não quebrar */
+        gap: 12px;
+      }
+      .bloco-card:first-of-type .header-resultado-linha {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .campo-periodo {
+        justify-content: flex-start;
+        width: 100%;
+      }
+      .campo-periodo select {
+        max-width: 110px;
+      }
+      .linha-seletores {
+        grid-template-columns: 1fr;
+      }
+      .linha-acoes-historico {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header-banner">
+    <img src="https://i.ibb.co/twJd6BRq/Whats-App-Image-2026-06-29-at-10-42-05.jpg" alt="Banner Central do Adm">
+  </header>
+
+  <main class="main-container">
+    
+    <div class="bloco-card">
+      <div class="header-resultado-linha">
+        <div class="titulo-secao">Inserir Pontos</div>
+        <div class="campo-periodo">
+          <span class="texto-fixo">De</span>
+          <select id="mes-inicio" required>
+            <option value="Janeiro">Janeiro</option>
+            <option value="Fevereiro">Fevereiro</option>
+            <option value="Março">Março</option>
+            <option value="Abril">Abril</option>
+            <option value="Maio">Maio</option>
+            <option value="Junho">Junho</option>
+            <option value="Julho">Julho</option>
+            <option value="Agosto">Agosto</option>
+            <option value="Setembro">Setembro</option>
+            <option value="Outubro">Outubro</option>
+            <option value="Novembro">Novembro</option>
+            <option value="Dezembro">Dezembro</option>
+          </select>
+          <span class="texto-fixo">Até</span>
+          <select id="mes-fim" required>
+            <option value="Janeiro">Janeiro</option>
+            <option value="Fevereiro">Fevereiro</option>
+            <option value="Março">Março</option>
+            <option value="Abril">Abril</option>
+            <option value="Maio">Maio</option>
+            <option value="Junho">Junho</option>
+            <option value="Julho">Julho</option>
+            <option value="Agosto">Agosto</option>
+            <option value="Setembro">Setembro</option>
+            <option value="Outubro">Outubro</option>
+            <option value="Novembro">Novembro</option>
+            <option value="Dezembro">Dezembro</option>
+          </select>
+        </div>
+      </div>
+
+      <form id="form-resultado">
+        <div class="secao-podio-container">
+          
+          <!-- LINHA QUE COLOCA 1º, 2º e 3º LUGAR LADO A LADO -->
+          <div class="linha-podio-top3">
+            <div class="coluna-podio podio-ouro">
+              <div class="titulo-podio"><span>🏆 1º</span> <span>+5</span></div>
+              <div id="container-p1" class="lista-checkboxes"></div>
+            </div>
+
+            <div class="coluna-podio podio-prata">
+              <div class="titulo-podio"><span>🥈 2º</span> <span>+3</span></div>
+              <div id="container-p2" class="lista-checkboxes"></div>
+            </div>
+
+            <div class="coluna-podio podio-bronze">
+              <div class="titulo-podio"><span>🥉 3º</span> <span>+1</span></div>
+              <div id="container-p3" class="lista-checkboxes"></div>
+            </div>
+          </div>
+
+          <!-- INTEGRAÇÃO FICA EMBAIXO OCUPANDO A LINHA TODA -->
+          <div class="coluna-podio podio-integracao">
+            <div class="titulo-podio"><span>🧑‍🧒‍🧒 Integração do Time</span> <span>+1 PT</span></div>
+            <div id="container-p4" class="lista-checkboxes"></div>
+          </div>
+
+        </div>
+        <button type="submit" class="btn-acao-principal">Computar Pontos</button>
+      </form>
+    </div>
+
+    <div class="bloco-card">
+      <div class="titulo-secao">Novo Competidor</div>
+      <form id="form-novo-jogador" class="form-inline">
+        <input type="text" id="nome-novo" placeholder="Nome do Jogador" required>
+        <button type="submit" class="btn-add-tabela">Add</button>
+      </form>
+    </div>
+
+    <div class="bloco-card">
+      <div class="header-resultado-linha">
+        <div class="titulo-secao">Ranking</div>
+        <button id="btn-zerar-todos" class="btn-zerar-tudo-geral">Zerar Tudo</button>
+      </div>
+      <div class="lista-ranking-usuarios" id="tabela-ranking"></div>
+      
+      <button id="btn-compartilhar-ranking" class="btn-whatsapp">
+        <span>💬</span> Compartilhar Classificação
+      </button>
+    </div>
+
+    <div class="bloco-card">
+      <div class="titulo-secao">Histórico de Partidas</div>
+      <form id="form-historico" class="formulario-historico">
+        <div class="linha-seletores">
+          <div class="campo-historico-seletor">
+            <label>🥇 1º Lugar</label>
+            <select id="hist-p1" required>
+              <option value="">Selecione...</option>
+              <option value="Amarelo">Amarelo</option>
+              <option value="Azul">Azul</option>
+              <option value="Rosa">Rosa</option>
+              <option value="Roxo">Roxo</option>
+            </select>
+          </div>
+          <div class="campo-historico-seletor">
+            <label>🥈 2º Lugar</label>
+            <select id="hist-p2" required>
+              <option value="">Selecione...</option>
+              <option value="Amarelo">Amarelo</option>
+              <option value="Azul">Azul</option>
+              <option value="Rosa">Rosa</option>
+              <option value="Roxo">Roxo</option>
+            </select>
+          </div>
+          <div class="campo-historico-seletor">
+            <label>🥉 3º Lugar</label>
+            <select id="hist-p3" required>
+              <option value="">Selecione...</option>
+              <option value="Amarelo">Amarelo</option>
+              <option value="Azul">Azul</option>
+              <option value="Rosa">Rosa</option>
+              <option value="Roxo">Roxo</option>
+            </select>
+          </div>
+        </div>
+        <div class="linha-acoes-historico">
+          <input type="date" id="hist-data" required>
+          <button type="submit" class="btn-registrar-historico">Registrar</button>
+        </div>
+      </form>
+
+      <div id="lista-historico" class="lista-historico-container"></div>
+    </div>
+
+  </main>
+
+  <footer class="footer-navegacao">
+    <a href="dashboard.html" class="btn-voltar-painel">
+      <span>↩</span> Voltar
+    </a>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <script>
+    // Configurações Oficiais do Firebase unificadas da página de Login
+    const firebaseConfig = {
+      apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
+      authDomain: "central-adm-bolafora.firebaseapp.com",
+      databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com",
+      projectId: "central-adm-bolafora",
+      storageBucket: "central-adm-bolafora.firebasestorage.app",
+      messagingSenderId: "429477810517",
+      appId: "1:429477810517:web:3be6c842269cbdfe4b5fdc"
+    };
+    
+    // Inicializa o Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
+
+    // --- CONFIGURAÇÃO DE PERSISTÊNCIA E VERIFICAÇÃO DE AUTENTICAÇÃO ---
+    auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
+      .then(() => {
+        auth.onAuthStateChanged((user) => {
+          if (!user) {
+            window.location.href = 'index.html'; 
+          }
+        });
+      })
+      .catch((error) => {
+        console.error("Erro ao definir persistência de sessão:", error);
+      });
+
+    // Objeto base local
+    let BD_Pontuacao = {
+      "Alan": 0, "Bruno": 0, "Carlos": 0, "Diego": 0, 
+      "Eduardo": 0, "Felipe": 0, "Gabriel": 0, "Heitor": 0,
+      "Igor": 0, "João": 0, "Lucas": 0, "Matheus": 0, 
+      "Natan": 0, "Otávio": 0, "Pedro": 0, "Rodrigo": 0
+    };
+
+    // Salva pontuações no Firebase
+    function salvarDados() {
+      db.ref('ranking_volei').set(BD_Pontuacao);
+    }
+
+    // Ouvir alterações do ranking em tempo real
+    db.ref('ranking_volei').on('value', (snapshot) => {
+      const dadosNuvem = snapshot.val();
+      if (dadosNuvem) {
+        BD_Pontuacao = dadosNuvem;
+      } else {
+        salvarDados();
+      }
+      atualizarListasCheckbox();
+      atualizarTabelaVisual();
+    });
+
+    // Ouvir alterações do Período em tempo real (Sincronizado na Nuvem)
+    db.ref('periodo_ranking').on('value', (snapshot) => {
+      const periodo = snapshot.val();
+      if (periodo) {
+        document.getElementById('mes-inicio').value = periodo.inicio || 'Julho';
+        document.getElementById('mes-fim').value = periodo.fim || 'Setembro';
+      } else {
+        db.ref('periodo_ranking').set({ inicio: 'Julho', fim: 'Setembro' });
+      }
+    });
+
+    // Ouvir histórico de partidas em tempo real
+    db.ref('historico_partidas').on('value', (snapshot) => {
+      const historico = snapshot.val();
+      atualizarHistoricoVisual(historico);
+    });
+
+    // Escutadores para salvar na nuvem quando os meses forem alterados
+    document.getElementById('mes-inicio').addEventListener('change', function() {
+      db.ref('periodo_ranking/inicio').set(this.value);
+    });
+
+    document.getElementById('mes-fim').addEventListener('change', function() {
+      db.ref('periodo_ranking/fim').set(this.value);
+    });
+
+    function atualizarListasCheckbox() {
+      const pódios = ['p1', 'p2', 'p3', 'p4'];
+      const listaJogadores = Object.keys(BD_Pontuacao).sort();
+
+      pódios.forEach(prefixo => {
+        const container = document.getElementById(`container-${prefixo}`);
+        container.innerHTML = '';
+
+        listaJogadores.forEach(jogador => {
+          const label = document.createElement('label');
+          label.className = 'item-checkbox';
+          const idSanitizado = `${prefixo}_${jogador.replace(/\s+/g, '_')}`;
+
+          label.innerHTML = `
+            <input type="checkbox" name="${prefixo}_players" value="${jogador}" id="${idSanitizado}">
+            <span>${jogador}</span>
+          `;
+          container.appendChild(label);
+        });
+      });
+    }
+
+    function atualizarTabelaVisual() {
+      const containerRanking = document.getElementById('tabela-ranking');
+      containerRanking.innerHTML = '';
+
+      const rankingOrdenado = Object.entries(BD_Pontuacao)
+        .sort((a, b) => b[1] - a[1]);
+
+      if (rankingOrdenado.length === 0) {
+        containerRanking.innerHTML = `<div style="text-align:center; padding: 20px; font-size:13px; opacity:0.6;">Nenhum jogador cadastrado no ranking.</div>`;
+        return;
+      }
+
+      rankingOrdenado.forEach((jogador, index) => {
+        const nome = jogador[0];
+        const pontos = jogador[1];
+        const ePrimeiro = index === 0;
+
+        const item = document.createElement('div');
+        item.className = `item-ranking ${ePrimeiro ? 'primeiro-lugar' : ''}`;
+        
+        item.innerHTML = `
+          <div style="display: flex; align-items: center; min-width: 0;">
+            <span class="posicao-badge">${index + 1}º</span>
+            <span class="nome-ranking" title="${nome}">${nome}</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <span class="pontos-ranking">${pontos} pts</span>
+            <button class="btn-zerar-ranking" onclick="zerarJogador('${nome}')" title="Zerar pontos deste jogador">🔄</button>
+            <button class="btn-deletar-ranking" onclick="excluirJogador('${nome}')" title="Excluir jogador">✕</button>
+          </div>
+        `;
+        containerRanking.appendChild(item);
+      });
+    }
+
+    document.getElementById('form-novo-jogador').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const input = document.getElementById('nome-novo');
+      const nome = input.value.trim();
+
+      if (BD_Pontuacao.hasOwnProperty(nome)) {
+        alert("Este jogador já está no ranking!");
+        return;
+      }
+
+      BD_Pontuacao[nome] = 0;
+      salvarDados();
+      input.value = '';
+    });
+
+    window.excluirJogador = function(nome) {
+      if (confirm(`Remover "${nome}" permanentemente da tabela de pontos?`)) {
+        delete BD_Pontuacao[nome];
+        salvarDados();
+      }
+    }
+
+    window.zerarJogador = function(nome) {
+      if (confirm(`Deseja zerar os pontos de "${nome}"?`)) {
+        BD_Pontuacao[nome] = 0;
+        salvarDados();
+      }
+    }
+
+    document.getElementById('btn-zerar-todos').addEventListener('click', function() {
+      if (confirm("🚨 ATENÇÃO: Deseja ZERAR a pontuação de TODOS os competidores? Esta ação mudará os valores na nuvem imediatamente.")) {
+        Object.keys(BD_Pontuacao).forEach(jogador => {
+          BD_Pontuacao[jogador] = 0;
+        });
+        salvarDados();
+      }
+    });
+
+    function obterFlagados(nomeInput) {
+      const checkboxes = document.querySelectorAll(`input[name="${nomeInput}"]:checked`);
+      return Array.from(checkboxes).map(cb => cb.value);
+    }
+
+    document.getElementById('form-resultado').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const flagadosP1 = obterFlagados('p1_players');
+      const flagadosP2 = obterFlagados('p2_players');
+      const flagadosP3 = obterFlagados('p3_players');
+      const flagadosP4 = obterFlagados('p4_players'); 
+
+      if (flagadosP1.length === 0 && flagadosP2.length === 0 && flagadosP3.length === 0 && flagadosP4.length === 0) {
+        alert("Nenhum jogador foi selecionado.");
+        return;
+      }
+
+      const podioApenas = [...flagadosP1, ...flagadosP2, ...flagadosP3];
+      const podioDuplicado = podioApenas.some((jogador, index) => podioApenas.indexOf(jogador) !== index);
+
+      if (podioDuplicado) {
+        alert("Erro: O mesmo competidor foi marcado em mais de uma posição do pódio (1º, 2º ou 3º).");
+        return;
+      }
+
+      flagadosP1.forEach(jogador => BD_Pontuacao[jogador] += 5);
+      flagadosP2.forEach(jogador => BD_Pontuacao[jogador] += 3);
+      flagadosP3.forEach(jogador => BD_Pontuacao[jogador] += 1);
+      flagadosP4.forEach(jogador => BD_Pontuacao[jogador] += 1);
+
+      salvarDados();
+      
+      document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    });
+
+    document.getElementById('btn-compartilhar-ranking').addEventListener('click', () => {
+      const rankingOrdenado = Object.entries(BD_Pontuacao)
+        .sort((a, b) => b[1] - a[1]);
+
+      if (rankingOrdenado.length === 0) {
+        alert("Não há dados cadastrados para compartilhar!");
+        return;
+      }
+
+      let textoMensagem = `*🏆 CLASSIFICAÇÃO GERAL - BOLA FORA 🏆*\n`;
+      textoMensagem += `_Atualizado em: ${new Date().toLocaleDateString('pt-BR')}_\n\n`;
+
+      rankingOrdenado.forEach((jogador, index) => {
+        const nome = filename = jogador[0];
+        const pontos = jogador[1];
+        
+        let emojiPosicao = `•`;
+        if (index === 0) emojiPosicao = `🥇`;
+        else if (index === 1) emojiPosicao = `🥈`;
+        else if (index === 2) emojiPosicao = `🥉`;
+
+        textoMensagem += `${emojiPosicao} *${index + 1}º ${nome}* - ${pontos} pts\n`;
+      });
+
+      textoMensagem += `\n_Gerado automaticamente pela Central do Adm._`;
+
+      const textoUrl = encodeURIComponent(textoMensagem);
+      const urlWhatsapp = `https://api.whatsapp.com/send?text=${textoUrl}`;
+      window.open(urlWhatsapp, '_blank');
+    });
+
+    // --- MANIPULAÇÃO DO HISTÓRICO DE PARTIDAS ---
+    document.getElementById('form-historico').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const p1 = document.getElementById('hist-p1').value;
+      const p2 = document.getElementById('hist-p2').value;
+      const p3 = document.getElementById('hist-p3').value;
+      const dataInput = document.getElementById('hist-data').value;
+
+      if (p1 === p2 || p1 === p3 || p2 === p3) {
+        alert("Erro: O mesmo time não pode ocupar mais de uma colocação na partida!");
+        return;
+      }
+
+      const novaPartida = {
+        primeiro: p1,
+        segundo: p2,
+        terceiro: p3,
+        data: dataInput,
+        timestamp: new Date(dataInput + 'T00:00:00').getTime()
+      };
+
+      db.ref('historico_partidas').push(novaPartida)
+        .then(() => {
+          document.getElementById('hist-p1').value = '';
+          document.getElementById('hist-p2').value = '';
+          document.getElementById('hist-p3').value = '';
+          document.getElementById('hist-data').value = '';
+        })
+        .catch((error) => {
+          console.error("Erro ao salvar histórico:", error);
+        });
+    });
+
+    function atualizarHistoricoVisual(historico) {
+      const container = document.getElementById('lista-historico');
+      container.innerHTML = '';
+
+      if (!historico) {
+        container.innerHTML = `<div style="text-align:center; padding: 15px; font-size:13px; opacity:0.6;">Nenhuma partida registrada no histórico.</div>`;
+        return;
+      }
+
+      const listaOrdenada = Object.entries(historico)
+        .map(([id, dados]) => ({ id, ...dados }))
+        .sort((a, b) => b.timestamp - a.timestamp);
+
+      listaOrdenada.forEach(partida => {
+        let dataFormatada = partida.data;
+        if (partida.data.includes('-')) {
+          const partes = partida.data.split('-');
+          dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+
+        const item = document.createElement('div');
+        item.className = 'item-historico';
+        item.innerHTML = `
+          <div class="data-hist">📅 ${dataFormatada}</div>
+          <div class="podio-resumo">
+            <span class="time-badge">🥇 <b>${partida.primeiro}</b></span>
+            <span class="time-badge">🥈 ${partida.segundo}</span>
+            <span class="time-badge">🥉 ${partida.terceiro}</span>
+          </div>
+          <button class="btn-deletar-ranking" onclick="excluirHistorico('${partida.id}')" title="Excluir do Histórico">✕</button>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    window.excluirHistorico = function(id) {
+      if (confirm("Deseja apagar este registro de partida permanentemente do histórico?")) {
+        db.ref(`historico_partidas/${id}`).remove();
+      }
+    }
+  </script>
+
+</body>
+</html>

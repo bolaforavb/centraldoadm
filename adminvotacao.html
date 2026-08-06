@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerenciamento de Votação - Central do Adm</title>
+  <link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
+  
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: sans-serif; background-color: #12364e; margin: 0; padding: 0;
+      display: flex; flex-direction: column; align-items: center; min-height: 100vh; color: #12364e;
+    }
+    .header-banner { width: 100%; max-width: 600px; background-color: #e1d8cd; overflow: hidden; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .header-banner img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .main-container { width: 100%; max-width: 600px; padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 16px; }
+    
+    .bloco-card { 
+      background-color: white; 
+      border-radius: 16px; 
+      width: 100%; 
+      padding: 20px; 
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .titulo-secao { font-size: 14px; font-weight: bold; color: #12364e; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
+    .header-secao-wrapper { border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+    
+    input[type="text"], input[type="file"], select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; color: #12364e; outline: none; width: 100%; background: white; }
+    input[type="file"] { padding: 7px; }
+    
+    .form-inline { display: flex; gap: 8px; width: 100%; }
+    .form-inline input { flex: 1; }
+    .form-candidato { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+    
+    .btn-add-tabela { padding: 10px 16px; background-color: #d9b246; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; white-space: nowrap; }
+    .btn-add-tabela:hover { background-color: #af8a23; }
+    
+    /* Listas com rolagem interna e controle para manter tudo organizado */
+    .lista-fidelidade { display: flex; flex-direction: column; gap: 8px; width: 100%; max-height: 220px; overflow-y: auto; padding-right: 4px; }
+    
+    .item-fidelidade { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background-color: #f7f5f2; border-radius: 8px; border-left: 3px solid #d9b246; flex-shrink: 0; }
+    .nome-diarista { font-size: 12px; font-weight: 500; color: #12364e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .posicao-votante { font-size: 11px; font-weight: bold; color: #7f8c8d; margin-right: 4px; min-width: 24px; }
+    
+    .botoes-acao { display: flex; gap: 8px; align-items: center; }
+    .btn-acao-txt { background: none; border: none; font-weight: bold; font-size: 12px; cursor: pointer; padding: 2px 4px; }
+    .btn-editar { color: #12364e; }
+    .btn-excluir { color: #d93025; }
+    .badge-status { font-size: 9px; font-weight: bold; background: #12364e; color: white; padding: 2px 6px; border-radius: 4px; }
+    
+    .ranking-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background-color: #f7f5f2; border-radius: 8px; border-left: 3px solid #d9b246; font-size: 12px; flex-shrink: 0; }
+    .ranking-info { display: flex; align-items: center; gap: 8px; overflow: hidden; }
+    .ranking-nota { font-weight: bold; color: #12364e; background: #e1d8cd; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+    
+    .voto-detalhe-card { background-color: #f7f5f2; border-radius: 8px; border-left: 3px solid #12364e; padding: 10px 12px; margin-bottom: 8px; flex-shrink: 0; }
+    .voto-detalhe-header { font-size: 13px; font-weight: bold; color: #12364e; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+    .voto-detalhe-lista { font-size: 11px; color: #333; display: flex; flex-direction: column; gap: 3px; padding-left: 8px; border-left: 2px solid rgba(0,0,0,0.08); }
+    
+    .btn-toggle-votos { background-color: #12364e; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 12px; padding: 10px 12px; cursor: pointer; width: 100%; text-align: center; }
+    .btn-toggle-votos:hover { background-color: #1b4d70; }
+    
+    .btn-whatsapp-topo { background-color: #25d366; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 5px 10px; cursor: pointer; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+    .btn-whatsapp-topo:hover { background-color: #1ebe5d; }
+    
+    .btn-perigo { background-color: #d93025; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 12px; padding: 8px 12px; cursor: pointer; width: 100%; }
+    .btn-perigo:hover { background-color: #a5221a; }
+    
+    .hidden { display: none !important; }
+    
+    .footer-navegacao { width: 100%; max-width: 600px; padding: 8px 16px 30px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .btn-voltar-painel { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; background-color: transparent; color: #e1d8cd; border: 2px solid #e1d8cd; border-radius: 8px; font-weight: bold; font-size: 14px; text-decoration: none; text-align: center; }
+    .btn-voltar-painel:hover { background-color: #e1d8cd; color: #12364e; }
+  </style>
+</head>
+<body>
+
+  <header class="header-banner">
+    <img src="https://i.ibb.co/twJd6BRq/Whats-App-Image-2026-06-29-at-10-42-05.jpg" alt="Banner Central do Adm">
+  </header>
+
+  <main class="main-container">
+    <div class="bloco-card">
+      <div class="titulo-secao" style="border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px; margin-bottom: 12px;">Lista de Votantes Autorizados</div>
+      <form id="form-novo-votante" class="form-inline" onsubmit="adicionarVotante(event)">
+        <input type="text" id="novo-votante-nome" placeholder="Nome do(a) mensalista" required>
+        <button type="submit" class="btn-add-tabela">Add</button>
+      </form>
+      <div style="margin-top: 12px;" class="lista-fidelidade" id="tabela-votantes"></div>
+      <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.06); display: flex; align-items: center; gap: 6px; font-size: 11px; color: #7f8c8d;">
+        <span>⭐</span> <span>Mensalista</span>
+      </div>
+    </div>
+
+    <div class="bloco-card">
+      <div class="titulo-secao" style="border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px; margin-bottom: 12px;">Atualizar Foto do(a) Mensalista</div>
+      <form id="form-candidato" class="form-candidato" onsubmit="salvarCandidato(event)">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <label style="font-size: 12px; font-weight: bold; color: #12364e;">Mensalista:</label>
+          <select id="candidato-select" required>
+            <option value="">Selecione um nome...</option>
+          </select>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <label style="font-size: 12px; font-weight: bold; color: #12364e;">Foto:</label>
+          <input type="file" id="candidato-foto" accept="image/*" required>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button type="submit" class="btn-add-tabela" style="flex: 1;">Salvar foto</button>
+          <button type="button" onclick="limparFormCandidato()" style="padding: 10px; background: #ccc; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Limpar</button>
+        </div>
+      </form>
+      <div style="margin-top: 15px;" class="lista-fidelidade" id="tabela-candidatos"></div>
+    </div>
+
+    <div class="bloco-card">
+      <div class="titulo-secao" style="border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px; margin-bottom: 12px;">Cadastrar Diaristas</div>
+      <form id="form-novo-destaque" class="form-inline" onsubmit="adicionarDestaque(event)">
+        <input type="text" id="novo-destaque-nome" placeholder="Nome do(a) diarista" required>
+        <button type="submit" class="btn-add-tabela">Add</button>
+      </form>
+      <div style="margin-top: 12px;" class="lista-fidelidade" id="tabela-destaques-nomes"></div>
+    </div>
+
+    <div class="bloco-card">
+      <div class="titulo-secao" style="border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px; margin-bottom: 12px;">Atualizar Foto do Diarista</div>
+      <form id="form-destaque-foto" class="form-candidato" onsubmit="salvarDestaqueFoto(event)">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <label style="font-size: 12px; font-weight: bold; color: #12364e;">Diarista:</label>
+          <select id="destaque-select" required>
+            <option value="">Selecione um nome...</option>
+          </select>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <label style="font-size: 12px; font-weight: bold; color: #12364e;">Foto:</label>
+          <input type="file" id="destaque-foto-input" accept="image/*" required>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button type="submit" class="btn-add-tabela" style="flex: 1;">Salvar foto</button>
+          <button type="button" onclick="limparFormDestaqueFoto()" style="padding: 10px; background: #ccc; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Limpar</button>
+        </div>
+      </form>
+      <div style="margin-top: 15px;" class="lista-fidelidade" id="tabela-destaques-fotos"></div>
+    </div>
+
+    <div class="bloco-card">
+      <div class="header-secao-wrapper">
+        <div class="titulo-secao">Apuração e Votos Computados</div>
+        <button type="button" class="btn-whatsapp-topo" onclick="compartilharWhatsApp()">💬 Compartilhar</button>
+      </div>
+
+      <div style="font-size: 12px; font-weight: bold; color: #12364e; margin-bottom: 6px;">Ranking por média de notas:</div>
+      <div class="lista-fidelidade" id="tabela-ranking" style="margin-bottom: 15px;"></div>
+
+      <div style="font-size: 12px; font-weight: bold; color: #12364e; margin-bottom: 6px;">Destaque do dia (Voto único):</div>
+      <div class="lista-fidelidade" id="tabela-ranking-destaques" style="margin-bottom: 15px;"></div>
+
+      <div style="margin-bottom: 15px;">
+        <button type="button" class="btn-toggle-votos" id="btn-toggle-votos" onclick="alternarVotosIndividuais()">Mostrar votos individuais</button>
+      </div>
+
+      <div id="container-votos-individuais" class="hidden" style="margin-bottom: 15px;">
+        <div style="font-size: 12px; font-weight: bold; color: #12364e; margin-bottom: 6px;">Votos Individuais por Eleitor:</div>
+        <div class="lista-fidelidade" id="tabela-votos-computados"></div>
+      </div>
+
+      <div>
+        <button type="button" class="btn-perigo" onclick="resetarVotos()">Limpar todos os votos</button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer-navegacao">
+    <a href="votacao.html" class="btn-voltar-painel" target="_blank"><span>🔗</span> Abrir Página de Votação &nearr;</a>
+    <a href="dashboard.html" class="btn-voltar-painel"><span>↩</span> Voltar</a>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getDatabase, ref, onValue, set, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
+      databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com/"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    setPersistence(auth, browserSessionPersistence).catch(console.error);
+
+    let ultimosDadosRanking = [];
+    let ultimosDadosDestaques = [];
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "index.html"; 
+      }
+    });
+
+    onValue(ref(db, '/'), (snapshot) => {
+      const data = snapshot.val() || {};
+      let voters = data.voters || [];
+      let candidates = data.candidates || [];
+      let destaqueCandidates = data.destaqueCandidates || [];
+      let votedUsers = data.votedUsers || [];
+      let votes = data.votes || {};
+
+      renderizarInterface(voters, candidates, destaqueCandidates, votedUsers, votes);
+    });
+
+    window.adicionarVotante = function(e) {
+      e.preventDefault();
+      const input = document.getElementById('novo-votante-nome');
+      const nome = input.value.trim();
+      if (!nome) return;
+
+      get(child(ref(db), 'voters')).then((snapshot) => {
+        let voters = snapshot.val() || [];
+        if (!voters.some(v => v.localeCompare(nome, 'pt-BR', { sensitivity: 'base' }) === 0)) {
+          voters.push(nome);
+          voters.sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
+          set(ref(db, 'voters'), voters);
+          
+          get(child(ref(db), 'candidates')).then((candSnapshot) => {
+            let candidates = candSnapshot.val() || [];
+            if (!candidates.some(c => c.name.localeCompare(nome, 'pt-BR', { sensitivity: 'base' }) === 0)) {
+              const safeId = Math.floor(Date.now() + Math.random() * 1000);
+              candidates.push({ id: safeId, name: nome, photo: "https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png", hidden: false, favorito: false });
+              candidates.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
+              set(ref(db, 'candidates'), candidates);
+            }
+          });
+        }
+        input.value = '';
+      });
+    }
+
+    window.removerVotante = function(index) {
+      get(child(ref(db), 'voters')).then((snapshot) => {
+        let voters = snapshot.val() || [];
+        voters.splice(index, 1);
+        set(ref(db, 'voters'), voters);
+      });
+    }
+
+    window.alternarVisibilidadeCandidato = function(id) {
+      get(child(ref(db), 'candidates')).then((snapshot) => {
+        let candidates = snapshot.val() || [];
+        candidates = candidates.map(c => String(c.id) === String(id) ? { ...c, hidden: !c.hidden } : c);
+        set(ref(db, 'candidates'), candidates);
+      });
+    }
+
+    window.alternarFavoritoCandidato = function(id) {
+      get(child(ref(db), 'candidates')).then((snapshot) => {
+        let candidates = snapshot.val() || [];
+        candidates = candidates.map(c => String(c.id) === String(id) ? { ...c, favorito: !c.favorito } : c);
+        set(ref(db, 'candidates'), candidates);
+      });
+    }
+
+    window.salvarCandidato = function(e) {
+      e.preventDefault();
+      const nomeSelecionado = document.getElementById('candidato-select').value;
+      const fileInput = document.getElementById('candidato-foto');
+      if (!nomeSelecionado || !fileInput.files[0]) return;
+
+      const reader = new FileReader();
+      reader.onload = function(uploadEvent) {
+        const photoUrl = uploadEvent.target.result;
+        get(child(ref(db), 'candidates')).then((snapshot) => {
+          let candidates = snapshot.val() || [];
+          const existe = candidates.some(c => c.name.localeCompare(nomeSelecionado, 'pt-BR', { sensitivity: 'base' }) === 0);
+          if (existe) {
+            candidates = candidates.map(c => c.name.localeCompare(nomeSelecionado, 'pt-BR', { sensitivity: 'base' }) === 0 ? { ...c, photo: photoUrl } : c);
+          } else {
+            const safeId = Math.floor(Date.now() + Math.random() * 1000);
+            candidates.push({ id: safeId, name: nomeSelecionado, photo: photoUrl, hidden: false, favorito: false });
+          }
+          candidates.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
+          set(ref(db, 'candidates'), candidates);
+          limparFormCandidato();
+        });
+      };
+      reader.readAsDataURL(fileInput.files[0]);
+    }
+
+    window.selecionarParaEditar = function(nome) {
+      document.getElementById('candidato-select').value = nome;
+    }
+
+    window.limparFormCandidato = function() {
+      document.getElementById('candidato-select').value = '';
+      document.getElementById('candidato-foto').value = '';
+    }
+
+    window.adicionarDestaque = function(e) {
+      e.preventDefault();
+      const input = document.getElementById('novo-destaque-nome');
+      const nome = input.value.trim();
+      if (!nome) return;
+
+      get(child(ref(db), 'destaqueCandidates')).then((snapshot) => {
+        let destaques = snapshot.val() || [];
+        if (!destaques.some(d => d.name.localeCompare(nome, 'pt-BR', { sensitivity: 'base' }) === 0)) {
+          const safeId = Math.floor(Date.now() + Math.random() * 1000);
+          destaques.push({ id: safeId, name: nome, photo: "https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png", hidden: false });
+          destaques.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
+          set(ref(db, 'destaqueCandidates'), destaques);
+        }
+        input.value = '';
+      });
+    }
+
+    window.removerDestaque = function(id) {
+      get(child(ref(db), 'destaqueCandidates')).then((snapshot) => {
+        let destaques = snapshot.val() || [];
+        destaques = destaques.filter(d => String(d.id) !== String(id));
+        set(ref(db, 'destaqueCandidates'), destaques);
+      });
+    }
+
+    window.alternarVisibilidadeDestaque = function(id) {
+      get(child(ref(db), 'destaqueCandidates')).then((snapshot) => {
+        let destaques = snapshot.val() || [];
+        destaques = destaques.map(d => String(d.id) === String(id) ? { ...d, hidden: !d.hidden } : d);
+        set(ref(db, 'destaqueCandidates'), destaques);
+      });
+    }
+
+    window.salvarDestaqueFoto = function(e) {
+      e.preventDefault();
+      const idSelecionado = document.getElementById('destaque-select').value;
+      const fileInput = document.getElementById('destaque-foto-input');
+      if (!idSelecionado || !fileInput.files[0]) return;
+
+      const reader = new FileReader();
+      reader.onload = function(uploadEvent) {
+        const photoUrl = uploadEvent.target.result;
+        get(child(ref(db), 'destaqueCandidates')).then((snapshot) => {
+          let destaques = snapshot.val() || [];
+          destaques = destaques.map(d => String(d.id) === String(idSelecionado) ? { ...d, photo: photoUrl } : d);
+          set(ref(db, 'destaqueCandidates'), destaques);
+          limparFormDestaqueFoto();
+        });
+      };
+      reader.readAsDataURL(fileInput.files[0]);
+    }
+
+    window.selecionarParaEditarDestaque = function(id) {
+      document.getElementById('destaque-select').value = id;
+    }
+
+    window.limparFormDestaqueFoto = function() {
+      document.getElementById('destaque-select').value = '';
+      document.getElementById('destaque-foto-input').value = '';
+    }
+
+    window.resetarVotos = function() {
+      if (confirm("Tem certeza que deseja apagar todos os votos computados e liberar novamente os eleitores?")) {
+        set(ref(db, 'votedUsers'), null);
+        set(ref(db, 'votes'), null);
+        alert("Todos os votos foram apagados com sucesso.");
+      }
+    }
+
+    window.alternarVotosIndividuais = function() {
+      const container = document.getElementById('container-votos-individuais');
+      const btn = document.getElementById('btn-toggle-votos');
+      container.classList.toggle('hidden');
+      btn.textContent = container.classList.contains('hidden') ? 'Mostrar votos individuais' : 'Ocultar votos individuais';
+    }
+
+    window.compartilharWhatsApp = function() {
+      let texto = "*📊 APURAÇÃO E VOTOS - RESULTADOS* 🏐\n\n";
+
+      texto += "*🏆 Ranking por média de notas:*\n";
+      if (ultimosDadosRanking.length === 0) {
+        texto += "Nenhum voto computado.\n";
+      } else {
+        ultimosDadosRanking.forEach((item, idx) => {
+          texto += `${idx + 1}º *${item.name}* - Média: ${item.media.toFixed(2)} (${item.qtd} votos)\n`;
+        });
+      }
+
+      texto += "\n*⭐ Destaque do dia (Voto único):*\n";
+      if (ultimosDadosDestaques.length === 0) {
+        texto += "Nenhum voto computado.\n";
+      } else {
+        ultimosDadosDestaques.forEach((item, idx) => {
+          texto += `${idx + 1}º *${item.name}* - ${item.totalVotos} voto(s)\n`;
+        });
+      }
+
+      const urlWhatsApp = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+      window.open(urlWhatsApp, '_blank');
+    }
+
+    function renderizarInterface(voters, candidates, destaqueCandidates, votedUsers, votes) {
+      voters.sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
+      candidates.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
+      destaqueCandidates.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
+
+      const containerVotantes = document.getElementById('tabela-votantes');
+      containerVotantes.innerHTML = '';
+      voters.forEach((voter, index) => {
+        const jaVotou = votedUsers.includes(voter);
+        const candObj = candidates.find(c => c.name.localeCompare(voter, 'pt-BR', { sensitivity: 'base' }) === 0);
+        const isHidden = candObj ? candObj.hidden : false;
+        const isFavorito = candObj ? candObj.favorito : false;
+        
+        const item = document.createElement('div');
+        item.className = 'item-fidelidade';
+        if (isHidden) item.style.opacity = '0.6';
+        item.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1;">
+            <span class="posicao-votante">${index + 1}º</span>
+            <span class="nome-diarista">${voter} ${isHidden ? '(Oculto)' : ''}</span>
+            ${jaVotou ? '<span class="badge-status">Já votou</span>' : ''}
+          </div>
+          <div class="botoes-acao">
+            ${candObj ? `<button class="btn-acao-txt" style="font-size: 15px;" onclick="alternarFavoritoCandidato('${candObj.id}')">${isFavorito ? '⭐' : '☆'}</button>` : ''}
+            ${candObj ? `<button class="btn-acao-txt" style="font-size: 15px;" onclick="alternarVisibilidadeCandidato('${candObj.id}')">${isHidden ? '👁️‍🗨️' : '👁️'}</button>` : ''}
+            <button class="btn-acao-txt btn-excluir" onclick="removerVotante(${index})">✕</button>
+          </div>
+        `;
+        containerVotantes.appendChild(item);
+      });
+
+      const selectCandidato = document.getElementById('candidato-select');
+      selectCandidato.innerHTML = '<option value="">Selecione um nome...</option>';
+      voters.forEach(voter => {
+        const option = document.createElement('option');
+        option.value = voter;
+        option.textContent = voter;
+        selectCandidato.appendChild(option);
+      });
+
+      const containerCandidatos = document.getElementById('tabela-candidatos');
+      containerCandidatos.innerHTML = '';
+      candidates.forEach(cand => {
+        const item = document.createElement('div');
+        item.className = 'item-fidelidade';
+        item.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;">
+            <img src="${cand.photo}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;">
+            <span class="nome-diarista">${cand.name}</span>
+          </div>
+          <div class="botoes-acao"><button class="btn-acao-txt btn-editar" onclick="selecionarParaEditar('${cand.name}')">Editar Foto</button></div>
+        `;
+        containerCandidatos.appendChild(item);
+      });
+
+      const containerDestaqueNomes = document.getElementById('tabela-destaques-nomes');
+      containerDestaqueNomes.innerHTML = '';
+      destaqueCandidates.forEach(dest => {
+        const item = document.createElement('div');
+        item.className = 'item-fidelidade';
+        if (dest.hidden) item.style.opacity = '0.6';
+        item.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1;">
+            <span class="nome-diarista">${dest.name} ${dest.hidden ? '(Oculto)' : ''}</span>
+          </div>
+          <div class="botoes-acao">
+            <button class="btn-acao-txt" style="font-size: 15px;" onclick="alternarVisibilidadeDestaque('${dest.id}')">${dest.hidden ? '👁️‍🗨️' : '👁️'}</button>
+            <button class="btn-acao-txt btn-excluir" onclick="removerDestaque('${dest.id}')">✕</button>
+          </div>
+        `;
+        containerDestaqueNomes.appendChild(item);
+      });
+
+      const selectDestaque = document.getElementById('destaque-select');
+      selectDestaque.innerHTML = '<option value="">Selecione um nome...</option>';
+      destaqueCandidates.forEach(dest => {
+        const option = document.createElement('option');
+        option.value = dest.id;
+        option.textContent = dest.name;
+        selectDestaque.appendChild(option);
+      });
+
+      const containerDestaquesFotos = document.getElementById('tabela-destaques-fotos');
+      containerDestaquesFotos.innerHTML = '';
+      destaqueCandidates.forEach(dest => {
+        const item = document.createElement('div');
+        item.className = 'item-fidelidade';
+        item.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;">
+            <img src="${dest.photo}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;">
+            <span class="nome-diarista">${dest.name}</span>
+          </div>
+          <div class="botoes-acao"><button class="btn-acao-txt btn-editar" onclick="selecionarParaEditarDestaque('${dest.id}')">Editar Foto</button></div>
+        `;
+        containerDestaquesFotos.appendChild(item);
+      });
+
+      const containerRanking = document.getElementById('tabela-ranking');
+      containerRanking.innerHTML = '';
+      const somaNotas = {}, qtdVotosCandidato = {};
+      const somaDestaques = {};
+      
+      Object.values(votes).forEach(escolhasDoEleitor => {
+        if (escolhasDoEleitor.notas) {
+          for (const [candId, nota] of Object.entries(escolhasDoEleitor.notas)) {
+            const valorNota = Number(nota);
+            if (!isNaN(valorNota)) {
+              somaNotas[candId] = (somaNotas[candId] || 0) + valorNota;
+              qtdVotosCandidato[candId] = (qtdVotosCandidato[candId] || 0) + 1;
+            }
+          }
+        }
+        if (escolhasDoEleitor.destaque) {
+          const destId = escolhasDoEleitor.destaque;
+          somaDestaques[destId] = (somaDestaques[destId] || 0) + 1;
+        }
+      });
+
+      const rankingData = candidates.map(cand => {
+        const idStr = String(cand.id).replace(/[.#$[\]/]/g, '_');
+        const total = somaNotas[idStr] || 0;
+        const qtd = qtdVotosCandidato[idStr] || 0;
+        const media = qtd > 0 ? (total / qtd).toFixed(2) : '0.00';
+        return { name: cand.name, photo: cand.photo, media: Number(media), qtd, hidden: cand.hidden };
+      }).sort((a, b) => b.media - a.media);
+
+      ultimosDadosRanking = rankingData;
+
+      if (Object.keys(votes).length === 0) {
+        containerRanking.innerHTML = '<p style="font-size: 12px; color: #7f8c8d; text-align: center; margin: 5px 0;">Nenhum voto computado.</p>';
+      } else {
+        rankingData.forEach((itemRank, idx) => {
+          const rankDiv = document.createElement('div');
+          rankDiv.className = 'ranking-item';
+          rankDiv.innerHTML = `
+            <div class="ranking-info">
+              <span class="posicao-votante">${idx + 1}º</span>
+              <img src="${itemRank.photo}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
+              <span class="nome-diarista">${itemRank.name} ${itemRank.hidden ? '(Oculto)' : ''}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+              <span style="font-size: 10px; color: #7f8c8d;">(${itemRank.qtd} votos)</span>
+              <span class="ranking-nota">Média: ${itemRank.media.toFixed(2)}</span>
+            </div>
+          `;
+          containerRanking.appendChild(rankDiv);
+        });
+      }
+
+      const containerRankingDestaques = document.getElementById('tabela-ranking-destaques');
+      containerRankingDestaques.innerHTML = '';
+      const rankingDestaquesData = destaqueCandidates.map(dest => {
+        const idStr = String(dest.id).replace(/[.#$[\]/]/g, '_');
+        const totalVotos = somaDestaques[idStr] || 0;
+        return { name: dest.name, photo: dest.photo, totalVotos, hidden: dest.hidden };
+      }).sort((a, b) => b.totalVotos - a.totalVotos);
+
+      ultimosDadosDestaques = rankingDestaquesData;
+
+      if (Object.keys(votes).length === 0) {
+        containerRankingDestaques.innerHTML = '<p style="font-size: 12px; color: #7f8c8d; text-align: center; margin: 5px 0;">Nenhum voto computado.</p>';
+      } else {
+        rankingDestaquesData.forEach((itemDestaque, idx) => {
+          const rankDiv = document.createElement('div');
+          rankDiv.className = 'ranking-item';
+          rankDiv.innerHTML = `
+            <div class="ranking-info">
+              <span class="posicao-votante">${idx + 1}º</span>
+              <img src="${itemDestaque.photo}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
+              <span class="nome-diarista">${itemDestaque.name} ${itemDestaque.hidden ? '(Oculto)' : ''}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+              <span class="ranking-nota">${itemDestaque.totalVotos} voto(s)</span>
+            </div>
+          `;
+          containerRankingDestaques.appendChild(rankDiv);
+        });
+      }
+
+      const containerVotos = document.getElementById('tabela-votos-computados');
+      containerVotos.innerHTML = '';
+      const scaleLabels = ["Muito abaixo", "Abaixo", "Adequado", "Acima", "Excelente"];
+      const votantesQueVotaram = Object.keys(votes);
+
+      if (votantesQueVotaram.length === 0) {
+        containerVotos.innerHTML = '<p style="font-size: 12px; color: #7f8c8d; text-align: center; margin: 10px 0;">Nenhum voto computado até o momento.</p>';
+      } else {
+        votantesQueVotaram.forEach(eleitor => {
+          const dadosEleitor = votes[eleitor];
+          let detalhesHTML = '';
+          
+          if (dadosEleitor.notas) {
+            for (const [candId, nota] of Object.entries(dadosEleitor.notas)) {
+              const candidatoObj = candidates.find(c => String(c.id).replace(/[.#$[\]/]/g, '_') === candId);
+              const nomeCandidato = candidatoObj ? candidatoObj.name : `Candidato`;
+              const descricaoNota = scaleLabels[nota - 1] || `Nota ${nota}`;
+              detalhesHTML += `<div>• <b>${nomeCandidato}</b>: ${descricaoNota} (Nota ${nota})</div>`;
+            }
+          }
+
+          if (dadosEleitor.destaque) {
+            const destObj = destaqueCandidates.find(d => String(d.id).replace(/[.#$[\]/]/g, '_') === dadosEleitor.destaque);
+            const nomeDestaque = destObj ? destObj.name : 'Destaque';
+            detalhesHTML += `<div style="margin-top: 4px;">⭐ <b>Destaque do dia</b>: ${nomeDestaque}</div>`;
+          }
+
+          const cardVoto = document.createElement('div');
+          cardVoto.className = 'voto-detalhe-card';
+          cardVoto.innerHTML = `
+            <div class="voto-detalhe-header"><span>Eleitor(a): ${eleitor}</span><span style="font-size: 10px; color: #7f8c8d;">Voto computado</span></div>
+            <div class="voto-detalhe-lista">${detalhesHTML}</div>
+          `;
+          containerVotos.appendChild(cardVoto);
+        });
+      }
+    }
+  </script>
+</body>
+</html>

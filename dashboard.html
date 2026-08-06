@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel - Central do Adm</title>
+  <link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png?v=2" type="image/png">
+  
+  <style>
+    /* Reset global para evitar que bordas e paddings quebrem a largura */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: sans-serif;
+      background-color: #12364e; 
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center; 
+      min-height: 100vh;
+      color: #12364e;
+    }
+
+    .header-banner {
+      width: 100%; 
+      max-width: 600px; 
+      background-color: #e1d8cd; 
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .header-banner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; 
+    }
+
+    .main-container {
+      width: 100%;
+      max-width: 600px; 
+      padding: 16px; 
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px; 
+      width: 100%;
+      transition: all 0.4s ease-in-out;
+    }
+
+    /* SEÇÃO DE LINKS - ADAPTADA EXCLUSIVAMENTE PARA 4 COLUNAS COM 2 LINHAS (TOTAL 8 BOTÕES) */
+    .secao-links {
+      grid-column: span 3;
+      border: 1px solid #d9b246; 
+      border-radius: 16px;
+      padding: 16px 10px 10px 10px;
+      margin: 0 0 4px 0;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr); /* Força 4 colunas perfeitamente simétricas nos links */
+      gap: 8px;
+      width: 100%;
+    }
+
+    .secao-links legend {
+      color: #d9b246;
+      font-weight: bold;
+      font-size: 13px;
+      padding: 0 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      text-align: center;
+    }
+
+    .bloco-link {
+      text-decoration: none;
+      color: inherit;
+      width: 100%;
+      display: block;
+    }
+
+    /* Estilo padrão para os 3 botões de baixo e os de links */
+    .bloco {
+      background-color: white; 
+      border-radius: 16px;
+      width: 100%;
+      aspect-ratio: 1 / 1; /* Mantém a proporção original quadrada perfeita */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 6px; 
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      text-align: center;
+      transition: transform 0.1s ease, background-color 0.3s ease;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Ajuste sutil no tamanho de fonte dos blocos de links com 4 colunas */
+    .secao-links .bloco .titulo {
+      font-size: 9px;
+    }
+    .secao-links .bloco .bloco-icon {
+      font-size: 16px;
+      margin-bottom: 2px;
+    }
+
+    .bloco:active {
+      transform: scale(0.95);
+    }
+
+    .bloco-icon {
+      font-size: 24px; 
+      margin-bottom: 4px;
+      color: #d9b246; 
+      flex-shrink: 0;
+    }
+
+    .titulo {
+      font-size: 11px; 
+      font-weight: bold;
+      line-height: 1.2;
+      width: 100%;
+      word-wrap: break-word;
+      display: -webkit-box;
+      -webkit-line-clamp: 2; 
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* EXPANSÃO CORRIGIDA */
+    #bloco-niveis.expandido,
+    #bloco-gerador.expandido,
+    #bloco-adms.expandido {
+      grid-column: span 3;
+      aspect-ratio: auto; 
+      height: auto;
+      min-height: 200px;
+      justify-content: flex-start;
+      padding: 20px;
+      cursor: default;
+    }
+
+    #bloco-niveis.expandido:active,
+    #bloco-gerador.expandido:active,
+    #bloco-adms.expandido:active {
+      transform: none;
+    }
+
+    #bloco-niveis.expandido .titulo,
+    #bloco-gerador.expandido .titulo,
+    #bloco-adms.expandido .titulo {
+      display: block;
+      -webkit-line-clamp: unset;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    .btn-fechar-absoluto {
+      display: none; 
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: #f0f0f0;
+      border: none;
+      font-size: 16px;
+      font-weight: bold;
+      color: #888;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      z-index: 10;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.2s, color 0.2s;
+    }
+    
+    .btn-fechar-absoluto:hover {
+      background: #e0d0d0;
+      color: #d93025;
+    }
+
+    .expandido .btn-fechar-absoluto {
+      display: flex;
+    }
+
+    .conteudo-dinamico {
+      display: none;
+      width: 100%;
+      font-weight: normal;
+      text-align: left;
+      margin-top: 15px;
+    }
+    
+    .expandido .conteudo-dinamico {
+      display: block;
+      padding-top: 15px; 
+    }
+
+    .form-niveis {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      margin-bottom: 12px;
+      width: 100%;
+    }
+
+    .form-niveis input, .form-niveis select {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .form-niveis input { flex: 2; min-width: 0; }
+    .form-niveis select { flex: 1.2; background-color: white; cursor: pointer; }
+
+    .btn-add, .btn-sortear {
+      padding: 8px 14px;
+      background-color: #d9b246;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 14px;
+      transition: background 0.2s;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-add:hover, .btn-sortear:hover { background-color: #af8a23; }
+
+    .lista-usuarios {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+      max-height: 250px; 
+      overflow-y: auto; 
+      padding-right: 2px;
+      margin-bottom: 15px;
+    }
+
+    .item-usuario {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      background-color: #f7f5f2;
+      border-radius: 6px;
+      border-left: 3px solid #12364e;
+      transition: opacity 0.2s ease;
+    }
+
+    .item-usuario.inativo {
+      opacity: 0.5;
+      border-left-color: #aaa;
+    }
+
+    .wrapper-nome {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .btn-visibilidade {
+      background: none;
+      border: none;
+      font-size: 16px;
+      padding: 0;
+      color: #12364e;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .nome-item { 
+      font-size: 13px;
+      font-weight: 500; 
+      color: #12364e; 
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .controles-nivel { display: flex; align-items: center; gap: 8px; }
+    .container-tags { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; max-width: 200px; }
+    .botoes-setas { display: flex; align-items: center; gap: 4px; }
+
+    .valor-nivel {
+      font-size: 12px;
+      font-weight: bold;
+      background: #12364e;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 3px;
+      min-width: 28px;
+      text-align: center;
+    }
+
+    /* ESTILO COMPACTO DAS TAGS DE ADM COM COR (#d9b246) */
+    .badge-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      background-color: #d9b246;
+      color: white;
+      padding: 3px 6px 3px 8px;
+      border-radius: 20px;
+      white-space: nowrap;
+      max-width: 110px;
+    }
+
+    .texto-tag {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* PEQUENO X PARA DELETAR A TAG */
+    .btn-deletar-tag {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 10px;
+      font-weight: bold;
+      padding: 0 2px;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+
+    .btn-deletar-tag:hover {
+      color: #d93025;
+    }
+
+    /* CORREÇÃO DO CSS PARA AS SETAS */
+    .btn-seta-up, .btn-seta-down {
+      background: none;
+      border: none;
+      color: #d9b246;
+      font-size: 14px;
+      padding: 2px;
+      line-height: 1;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* CORREÇÃO DO CSS PARA O BOTÃO EXCLUIR JOGADOR */
+    .btn-deletar-fb, .btn-deletar-adm-fb {
+      background: none;
+      border: none;
+      color: #d93025;
+      font-weight: bold;
+      font-size: 14px;
+      padding: 2px 6px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ESTILOS DA SEÇÃO DE LEGENDA DE TAGS */
+    .container-legenda {
+      margin-top: 20px;
+      border-top: 2px dashed #e1d8cd;
+      padding-top: 15px;
+    }
+
+    .titulo-legenda {
+      font-size: 14px;
+      font-weight: bold;
+      color: #d9b246;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .tabela-legenda {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 12px;
+      font-size: 13px;
+    }
+
+    .tabela-legenda th, .tabela-legenda td {
+      padding: 8px 10px;
+      text-align: left;
+      border-bottom: 1px solid #e1d8cd;
+    }
+
+    .tabela-legenda th {
+      background-color: #f7f5f2;
+      color: #12364e;
+      font-weight: bold;
+    }
+
+    .tabela-legenda td .badge-tag {
+      max-width: 130px;
+    }
+
+    .btn-deletar-linha-legenda {
+      background: none;
+      border: none;
+      color: #d93025;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 0 4px;
+    }
+
+    #bloco-gerador .btn-sortear {
+      width: 100%;
+      padding: 12px;
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+
+    .grid-times {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      width: 100%;
+    }
+
+    .card-time {
+      display: flex;
+      flex-direction: column;
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      min-height: 120px;
+    }
+
+    .time-amarelo { background-color: #fff3cd; border-left: 5px solid #ffc107; }
+    .time-azul { background-color: #cff4fc; border-left: 5px solid #0dcaf0; }
+    .time-rosa { background-color: #f8d7da; border-left: 5px solid #e27c8d; }
+    .time-roxo { background-color: #e2d9f3; border-left: 5px solid #6f42c1; }
+
+    .titulo-time {
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      padding-bottom: 4px;
+    }
+
+    .lista-jogadores-time {
+      font-size: 13px;
+      line-height: 1.5;
+      margin: 0;
+      padding-left: 16px;
+      flex: 1;
+    }
+
+    .resumo-time {
+      margin-top: 10px;
+      padding-top: 6px;
+      border-top: 1px dashed rgba(0,0,0,0.15);
+      font-size: 12px;
+      color: #12364e;
+      font-weight: bold;
+      text-align: right;
+    }
+
+    /* BOTAO COMPARTILHAR WHATSAPP */
+    .btn-whatsapp {
+      display: none; 
+      background-color: #25d366;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 20px auto 0 auto;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      transition: background-color 0.2s, transform 0.1s;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      max-width: 280px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-whatsapp:hover {
+      background-color: #1ebd59;
+    }
+
+    .btn-whatsapp:active {
+      transform: scale(0.97);
+    }
+
+    /* ESTILIZAÇÃO DO BOTÃO DE LOGOUT NO RODAPÉ */
+    .btn-logout {
+      background-color: #c53929;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 24px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 20px 0 30px 0; 
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-logout:hover {
+      background-color: #a82e20;
+    }
+
+    .btn-logout:active {
+      transform: scale(0.96);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header-banner">
+    <img src="https://i.ibb.co/twJd6BRq/Whats-App-Image-2026-06-29-at-10-42-05.jpg" alt="Banner Central do Adm">
+  </header>
+
+  <main class="main-container">
+    <div class="grid-container">
+      
+      <fieldset class="secao-links">
+        <legend>Links</legend>
+
+        <a href="https://docs.google.com/spreadsheets/d/1u1q903pAVtIqxR7CpmyinyFl4Vc_nCPsyAGE_PsIP5I/edit?gid=0#gid=0" target="_blank" class="bloco-link">
+          <div class="bloco">
+            <div class="bloco-icon">💹</div>
+            <div class="titulo">Financeiro</div>
+          </div>
+        </a>
+
+        <a href="https://bolaforavb.github.io/centraldoadm/ranking.html" class="bloco-link">
+          <div class="bloco">
+            <div class="bloco-icon">🏆</div>
+            <div class="titulo">Premiação Trimestral</div>
+          </div>
+        </a>
+
+        <a href="https://bolaforavb.github.io/centraldoadm/fidelidade.html" class="bloco-link">
+          <div class="bloco">
+            <div class="bloco-icon">💎</div>
+            <div class="titulo">Diarista Fidelidade</div>
+          </div>
+        </a>
+
+        <a href="placar.html" class="bloco-link">
+          <div class="bloco">
+            <div class="bloco-icon">📟</div>
+            <div class="titulo">Placar</div>
+          </div>
+        </a>
+
+        <a href="https://louisebraga.github.io/tabela-bola-fora/" target="_blank" class="bloco-link">
+          <div class="bloco">
+            <div class="bloco-icon">📋</div>
+            <div class="titulo">Tabela de Jogos</div>
+          </div>
+        </a>
+
+        <a href="https://bolaforavb.github.io/centraldoadm/adminvotacao.html" class="bloco-link">
+          <div class="bloco">
+            <div class="bloco-icon">🗳️</div>
+            <div class="titulo">Gerenciamento de Votação</div>
+          </div>
+        </a>
+
+        <a href="https://bolaforavb.github.io/centraldoadm/votacao.html" class="bloco-link" target="_blank">
+          <div class="bloco">
+            <div class="bloco-icon">👨🏻‍⚖️</div>
+            <div class="titulo">Página de Votação</div>
+          </div>
+        </a>
+
+        <a href="https://bolaforavb.github.io/centraldoadm/arquivos.html" class="bloco-link">
+          <div class="bloco">
+            <div class="bloco-icon">📂</div>
+            <div class="titulo">Banco de Arquivos</div>
+          </div>
+        </a>
+      </fieldset>
+
+      <div class="bloco" id="bloco-niveis">
+        <button class="btn-fechar-absoluto" id="btn-fechar-niveis">✕</button>
+        <div class="bloco-icon">📊</div>
+        <div class="titulo">Relação de Níveis</div>
+        
+        <div class="conteudo-dinamico">
+          <div class="form-niveis">
+            <input type="text" id="input-nome" placeholder="Nome">
+            <select id="select-nivel">
+              <option value="1">1</option>
+              <option value="1.5">1.5</option>
+              <option value="2">2</option>
+              <option value="2.5">2.5</option>
+              <option value="3">3</option>
+              <option value="3.5">3.5</option>
+              <option value="4">4</option>
+              <option value="4.5">4.5</option>
+              <option value="5">5</option>
+            </select>
+            <button class="btn-add" id="btn-adicionar-jogador">Add</button>
+          </div>
+          
+          <div class="lista-usuarios" id="lista-usuarios"></div>
+        </div>
+      </div>
+
+      <div class="bloco" id="bloco-gerador">
+        <button class="btn-fechar-absoluto" id="btn-fechar-gerador">✕</button>
+        <div class="bloco-icon">⚖️</div>
+        <div class="titulo">Gerador de Times</div>
+        
+        <div class="conteudo-dinamico">
+          <button class="btn-sortear" id="btn-sortear-times">Sortear</button>
+          
+          <div class="grid-times" id="container-times">
+            <div class="card-time time-amarelo">
+              <div class="titulo-time">🟡 Amarelo</div>
+              <ul class="lista-jogadores-time" id="jogadores-amarelo"></ul>
+              <div class="resumo-time" id="resumo-amarelo"></div>
+            </div>
+            <div class="card-time time-azul">
+              <div class="titulo-time">🔵 Azul</div>
+              <ul class="lista-jogadores-time" id="jogadores-azul"></ul>
+              <div class="resumo-time" id="resumo-azul"></div>
+            </div>
+            <div class="card-time time-rosa">
+              <div class="titulo-time">🔴 Rosa</div>
+              <ul class="lista-jogadores-time" id="jogadores-rosa"></ul>
+              <div class="resumo-time" id="resumo-rosa"></div>
+            </div>
+            <div class="card-time time-roxo">
+              <div class="titulo-time">🟣 Roxo</div>
+              <ul class="lista-jogadores-time" id="jogadores-roxo"></ul>
+              <div class="resumo-time" id="resumo-roxo"></div>
+            </div>
+          </div>
+
+          <button id="btn-compartilhar-whatsapp" class="btn-whatsapp">
+            <span>💬</span> Compartilhar no WhatsApp
+          </button>
+        </div>
+      </div>
+
+      <div class="bloco" id="bloco-adms">
+        <button class="btn-fechar-absoluto" id="btn-fechar-adms">✕</button>
+        <div class="bloco-icon">🛠️</div>
+        <div class="titulo">Equipe e Funções</div>
+        
+        <div class="conteudo-dinamico">
+          <div class="form-niveis">
+            <input type="text" id="input-nome-adm" placeholder="Nome do Adm">
+            <input type="text" id="input-tag-adm" placeholder="Tag (ex: Finanças)" style="flex: 1;">
+            <button class="btn-add" id="btn-adicionar-adm">Add</button>
+          </div>
+          
+          <div class="lista-usuarios" id="lista-adms"></div>
+
+          <div class="container-legenda">
+            <div class="titulo-legenda"></div>
+            
+            <table class="tabela-legenda">
+              <thead>
+                <tr>
+                  <th>Tag</th>
+                  <th>Significado</th>
+                  <th style="width: 30px; text-align: center;">✕</th>
+                </tr>
+              </thead>
+              <tbody id="corpo-tabela-legenda">
+              </tbody>
+            </table>
+
+            <div class="form-niveis">
+              <input type="text" id="input-legenda-tag" placeholder="Nome da Tag">
+              <input type="text" id="input-legenda-significado" placeholder="Significado" style="flex: 2;">
+              <button class="btn-add" id="btn-adicionar-legenda">Add</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <button id="btn-logout" class="btn-logout">Deslogar</button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged, signOut, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
+      databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com/"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const dbRef = ref(db, 'jogadores');
+    const dbAdmsRef = ref(db, 'administradores'); 
+    const dbLegendaRef = ref(db, 'legenda_tags');
+    const auth = getAuth(app);
+
+    setPersistence(auth, browserSessionPersistence)
+      .catch((error) => {
+        console.error("Erro ao configurar persistência de sessão:", error);
+      });
+
+    let dadosJogadoresGlobais = {};
+    let dadosAdmsGlobais = {};
+    let dadosLegendasGlobais = {};
+    let timesGeradosParaCompartilhar = null;
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "index.html"; 
+      }
+    });
+
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      signOut(auth).then(() => {
+        window.location.href = "index.html";
+      }).catch((error) => {
+        console.error("Erro ao deslogar:", error);
+        alert("Erro ao sair. Tente novamente.");
+      });
+    });
+
+    onValue(dbRef, (snapshot) => {
+      const dados = snapshot.val();
+      dadosJogadoresGlobais = dados || {}; 
+      
+      const listaUI = document.getElementById('lista-usuarios');
+      listaUI.innerHTML = '';
+      
+      if (dados) {
+        Object.keys(dados).forEach(id => {
+          const player = dados[id];
+          const item = document.createElement('div');
+          item.className = 'item-usuario' + (player.inativo ? ' inativo' : '');
+          const iconeOlho = player.inativo ? '👁️‍🗨️' : '👁️';
+          
+          item.innerHTML = `
+            <div class="wrapper-nome">
+              <button class="btn-visibilidade" data-id="${id}">${iconeOlho}</button>
+              <span class="nome-item" title="${player.nome}">${player.nome}</span>
+            </div>
+            <div class="controles-nivel">
+              <div class="botoes-setas">
+                <button class="btn-seta-up" data-id="${id}">▲</button>
+                <span class="valor-nivel">${player.nivel}</span>
+                <button class="btn-seta-down" data-id="${id}">▼</button>
+              </div>
+              <button class="btn-deletar-fb" data-id="${id}" data-nome="${player.nome}">✕</button>
+            </div>
+          `;
+          listaUI.appendChild(item);
+        });
+        
+        distribuirEventosDinamicos();
+      }
+    });
+
+    onValue(dbAdmsRef, (snapshot) => {
+      const dados = snapshot.val();
+      dadosAdmsGlobais = dados || {};
+      
+      const listaAdmsUI = document.getElementById('lista-adms');
+      listaAdmsUI.innerHTML = '';
+      
+      if (dados) {
+        Object.keys(dados).forEach(id => {
+          const adm = dados[id];
+          const item = document.createElement('div');
+          item.className = 'item-usuario';
+          
+          const tagsArray = Array.isArray(adm.tags) ? adm.tags : [adm.tag || "Adm"];
+          
+          const badgesHTML = tagsArray.map(t => `
+            <span class="badge-tag">
+              <span class="texto-tag" title="${t}">${t}</span>
+              <button class="btn-deletar-tag" data-id="${id}" data-tag="${t}">✕</button>
+            </span>
+          `).join('');
+          
+          item.innerHTML = `
+            <div class="wrapper-nome">
+              <span class="nome-item" style="margin-left: 5px;" title="${adm.nome}">${adm.nome}</span>
+            </div>
+            <div class="controles-nivel">
+              <div class="container-tags">${badgesHTML}</div>
+              <button class="btn-deletar-adm-fb" data-id="${id}" data-nome="${adm.nome}">✕</button>
+            </div>
+          `;
+          listaAdmsUI.appendChild(item);
+        });
+        
+        atribuirEventosDinamicosAdms();
+      }
+    });
+
+    onValue(dbLegendaRef, (snapshot) => {
+      const dados = snapshot.val();
+      dadosLegendasGlobais = dados || {};
+      
+      const corpoTabela = document.getElementById('corpo-tabela-legenda');
+      corpoTabela.innerHTML = '';
+      
+      Object.keys(dadosLegendasGlobais).forEach(id => {
+        const linha = dadosLegendasGlobais[id];
+        const tr = document.createElement('tr');
+        
+        tr.innerHTML = `
+          <td><span class="badge-tag">${linha.tag}</span></td>
+          <td>${linha.significado}</td>
+          <td style="text-align: center;">
+            <button class="btn-deletar-linha-legenda" data-id="${id}">✕</button>
+          </td>
+        `;
+        corpoTabela.appendChild(tr);
+      });
+      
+      atribuirEventosLegenda();
+    });
+
+    function salvarNoFirebase(dados) { set(dbRef, dados); }
+    function salvarAdmsNoFirebase(dados) { set(dbAdmsRef, dados); }
+    function salvarLegendaNoFirebase(dados) { set(dbLegendaRef, dados); }
+
+    document.getElementById('btn-adicionar-jogador').addEventListener('click', (event) => {
+      event.stopPropagation();
+      const nomeInput = document.getElementById('input-nome');
+      const nivelSelect = document.getElementById('select-nivel');
+      const nomeCompleto = nomeInput.value.trim();
+      
+      if (nomeCompleto === "") {
+        alert("Por favor, digite um nome!");
+        return;
+      }
+
+      const novoId = 'jog_' + Date.now();
+      dadosJogadoresGlobais[novoId] = {
+        nome: nomeCompleto,
+        nivel: parseFloat(nivelSelect.value),
+        inativo: false
+      };
+
+      salvarNoFirebase(dadosJogadoresGlobais);
+      nomeInput.value = "";
+    });
+
+    document.getElementById('btn-adicionar-adm').addEventListener('click', (event) => {
+      event.stopPropagation();
+      const nomeInput = document.getElementById('input-nome-adm');
+      const tagInput = document.getElementById('input-tag-adm');
+      const nomeOriginal = nomeInput.value.trim();
+      const novaTag = tagInput.value.trim();
+
+      if (nomeOriginal === "") {
+        alert("Por favor, digite o nome do Administrador!");
+        return;
+      }
+
+      const tagParaAdicionar = novaTag !== "" ? novaTag : "Adm";
+      const idChaveNome = nomeOriginal.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "_");
+
+      if (dadosAdmsGlobais[idChaveNome]) {
+        let tagsAtuais = Array.isArray(dadosAdmsGlobais[idChaveNome].tags) 
+          ? dadosAdmsGlobais[idChaveNome].tags 
+          : [dadosAdmsGlobais[idChaveNome].tag || "Adm"];
+        
+        if (!tagsAtuais.includes(tagParaAdicionar)) {
+          tagsAtuais.push(tagParaAdicionar);
+        }
+        
+        dadosAdmsGlobais[idChaveNome].tags = tagsAtuais;
+      } else {
+        dadosAdmsGlobais[idChaveNome] = {
+          nome: nomeOriginal,
+          tags: [tagParaAdicionar]
+        };
+      }
+
+      salvarAdmsNoFirebase(dadosAdmsGlobais);
+      tagInput.value = ""; 
+    });
+
+    document.getElementById('btn-adicionar-legenda').addEventListener('click', (event) => {
+      event.stopPropagation();
+      const inputTag = document.getElementById('input-legenda-tag');
+      const inputSignificado = document.getElementById('input-legenda-significado');
+      
+      const tagTexto = inputTag.value.trim();
+      const significadoTexto = inputSignificado.value.trim();
+
+      if (tagTexto === "" || significadoTexto === "") {
+        alert("Preencha o nome da Tag e o seu significado completo!");
+        return;
+      }
+
+      const idLegenda = 'leg_' + tagTexto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "_");
+
+      dadosLegendasGlobais[idLegenda] = {
+        tag: tagTexto,
+        significado: significadoTexto
+      };
+
+      salvarLegendaNoFirebase(dadosLegendasGlobais);
+      inputTag.value = "";
+      inputSignificado.value = "";
+    });
+
+    function distribuirEventosDinamicos() {
+      document.querySelectorAll('.btn-visibilidade').forEach(btn => {
+        btn.onclick = function(e) {
+          e.stopPropagation();
+          const id = this.getAttribute('data-id');
+          if(dadosJogadoresGlobais[id]) {
+            dadosJogadoresGlobais[id].inativo = !(dadosJogadoresGlobais[id].inativo);
+            salvarNoFirebase(dadosJogadoresGlobais);
+          }
+        };
+      });
+
+      document.querySelectorAll('.btn-seta-up').forEach(btn => {
+        btn.onclick = function(e) {
+          e.stopPropagation();
+          const id = this.getAttribute('data-id');
+          if(dadosJogadoresGlobais[id] && dadosJogadoresGlobais[id].nivel < 5) {
+            dadosJogadoresGlobais[id].nivel = Number((dadosJogadoresGlobais[id].nivel + 0.5).toFixed(1));
+            salvarNoFirebase(dadosJogadoresGlobais);
+          }
+        };
+      });
+
+      document.querySelectorAll('.btn-seta-down').forEach(btn => {
+        btn.onclick = function(e) {
+          e.stopPropagation();
+          const id = this.getAttribute('data-id');
+          if(dadosJogadoresGlobais[id] && dadosJogadoresGlobais[id].nivel > 1) {
+            dadosJogadoresGlobais[id].nivel = Number((dadosJogadoresGlobais[id].nivel - 0.5).toFixed(1));
+            salvarNoFirebase(dadosJogadoresGlobais);
+          }
+        };
+      });
+
+      document.querySelectorAll('.btn-deletar-fb').forEach(btn => {
+        btn.onclick = function(e) {
+          e.stopPropagation();
+          const id = this.getAttribute('data-id');
+          const nome = this.getAttribute('data-nome');
+          if(confirm(`Tem certeza que deseja excluir "${nome}"?`)) {
+            delete dadosJogadoresGlobais[id];
+            salvarNoFirebase(dadosJogadoresGlobais);
+          }
+        };
+      });
+    }
+
+    function atribuirEventosDinamicosAdms() {
+      document.querySelectorAll('.btn-deletar-adm-fb').forEach(btn => {
+        btn.onclick = function(e) {
+          e.stopPropagation();
+          const id = this.getAttribute('data-id');
+          const nome = this.getAttribute('data-nome');
+          if(confirm(`Tem certeza que deseja remover o Administrador "${nome}" e todas as suas funções?`)) {
+            delete dadosAdmsGlobais[id];
+            salvarAdmsNoFirebase(dadosAdmsGlobais);
+          }
+        };
+      });
+
+      document.querySelectorAll('.btn-deletar-tag').forEach(btn => {
+        btn.onclick = function(e) {
+          e.stopPropagation();
+          const id = this.getAttribute('data-id');
+          const tagParaRemover = this.getAttribute('data-tag');
+          
+          if(dadosAdmsGlobais[id]) {
+            let tagsAtuais = Array.isArray(dadosAdmsGlobais[id].tags) 
+              ? dadosAdmsGlobais[id].tags 
+              : [dadosAdmsGlobais[id].tag || "Adm"];
+            
+            tagsAtuais = tagsAtuais.filter(t => t !== tagParaRemover);
+            
+            if(tagsAtuais.length === 0) {
+              tagsAtuais = ["Adm"];
+            }
+            
+            dadosAdmsGlobais[id].tags = tagsAtuais;
+            salvarAdmsNoFirebase(dadosAdmsGlobais);
+          }
+        };
+      });
+    }
+
+    function atribuirEventosLegenda() {
+      document.querySelectorAll('.btn-deletar-linha-legenda').forEach(btn => {
+        btn.onclick = function(e) {
+          e.stopPropagation();
+          const id = this.getAttribute('data-id');
+          delete dadosLegendasGlobais[id];
+          salvarLegendaNoFirebase(dadosLegendasGlobais);
+        };
+      });
+    }
+
+    function gerenciarLayoutBloco(event, idBloco) {
+      const bloco = document.getElementById(idBloco);
+      
+      if (event.target.closest('input') || 
+          event.target.closest('select') || 
+          event.target.closest('button') || 
+          event.target.closest('.item-usuario') ||
+          event.target.closest('.tabela-legenda') ||
+          event.target.closest('.grid-times')) {
+        return; 
+      }
+      
+      if (!bloco.classList.contains('expandido')) {
+        bloco.classList.add('expandido');
+        setTimeout(() => {
+          bloco.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 200);
+      } else {
+        if (event.target.closest('.bloco-icon') || event.target.closest('.titulo')) {
+          bloco.classList.remove('expandido');
+        }
+      }
+    }
+
+    document.getElementById('bloco-niveis').addEventListener('click', (e) => gerenciarLayoutBloco(e, 'bloco-niveis'));
+    document.getElementById('bloco-gerador').addEventListener('click', (e) => gerenciarLayoutBloco(e, 'bloco-gerador'));
+    document.getElementById('bloco-adms').addEventListener('click', (e) => gerenciarLayoutBloco(e, 'bloco-adms'));
+
+    document.getElementById('btn-fechar-niveis').addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('bloco-niveis').classList.remove('expandido');
+    });
+    document.getElementById('btn-fechar-gerador').addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('bloco-gerador').classList.remove('expandido');
+    });
+    document.getElementById('btn-fechar-adms').addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('bloco-adms').classList.remove('expandido');
+    });
+
+    document.getElementById('btn-sortear-times').addEventListener('click', (event) => {
+      event.stopPropagation();
+      
+      const itensJogadoresAtivos = document.querySelectorAll('#lista-usuarios .item-usuario:not(.inativo)');
+      const totalAtivos = itensJogadoresAtivos.length;
+
+      if (totalAtivos < 16) {
+        alert(`Erro: Não há jogadores suficientes visíveis! Você ativou apenas ${totalAtivos} jogadores. (Mínimo e máximo exigido: 16)`);
+        return;
+      }
+      if (totalAtivos > 16) {
+        alert(`Erro: Jogadores ativos acima do limite permitido! Você ativou ${totalAtivos} jogadores.`);
+        return;
+      }
+
+      const IDsTimes = ['amarelo', 'azul', 'rosa', 'roxo'];
+      IDsTimes.forEach(id => {
+        document.getElementById(`jogadores-${id}`).innerHTML = '';
+        document.getElementById(`resumo-${id}`).innerHTML = ''; 
+      });
+
+      let listaJogadores = [];
+      itensJogadoresAtivos.forEach(item => {
+        const nome = item.querySelector('.nome-item').innerText;
+        const nivel = parseFloat(item.querySelector('.valor-nivel').innerText);
+        listaJogadores.push({ nome, nivel });
+      });
+
+      listaJogadores.sort((a, b) => b.nivel - a.nivel);
+
+      let jogadoresOrdenadosEEmbaralhados = [];
+      for (let i = 5; i >= 1; i = Number((i - 0.5).toFixed(1))) {
+        let subGrupo = listaJogadores.filter(j => j.nivel === i);
+        for (let j = subGrupo.length - 1; j > 0; j--) {
+          const k = Math.floor(Math.random() * (j + 1));
+          [subGrupo[j], subGrupo[k]] = [subGrupo[k], subGrupo[j]];
+        }
+        jogadoresOrdenadosEEmbaralhados = jogadoresOrdenadosEEmbaralhados.concat(subGrupo);
+      }
+
+      let times = { amarelo: [], azul: [], rosa: [], roxo: [] };
+      let direcaoDireta = true;
+      let indiceTime = 0;
+
+      jogadoresOrdenadosEEmbaralhados.forEach(jogador => {
+        const chaveTime = IDsTimes[indiceTime];
+        times[chaveTime].push(jogador);
+
+        if (direcaoDireta) {
+          indiceTime++;
+          if (indiceTime === 4) { indiceTime = 3; direcaoDireta = false; }
+        } else {
+          indiceTime--;
+          if (indiceTime === -1) { indiceTime = 0; direcaoDireta = true; }
+        }
+      });
+
+      IDsTimes.forEach(id => {
+        const listaUI = document.getElementById(`jogadores-${id}`);
+        const resumoUI = document.getElementById(`resumo-${id}`);
+        
+        times[id].forEach(jogador => {
+          const li = document.createElement('li');
+          li.innerHTML = `<strong>${jogador.nome}</strong>`;
+          listaUI.appendChild(li);
+        });
+        
+        let somaNivelTime = times[id].reduce((acc, j) => acc + j.nivel, 0);
+        resumoUI.innerHTML = `Total: ${somaNivelTime}`;
+      });
+
+      timesGeradosParaCompartilhar = times;
+      document.getElementById('btn-compartilhar-whatsapp').style.display = 'flex';
+    });
+
+    document.getElementById('btn-compartilhar-whatsapp').addEventListener('click', (event) => {
+      event.stopPropagation();
+      
+      if (!timesGeradosParaCompartilhar) {
+        alert("Por favor, realize um sorteio primeiro!");
+        return;
+      }
+
+      const configTimes = [
+        { nome: 'Amarelo', emoji: '🟡', chave: 'amarelo' },
+        { nome: 'Azul', emoji: '🔵', chave: 'azul' },
+        { nome: 'Rosa', emoji: '🔴', chave: 'rosa' },
+        { nome: 'Roxo', emoji: '🟣', chave: 'roxo' }
+      ];
+
+      let textoMensagem = `*🏐 TIMES SORTEADOS - BOLA FORA 🏐*\n\n`;
+
+      configTimes.forEach(t => {
+        const listaJogadores = timesGeradosParaCompartilhar[t.chave];
+        const somaNiveis = listaJogadores.reduce((acc, j) => acc + j.nivel, 0);
+        
+        textoMensagem += `${t.emoji} *TIME ${t.nome.toUpperCase()}* (Nível: ${somaNiveis})\n`;
+        
+        listaJogadores.forEach(j => {
+          textoMensagem += `• ${j.nome} (Nív. ${j.nivel})\n`;
+        });
+        
+        textoMensagem += `\n`;
+      });
+
+      textoMensagem += `_Gerado automaticamente pela Central do Adm._`;
+
+      const textoUrl = encodeURIComponent(textoMensagem);
+      const urlWhatsapp = `https://api.whatsapp.com/send?text=${textoUrl}`;
+      window.open(urlWhatsapp, '_blank');
+    });
+  </script>
+</body>
+</html>

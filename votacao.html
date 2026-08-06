@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Votação</title>
+  <link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
+  
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: sans-serif; background-color: #12364e; margin: 0; padding: 0;
+      display: flex; flex-direction: column; align-items: center; min-height: 100vh; color: #12364e;
+    }
+    .header-banner { width: 100%; max-width: 600px; background-color: #e1d8cd; overflow: hidden; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .header-banner img { width: 100%; height: 100%; object-fit: cover; }
+    .main-container { width: 100%; max-width: 600px; padding: 16px; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+    .bloco-card { background-color: white; border-radius: 16px; width: 100%; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .titulo-secao { font-size: 14px; font-weight: bold; color: #12364e; margin: 0 0 12px 0; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; color: #12364e; outline: none; width: 100%; background: white; }
+    .form-inline { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+    .btn-acao { padding: 12px 16px; background-color: #d9b246; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; text-align: center; }
+    .btn-acao:hover { background-color: #af8a23; }
+    .btn-acao:disabled { background-color: #95a5a6; cursor: not-allowed; }
+    .lista-candidatos { display: flex; flex-direction: column; gap: 16px; width: 100%; max-height: 450px; overflow-y: auto; }
+    .item-candidato { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 16px; background-color: #f7f5f2; border-radius: 8px; border-left: 3px solid #d9b246; width: 100%; }
+    .candidato-info { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
+    .candidato-foto { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; }
+    .candidato-nome { font-size: 14px; font-weight: bold; color: #12364e; text-align: center; }
+    .escala-voto { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; background: white; padding: 8px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.05); width: 100%; }
+    .opcao-radio { display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; }
+    .opcao-radio input { margin-bottom: 2px; accent-color: #12364e; cursor: pointer; }
+    .opcao-radio span { font-size: 8px; font-weight: bold; color: #12364e; opacity: 0.7; line-height: 1.1; }
+    
+    .lista-escolha-unica { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; max-height: 300px; overflow-y: auto; }
+    .item-escolha-unica { display: flex; align-items: center; gap: 10px; padding: 10px; background-color: #f7f5f2; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05); cursor: pointer; }
+    .item-escolha-unica input { accent-color: #12364e; }
+
+    .footer-navegacao { width: 100%; max-width: 600px; padding: 8px 16px 24px 16px; display: flex; justify-content: center; }
+    .btn-voltar-painel { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; background-color: transparent; color: #e1d8cd; border: 2px solid #e1d8cd; border-radius: 8px; font-weight: bold; font-size: 14px; text-decoration: none; cursor: pointer; }
+    .btn-voltar-painel:hover { background-color: #e1d8cd; color: #12364e; }
+    .alerta-erro { color: #d93025; font-size: 12px; margin-top: 6px; text-align: center; font-weight: 500; }
+    .modal-foto { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(18, 54, 78, 0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+    .modal-conteudo { position: relative; max-width: 90%; max-height: 90%; display: flex; flex-direction: column; align-items: center; }
+    .modal-conteudo img { max-width: 100%; max-height: 80vh; border-radius: 8px; object-fit: contain; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+    .modal-fechar { position: absolute; top: -40px; right: 0; background: none; border: none; color: white; font-size: 28px; font-weight: bold; cursor: pointer; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <header class="header-banner">
+    <img src="https://i.ibb.co/twJd6BRq/Whats-App-Image-2026-06-29-at-10-42-05.jpg" alt="Banner Votação">
+  </header>
+
+  <main class="main-container">
+    <div class="bloco-card" id="auth-card">
+      <div class="titulo-secao">Identificação do Votante</div>
+      <div class="form-inline">
+        <select id="voter-select">
+          <option value="">Carregando...</option>
+        </select>
+        <button onclick="iniciarVotacao()" class="btn-acao">Acessar Votação</button>
+      </div>
+      <p id="auth-error" class="alerta-erro hidden">Selecione um nome válido ou você já votou.</p>
+    </div>
+
+    <div class="bloco-card hidden" id="voting-card">
+      <div class="titulo-secao">Com base no desempenho geral, avalie como cada um se saiu hoje:</div>
+      <form id="voting-form" onsubmit="enviarVotos(event)">
+        
+        <div class="lista-candidatos" id="candidates-container"></div>
+
+        <div id="bloco-destaque-wrapper" class="hidden" style="margin-top: 16px;">
+          <div class="titulo-secao" style="margin-top: 10px;">Qual diarista se destacou?</div>
+          <div class="lista-escolha-unica" id="destaque-container"></div>
+        </div>
+
+        <div style="margin-top: 15px;">
+          <button type="submit" id="btn-enviar" class="btn-acao" style="width: 100%; background-color: #12364e;">Enviar Votos</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="bloco-card hidden text-center" id="success-card" style="text-align: center; padding: 30px;">
+      <div style="font-size: 36px; color: #d9b246; margin-bottom: 10px;">✓</div>
+      <div class="titulo-secao" style="border: none;">Voto Computado com Sucesso!</div>
+      <p style="font-size: 13px; color: #12364e; opacity: 0.8; margin-top: 8px;">Obrigado por participar. Seu registro foi salvo com sucesso.</p>
+    </div>
+  </main>
+
+  <div id="foto-modal" class="modal-foto hidden">
+    <div class="modal-conteudo">
+      <button class="modal-fechar" onclick="fecharModalFoto()">×</button>
+      <img id="modal-img" src="" alt="Foto Ampliada">
+    </div>
+  </div>
+
+  <footer class="footer-navegacao">
+    <button onclick="window.location.reload()" class="btn-voltar-painel"><span>🔄</span> Reiniciar</button>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
+      databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com/"
+    };
+
+    let db, app;
+    try {
+      app = initializeApp(firebaseConfig);
+      db = getDatabase(app);
+    } catch (e) {
+      console.error("Erro ao iniciar Firebase:", e);
+    }
+
+    let dbData = {};
+    let voterName = "";
+
+    if (db) {
+      onValue(ref(db), (snapshot) => {
+        dbData = snapshot.val() || {};
+        carregarSelect();
+      }, (error) => {
+        console.error("Erro ao escutar dados:", error);
+      });
+    }
+
+    function toArray(obj) {
+      if (!obj) return [];
+      return Array.isArray(obj) ? obj.filter(Boolean) : Object.values(obj).filter(Boolean);
+    }
+
+    function carregarSelect() {
+      const select = document.getElementById('voter-select');
+      const voters = toArray(dbData.voters);
+      const votedUsers = toArray(dbData.votedUsers);
+      const candidates = toArray(dbData.candidates);
+
+      // Ordena o array de votantes alfabeticamente
+      voters.sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
+
+      const hiddenNames = candidates.filter(c => c && c.hidden).map(c => String(c.name).trim().toLowerCase());
+
+      const disponiveis = voters.filter(v => {
+        if (!v) return false;
+        const jaVotou = votedUsers.some(u => String(u).trim().toLowerCase() === String(v).trim().toLowerCase());
+        const oculta = hiddenNames.includes(String(v).trim().toLowerCase());
+        return !jaVotou && !oculta;
+      });
+
+      select.innerHTML = '<option value="">Selecione o seu nome...</option>';
+      disponiveis.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v;
+        opt.textContent = v;
+        select.appendChild(opt);
+      });
+    }
+
+    window.iniciarVotacao = function() {
+      const select = document.getElementById('voter-select');
+      const errorEl = document.getElementById('auth-error');
+      voterName = select.value;
+
+      if (!voterName) {
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      errorEl.classList.add('hidden');
+      document.getElementById('auth-card').classList.add('hidden');
+      document.getElementById('voting-card').classList.remove('hidden');
+
+      renderizarCandidatos();
+      renderizarDestaques();
+    }
+
+    function renderizarCandidatos() {
+      const container = document.getElementById('candidates-container');
+      container.innerHTML = '';
+      const scaleLabels = ["Muito abaixo", "Abaixo", "Adequado", "Acima", "Excelente"];
+      const candidates = toArray(dbData.candidates);
+
+      // Ordena os candidatos alfabeticamente pelo nome
+      candidates.sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR', { sensitivity: 'base' }));
+
+      const elegiveis = candidates.filter(c => {
+        if (!c || !c.name) return false;
+        const mesmoEu = String(c.name).trim().toLowerCase() === String(voterName).trim().toLowerCase();
+        return !mesmoEu && !c.hidden;
+      });
+
+      elegiveis.forEach(c => {
+        const safeId = String(c.id).replace(/[.#$[\]/]/g, '_');
+        let radios = '';
+        for (let i = 1; i <= 5; i++) {
+          radios += `
+            <label class="opcao-radio">
+              <input type="radio" name="cand_${safeId}" value="${i}" required>
+              <span>${scaleLabels[i-1]}</span>
+            </label>
+          `;
+        }
+
+        const div = document.createElement('div');
+        div.className = 'item-candidato';
+        div.innerHTML = `
+          <div class="candidato-info">
+            <img src="${c.photo || ''}" alt="${c.name}" class="candidato-foto" onclick="abrirFoto('${c.photo || ''}')">
+            <span class="candidato-nome">${c.name}</span>
+          </div>
+          <div class="escala-voto">${radios}</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderizarDestaques() {
+      const wrapper = document.getElementById('bloco-destaque-wrapper');
+      const container = document.getElementById('destaque-container');
+      container.innerHTML = '';
+      const destaqueCandidates = toArray(dbData.destaqueCandidates);
+
+      // Ordena os diaristas alfabeticamente pelo nome
+      destaqueCandidates.sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR', { sensitivity: 'base' }));
+
+      const elegiveis = destaqueCandidates.filter(d => d && !d.hidden);
+
+      if (elegiveis.length < 2) {
+        wrapper.classList.add('hidden');
+        return;
+      }
+
+      wrapper.classList.remove('hidden');
+
+      elegiveis.forEach(d => {
+        const safeId = String(d.id).replace(/[.#$[\]/]/g, '_');
+        const div = document.createElement('label');
+        div.className = 'item-escolha-unica';
+        div.innerHTML = `
+          <input type="radio" name="diarista_destaque" value="${safeId}" required>
+          <img src="${d.photo || ''}" alt="${d.name}" class="candidato-foto" style="width: 40px; height: 40px;" onclick="abrirFoto('${d.photo || ''}')">
+          <span class="candidato-nome" style="font-size: 12px; text-align: left;">${d.name}</span>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    window.abrirFoto = function(url) {
+      if (!url) return;
+      document.getElementById('modal-img').src = url;
+      document.getElementById('foto-modal').classList.remove('hidden');
+    }
+
+    window.fecharModalFoto = function() {
+      document.getElementById('foto-modal').classList.add('hidden');
+    }
+
+    window.enviarVotos = async function(e) {
+      e.preventDefault();
+      if (!voterName) return;
+
+      const btn = document.getElementById('btn-enviar');
+      btn.disabled = true;
+      btn.textContent = "Salvando...";
+
+      try {
+        const formData = new FormData(e.target);
+        const votosNotasObj = {};
+        const candidates = toArray(dbData.candidates);
+
+        candidates.forEach(c => {
+          if (c && c.id !== undefined && !c.hidden) {
+            const safeId = String(c.id).replace(/[.#$[\]/]/g, '_');
+            const val = formData.get(`cand_${safeId}`);
+            if (val !== null) {
+              votosNotasObj[safeId] = val;
+            }
+          }
+        });
+
+        const wrapper = document.getElementById('bloco-destaque-wrapper');
+        let destaqueEscolhido = null;
+        
+        if (!wrapper.classList.contains('hidden')) {
+          destaqueEscolhido = formData.get('diarista_destaque') || null;
+        }
+
+        const votoCompleto = {
+          notas: votosNotasObj,
+          destaque: destaqueEscolhido
+        };
+
+        const safeKey = voterName.replace(/[.#$[\]/]/g, '_');
+        let votedList = toArray(dbData.votedUsers);
+        if (!votedList.includes(voterName)) {
+          votedList.push(voterName);
+        }
+
+        const writePromise = Promise.all([
+          set(ref(db, 'votedUsers'), votedList),
+          set(ref(db, 'votes/' + safeKey), votoCompleto)
+        ]);
+
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("Timeout: O banco demorou muito para responder.")), 6000)
+        );
+
+        await Promise.race([writePromise, timeoutPromise]);
+
+        document.getElementById('voting-card').classList.add('hidden');
+        document.getElementById('success-card').classList.remove('hidden');
+
+      } catch (err) {
+        console.error("Erro capturado no envio:", err);
+        alert("Erro ao enviar: " + (err.message || "Falha desconhecida"));
+        btn.disabled = false;
+        btn.textContent = "Enviar Votos";
+      }
+    }
+  </script>
+</body>
+</html>

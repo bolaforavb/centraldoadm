@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arquivos - Central do Adm</title>
+  <link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
+  
+  <style>
+    /* Reset global idêntico ao painel */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: sans-serif;
+      background-color: #12364e; 
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center; 
+      min-height: 100vh;
+      color: #12364e;
+    }
+
+    .header-banner {
+      width: 100%; 
+      max-width: 600px;
+      background-color: #e1d8cd; 
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .header-banner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; 
+    }
+
+    .main-container {
+      width: 100%;
+      max-width: 600px;
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Estrutura de Card baseada no design original */
+    .bloco-card {
+      background-color: white; 
+      border-radius: 16px;
+      width: 100%;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .titulo-secao {
+      font-size: 15px;
+      font-weight: bold;
+      color: #12364e;
+      margin: 0 0 15px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      padding-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .header-resultado-linha {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      padding-bottom: 6px;
+      width: 100%;
+    }
+
+    .header-resultado-linha .titulo-secao {
+      margin: 0;
+      border: none;
+      padding: 0;
+      flex: 1;
+      white-space: nowrap;
+    }
+
+    /* Inputs padronizados com o Painel */
+    input[type="text"], input[type="file"], select {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #12364e;
+      outline: none;
+      width: 100%;
+    }
+
+    input[type="file"] {
+      background-color: #f7f5f2;
+      cursor: pointer;
+    }
+
+    /* Botão Principal padronizado com o Dourado do Painel */
+    .btn-acao-principal {
+      width: 100%;
+      padding: 12px;
+      background-color: #d9b246;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      transition: background 0.2s, transform 0.1s;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      margin-top: 12px;
+    }
+
+    .btn-acao-principal:hover { background-color: #af8a23; }
+    .btn-acao-principal:active { transform: scale(0.98); }
+    .btn-acao-principal:disabled { background-color: #ccc; cursor: not-allowed; }
+
+    /* Área do formulário de Upload */
+    .form-upload {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+    }
+
+    /* Aviso de limite de tamanho */
+    .aviso-limite {
+      font-size: 11px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    /* Grade de Arquivos (Lado a lado) */
+    .lista-arquivos-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 12px;
+      width: 100%;
+      max-height: 420px; 
+      overflow-y: auto; 
+      padding-right: 4px;
+    }
+
+    .item-arquivo {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 10px;
+      background-color: #f7f5f2;
+      border-radius: 12px;
+      border-top: 3px solid #d9b246;
+      position: relative;
+      gap: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Botão de excluir discreto no canto superior direito do card */
+    .btn-deletar-arquivo {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: rgba(217, 48, 37, 0.1);
+      border: none;
+      color: #d93025;
+      font-weight: bold;
+      font-size: 11px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.2s;
+      z-index: 2;
+    }
+
+    .btn-deletar-arquivo:hover {
+      background: #d93025;
+      color: white;
+    }
+
+    .info-arquivo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .miniatura-container {
+      width: 100%;
+      height: 75px;
+      border-radius: 8px;
+      background-color: #e1d8cd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .miniatura-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .icone-arquivo {
+      font-size: 26px;
+    }
+
+    .nome-arquivo {
+      font-size: 11px;
+      font-weight: 500;
+      color: #12364e;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .nome-arquivo:hover {
+      text-decoration: underline;
+    }
+
+    .acoes-arquivo {
+      display: flex;
+      width: 100%;
+    }
+
+    .btn-baixar {
+      background-color: #12364e;
+      color: white;
+      padding: 6px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: bold;
+      text-decoration: none;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      width: 100%;
+    }
+
+    .btn-baixar:hover {
+      background-color: #0b2231;
+    }
+
+    /* Rodapé com botão Voltar */
+    .footer-navegacao {
+      width: 100%;
+      max-width: 600px;
+      padding: 8px 16px 24px 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .btn-voltar-painel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px;
+      background-color: transparent;
+      color: #e1d8cd;
+      border: 2px solid #e1d8cd;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-voltar-painel:hover {
+      background-color: #e1d8cd;
+      color: #12364e;
+    }
+
+    .btn-voltar-painel:active {
+      transform: scale(0.99);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header-banner">
+    <img src="https://i.ibb.co/twJd6BRq/Whats-App-Image-2026-06-29-at-10-42-05.jpg" alt="Banner Central do Adm">
+  </header>
+
+  <main class="main-container">
+    
+    <!-- CARD DE UPLOAD -->
+    <div class="bloco-card">
+      <div class="titulo-secao">Fazer Upload de Arquivos</div>
+      <form id="form-upload-arquivo" class="form-upload">
+        <input type="file" id="arquivo-input" multiple required>
+        <span class="aviso-limite">💡 Você pode selecionar vários arquivos de uma vez (até 2MB cada).</span>
+        <button type="submit" id="btn-enviar" class="btn-acao-principal">Enviar Arquivos</button>
+      </form>
+    </div>
+
+    <!-- CARD DE LISTAGEM DE ARQUIVOS -->
+    <div class="bloco-card">
+      <div class="header-resultado-linha">
+        <div class="titulo-secao">Arquivos Disponíveis</div>
+      </div>
+      <div class="lista-arquivos-container" id="lista-arquivos">
+        <!-- Preenchido via JavaScript -->
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="footer-navegacao">
+    <a href="dashboard.html" class="btn-voltar-painel">
+      <span>↩</span> Voltar
+    </a>
+  </footer>
+
+  <!-- Scripts do Firebase v8 -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <script>
+    // Configurações Oficiais do Firebase unificadas da sua base
+    const firebaseConfig = {
+      apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
+      authDomain: "central-adm-bolafora.firebaseapp.com",
+      databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com",
+      projectId: "central-adm-bolafora",
+      storageBucket: "central-adm-bolafora.firebasestorage.app",
+      messagingSenderId: "429477810517",
+      appId: "1:429477810517:web:3be6c842269cbdfe4b5fdc"
+    };
+    
+    // Inicializa o Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
+
+    // --- CONFIGURAÇÃO DE PERSISTÊNCIA E VERIFICAÇÃO DE AUTENTICAÇÃO ---
+    auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
+      .then(() => {
+        auth.onAuthStateChanged((user) => {
+          if (!user) {
+            window.location.href = 'index.html'; 
+          }
+        });
+      })
+      .catch((error) => {
+        console.error("Erro ao definir persistência de sessão:", error);
+      });
+
+    // Ouvir alterações da lista de arquivos em tempo real no Realtime Database
+    db.ref('arquivos_enviados').on('value', (snapshot) => {
+      const dados = snapshot.val();
+      atualizarListaArquivosVisual(dados);
+    });
+
+    // Manipulador do envio do formulário de upload
+    document.getElementById('form-upload-arquivo').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const inputArquivo = document.getElementById('arquivo-input');
+      const arquivos = inputArquivo.files;
+
+      if (arquivos.length === 0) return;
+
+      const btnEnviar = document.getElementById('btn-enviar');
+      btnEnviar.disabled = true;
+      btnEnviar.textContent = "Processando e enviando...";
+
+      try {
+        for (let i = 0; i < arquivos.length; i++) {
+          const arquivo = arquivos[i];
+
+          if (arquivo.size > 2 * 1024 * 1024) {
+            alert(`O arquivo "${arquivo.name}" é maior que 2MB e foi ignorado.`);
+            continue;
+          }
+
+          await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+              const base64Data = event.target.result;
+
+              const novoArquivoRef = db.ref('arquivos_enviados').push();
+              novoArquivoRef.set({
+                nomeOriginal: arquivo.name,
+                tipoMime: arquivo.type,
+                dadosBase64: base64Data,
+                dataEnvio: new Date().toLocaleDateString('pt-BR')
+              }).then(resolve).catch(reject);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(arquivo);
+          });
+        }
+
+        inputArquivo.value = '';
+        alert("Arquivos enviados com sucesso!");
+      } catch (error) {
+        console.error("Erro ao enviar arquivos:", error);
+        alert("Ocorreu um erro ao enviar alguns arquivos.");
+      } finally {
+        btnEnviar.disabled = false;
+        btnEnviar.textContent = "Enviar Arquivos";
+      }
+    });
+
+    // Renderiza a lista de arquivos em formato de grade (grid) com opção de renomear
+    function atualizarListaArquivosVisual(dados) {
+      const container = document.getElementById('lista-arquivos');
+      container.innerHTML = '';
+
+      if (!dados) {
+        container.innerHTML = `<div style="grid-column: 1 / -1; text-align:center; padding: 20px; font-size:13px; opacity:0.6;">Nenhum arquivo enviado até o momento.</div>`;
+        return;
+      }
+
+      const lista = Object.entries(dados).map(([id, item]) => ({ id, ...item }));
+
+      lista.forEach(arq => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'item-arquivo';
+        
+        let conteudoMiniatura = `<span class="icone-arquivo">📄</span>`;
+        if (arq.tipoMime && arq.tipoMime.startsWith('image/')) {
+          conteudoMiniatura = `<img src="${arq.dadosBase64}" alt="Miniatura">`;
+        } else if (arq.nomeOriginal && arq.nomeOriginal.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+          conteudoMiniatura = `<img src="${arq.dadosBase64}" alt="Miniatura">`;
+        }
+
+        itemDiv.innerHTML = `
+          <button class="btn-deletar-arquivo" onclick="excluirArquivo('${arq.id}')" title="Excluir arquivo">✕</button>
+          <div class="info-arquivo">
+            <div class="miniatura-container">
+              ${conteudoMiniatura}
+            </div>
+            <span class="nome-arquivo" onclick="renomearArquivo('${arq.id}', '${arq.nomeOriginal}')" title="Clique para renomear">${arq.nomeOriginal}</span>
+          </div>
+          <div class="acoes-arquivo">
+            <a href="${arq.dadosBase64}" download="${arq.nomeOriginal}" class="btn-baixar" title="Baixar arquivo">📥 Baixar</a>
+          </div>
+        `;
+        container.appendChild(itemDiv);
+      });
+    }
+
+    // Função para renomear o arquivo no Realtime Database (mantendo a extensão original)
+    window.renomearArquivo = function(id, nomeAtual) {
+      // Pega apenas a extensão do arquivo atual (ex: .png, .pdf)
+      const extensaoMatch = nomeAtual.match(/\.[0-9a-z]+$/i);
+      const extensao = extensaoMatch ? extensaoMatch[0] : '';
+      const nomeSemExtensao = nomeAtual.replace(/\.[0-9a-z]+$/i, '');
+
+      const novoNomeBase = prompt("Digite o novo nome para o arquivo:", nomeSemExtensao);
+      if (!novoNomeBase || novoNomeBase.trim() === "") return;
+
+      const novoNomeCompleto = novoNomeBase.trim() + extensao;
+
+      db.ref(`arquivos_enviados/${id}`).update({
+        nomeOriginal: novoNomeCompleto
+      }).catch((error) => {
+        console.error("Erro ao renomear arquivo:", error);
+        alert("Erro ao renomear o arquivo.");
+      });
+    };
+
+    // Função global para excluir o arquivo do Realtime Database
+    window.excluirArquivo = function(id) {
+      if (confirm("Deseja realmente excluir este arquivo?")) {
+        db.ref(`arquivos_enviados/${id}`).remove().catch((error) => {
+          console.error("Erro ao deletar arquivo:", error);
+        });
+      }
+    }
+  </script>
+
+</body>
+</html>

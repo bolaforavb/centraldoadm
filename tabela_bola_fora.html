@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabela Bola Fora</title>
+    <style>
+/* ==========================================
+   VARIÁVEIS DE CORES OFICIAIS
+   ========================================== */
+:root {
+    --azul-oficial: #12364e;
+    --amarelo-oficial: #d9b246;
+    --bege-oficial: #e1d8cd;
+    --branco: #ffffff;
+}
+
+/* ==========================================
+   RESET E ESTILOS GERAIS
+   ========================================== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    background-color: var(--bege-oficial);
+    color: var(--azul-oficial);
+    padding-bottom: 40px;
+}
+
+/* ==========================================
+   CABEÇALHO E NAVEGAÇÃO
+   ========================================== */
+header {
+    background-color: var(--azul-oficial);
+    color: var(--branco);
+    padding: 20px 15px;
+    text-align: center;
+    border-bottom: 4px solid var(--amarelo-oficial);
+}
+
+.header-topo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.logo-escudo {
+    width: 100px; 
+    height: auto;
+}
+
+header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.menu {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.menu button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--branco);
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.menu button.ativo {
+    background-color: var(--amarelo-oficial);
+    color: var(--azul-oficial);
+}
+
+/* ==========================================
+   ESTRUTURA DAS ABAS
+   ========================================== */
+#app-container {
+    max-width: 500px;
+    margin: 20px auto;
+    padding: 0 10px;
+}
+
+.aba { display: none; }
+.aba.ativa { display: block; }
+
+h2 {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    color: var(--azul-oficial);
+    text-align: center;
+    background-color: var(--amarelo-oficial);
+    padding: 10px;
+    border-radius: 4px;
+}
+
+/* ==========================================
+   CARDS DE JOGOS
+   ========================================== */
+.jogo-card {
+    margin-bottom: 25px;
+    background-color: var(--branco);
+    border: 2px solid var(--azul-oficial);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.jogo-grid {
+    display: grid;
+    /* 4 Colunas: Time A | X | Time B | Vencedor */
+    grid-template-columns: 1fr 30px 1fr 1fr; 
+}
+
+.header-cell {
+    background-color: var(--azul-oficial);
+    color: var(--branco);
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px 2px;
+    border-bottom: 2px solid var(--azul-oficial);
+    border-right: 2px solid var(--azul-oficial);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+}
+
+.header-cell.vazia {
+    border-bottom: none;
+    background-color: var(--bege-oficial);
+}
+
+.header-cell.vencedor-header {
+    color: var(--amarelo-oficial);
+    border-right: none;
+}
+
+.data-cell {
+    background-color: var(--bege-oficial);
+    padding: 10px 4px;
+    border-right: 2px solid var(--azul-oficial);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.data-cell.x-cell {
+    font-weight: bold;
+    color: var(--azul-oficial);
+    background-color: var(--bege-oficial);
+}
+
+.data-cell.vencedor-cell {
+    background-color: var(--amarelo-oficial);
+    color: var(--azul-oficial);
+    font-weight: bold;
+    font-size: 0.95rem;
+    border-right: none;
+    text-transform: uppercase;
+}
+
+.data-cell input {
+    width: 100%;
+    max-width: 60px;
+    padding: 8px 2px;
+    text-align: center;
+    border: 1px solid var(--azul-oficial);
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: var(--azul-oficial);
+}
+
+.data-cell input:disabled {
+    background-color: transparent;
+    border-color: transparent;
+    color: var(--azul-oficial);
+}
+
+.btn-salvar {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--azul-oficial);
+    color: var(--amarelo-oficial);
+    border: none;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+/* ==========================================
+   BOTÕES DE AÇÃO DOS JOGOS
+   ========================================== */
+.acoes-jogo {
+    display: flex;
+    width: 100%;
+}
+
+.acoes-jogo button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    border-right: 1px solid rgba(0,0,0,0.1);
+    transition: background-color 0.2s;
+}
+
+.acoes-jogo button:last-child {
+    border-right: none;
+}
+
+.btn-puxar-emoji {
+    background-color: #2196f3;
+}
+.btn-puxar-emoji:hover {
+    background-color: #0b7dda;
+}
+
+.btn-salvar-emoji {
+    background-color: var(--azul-oficial);
+}
+.btn-salvar-emoji:hover {
+    background-color: #0d273a;
+}
+
+.btn-editar-emoji {
+    background-color: #ffc107;
+}
+.btn-editar-emoji:hover {
+    background-color: #e0a800;
+}
+
+/* ==========================================
+   TABELA DE CLASSIFICAÇÃO
+   ========================================== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--bege-oficial);
+    border: 2px solid var(--azul-oficial);
+}
+
+thead {
+    background-color: var(--azul-oficial);
+    color: var(--amarelo-oficial);
+}
+
+th, td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 2px solid var(--azul-oficial);
+    border-right: 2px solid var(--azul-oficial);
+}
+
+th { font-size: 0.9rem; text-transform: uppercase; }
+td { font-size: 1.1rem; font-weight: bold; }
+
+/* ==========================================
+   TOAST NOTIFICATION
+   ========================================== */
+.toast {
+    visibility: hidden;
+    min-width: 250px;
+    background-color: #dc3545;
+    color: var(--branco);
+    text-align: center;
+    border-radius: 8px;
+    padding: 15px;
+    position: fixed;
+    z-index: 1000;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    opacity: 0;
+    transition: opacity 0.3s, bottom 0.3s, visibility 0.3s;
+}
+
+.toast.show {
+    visibility: visible;
+    opacity: 1;
+    bottom: 40px;
+}
+
+.toast.info {
+    background-color: var(--azul-oficial);
+    color: var(--amarelo-oficial);
+}
+
+.toast.sucesso {
+    background-color: #28a745;
+    color: var(--branco);
+}
+
+.btn-reset {
+    background-color: #c9302c;
+    color: var(--branco);
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.btn-reset:active {
+    background-color: #ac2925;
+}
+
+.card-cadastro {
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.card-cadastro input, .card-cadastro select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.time-container {
+    background: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.time-header {
+    font-weight: bold;
+    text-align: center;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #eee;
+    margin-bottom: 5px;
+}
+
+.linha-inputs {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.linha-inputs > * {
+    flex: 1;
+    min-width: 130px;
+}
+
+.grid-times {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+@media (max-width: 600px) {
+    .grid-times {
+        grid-template-columns: 1fr;
+        max-width: 100%;
+    }
+}
+
+.escondido {
+    display: none;
+}
+
+.controle-placar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.btn-ponto {
+    width: 24px;
+    height: 24px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background-color: var(--azul-oficial);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.1s ease-in-out;
+}
+
+.btn-ponto-positivo {
+    background-color: var(--azul-oficial);
+}
+
+.btn-ponto:active {
+    opacity: 0.8;
+    transform: scale(0.90);
+}
+
+.controle-placar input {
+    width: 32px;
+    height: 26px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--azul-oficial);
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    -moz-appearance: textfield;
+}
+
+.controle-placar input::-webkit-outer-spin-button,
+.controle-placar input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-topo">
+            <img src="https://bolaforavb.github.io/centraldoadm/escudo.PNG" alt="Escudo Bola Fora" class="logo-escudo">
+            <h1>TABELA<br>BOLA FORA</h1>
+        </div>
+        
+        <nav class="menu">
+            <button onclick="mudarAba('elenco')" id="btn-elenco" class="ativo">Elenco & Times</button>
+            <button onclick="mudarAba('grupos')" id="btn-grupos">Fase de Grupos</button>
+            <button onclick="mudarAba('classificacao')" id="btn-classificacao">Classificação</button>
+            <button onclick="mudarAba('finais')" id="btn-finais">Finais</button>
+        </nav>
+        
+        <div style="margin-top: 15px; margin-bottom: 10px; display: flex; gap: 15px; justify-content: center; align-items: center; flex-wrap: wrap;">
+            <button onclick="resetarTorneio()" class="btn-reset">🔄 Iniciar Novo Torneio</button>
+            <button onclick="exportarRelatorioPDF()" class="btn-reset" style="background-color: #28a745;">📄 Exportar PDF do Dia</button>
+        </div>
+    </header>
+
+    <main id="app-container">
+        <section id="elenco" class="aba ativa">
+            <div class="card-cadastro">
+                <h3 style="color: var(--azul-oficial); margin-bottom: 10px;">1. Cadastrar Novo Jogador</h3>
+                <div class="linha-inputs">
+                    <input type="text" id="novo-nome" placeholder="Nome do Jogador..." maxlength="20">
+                    <select id="novo-tipo">
+                        <option value="mensalista">Mensalista ⭐️</option>
+                        <option value="diarista">Diarista 🏐</option>
+                    </select>
+                    <button class="btn-salvar" onclick="adicionarJogador()">Salvar no Sistema</button>
+                </div>
+            </div>
+
+            <div class="card-cadastro">
+                <h3 style="color: var(--azul-oficial); margin-bottom: 10px;">2. Escalação dos times</h3>
+                <div class="linha-inputs">
+                    <input type="text" id="busca-jogador-input" list="lista-jogadores-disponiveis" placeholder="Digitar nome do jogador..." autocomplete="off">
+                    <datalist id="lista-jogadores-disponiveis"></datalist>
+                    
+                    <select id="escolha-time">
+                        <option value="Amarelo">Time Amarelo</option>
+                        <option value="Rosa">Time Rosa</option>
+                        <option value="Azul">Time Azul</option>
+                        <option value="Roxo">Time Roxo</option>
+                    </select>
+                    <button class="btn-salvar" onclick="escalarJogador()">Escalar Jogador</button>
+                </div>
+            </div>
+
+            <div class="montagem-times">
+                <h3 style="color: var(--azul-oficial); margin-bottom: 15px; text-align: center; margin-top: 20px;">Times Formados</h3>
+                <div id="times-formados" class="grid-times"></div>
+            </div>
+
+            <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ccc;">
+                <h4 style="color: #666; cursor: pointer; text-align: center;" onclick="document.getElementById('tabela-geral-container').classList.toggle('escondido')">
+                    👀 Mostrar/Ocultar Todos os Jogadores Cadastrados
+                </h4>
+                <div id="tabela-geral-container" class="escondido" style="margin-top: 15px;">
+                    <table class="tabela-classificacao" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Tipo</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corpo-tabela-elenco"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="grupos" class="aba">
+            <h2>Jogos da Fase de Grupos</h2>
+            <div id="lista-jogos"></div>
+        </section>
+
+        <section id="classificacao" class="aba">
+            <h2>Tabela de Classificação</h2>
+            <table id="tabela-classificacao">
+                <thead>
+                    <tr>
+                        <th>Pos</th>
+                        <th>Time</th>
+                        <th>Vitórias</th>
+                    </tr>
+                </thead>
+                <tbody id="corpo-tabela">
+                </tbody>
+            </table>
+        </section>
+
+        <section id="finais" class="aba">
+            <h2>Fase Final</h2>
+            <div id="mata-mata">
+                <p>As finais serão liberadas após o término da fase de grupos.</p>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast"></div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <!-- html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <script>
+// Configuração do app Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyAXQI_c9ZQ2kck1HYC70STM1bTWpFYeeVU",
+    authDomain: "tabela-bola-fora.firebaseapp.com",
+    databaseURL: "https://tabela-bola-fora-default-rtdb.firebaseio.com/",
+    projectId: "tabela-bola-fora",
+    storageBucket: "tabela-bola-fora.firebasestorage.app",
+    messagingSenderId: "917821142911",
+    appId: "1:917821142911:web:267ba5ed629f8b885e0c4a"
+};
+
+// Inicializa o Firebase
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+// VARIÁVEIS GLOBAIS DO TORNEIO
+const times = ['Amarelo', 'Rosa', 'Azul', 'Roxo'];
+let partidas = [];
+let semiFinais = [];
+let finais = [];
+let elenco = [];
+
+function normalizarArrayFirebase(dado) {
+    if (!dado) return [];
+    if (Array.isArray(dado)) return dado.filter(item => item !== null && typeof item === 'object');
+    return Object.values(dado).filter(item => item !== null && typeof item === 'object');
+}
+
+function gerarPartidasIniciais() {
+    const partidasIniciais = [
+        { id: 1, timeA: 'Amarelo', timeB: 'Roxo', pontosA: null, pontosB: null, finalizada: false },
+        { id: 2, timeA: 'Azul', timeB: 'Rosa', pontosA: null, pontosB: null, finalizada: false },
+        { id: 3, timeA: 'Amarelo', timeB: 'Azul', pontosA: null, pontosB: null, finalizada: false },
+        { id: 4, timeA: 'Roxo', timeB: 'Rosa', pontosA: null, pontosB: null, finalizada: false },
+        { id: 5, timeA: 'Rosa', timeB: 'Amarelo', pontosA: null, pontosB: null, finalizada: false },
+        { id: 6, timeA: 'Roxo', timeB: 'Azul', pontosA: null, pontosB: null, finalizada: false }
+    ];
+
+    database.ref('torneio').update({
+        partidas: partidasIniciais,
+        semiFinais: null,
+        finais: null
+    }).catch(erro => {
+        console.error("Erro na nuvem:", erro);
+    });
+}
+
+function escutarBancoDeDados() {
+    database.ref('torneio').on('value', (snapshot) => {
+        const dados = snapshot.val();
+        
+        if (dados) {
+            let partidasNuvem = normalizarArrayFirebase(dados.partidas);
+            
+            if (partidasNuvem.length === 0) {
+                gerarPartidasIniciais();
+            } else {
+                partidas = partidasNuvem;
+            }
+            
+            semiFinais = normalizarArrayFirebase(dados.semiFinais);
+            finais = normalizarArrayFirebase(dados.finais);
+            elenco = normalizarArrayFirebase(dados.elenco); 
+            
+            try { renderizarJogos(); } catch(e) { console.error("Erro Jogos:", e); }
+            try { atualizarClassificacao(); } catch(e) { console.error("Erro Classificação:", e); }
+            try { renderizarMataMata(); } catch(e) { console.error("Erro Mata-Mata:", e); }
+            try { renderizarElenco(); } catch(e) { console.error("Erro Elenco:", e); }
+            
+        } else {
+            gerarPartidasIniciais();
+        }
+    }, (erro) => {
+        console.error("FIREBASE BLOQUEOU A LEITURA:", erro);
+    });
+}
+
+escutarBancoDeDados();
+
+function puxarPlacarParaJogo(idJogo, isMataMata = false) {
+    database.ref('placar_digital').once('value').then((snapshot) => {
+        let placarDigital = snapshot.val();
+        
+        if (!placarDigital) {
+            return database.ref('placar').once('value').then(snapAlt => snapAlt.val());
+        }
+        return placarDigital;
+    }).then((placarDigital) => {
+        if (!placarDigital) {
+            mostrarAviso("Nenhum placar digital ativo encontrado no Firebase.");
+            return;
+        }
+
+        let jogo;
+        if (!isMataMata) {
+            jogo = partidas.find(p => p.id === idJogo);
+        } else {
+            jogo = semiFinais.find(p => p.id === idJogo) || finais.find(p => p.id === idJogo);
+        }
+
+        if (!jogo) {
+            mostrarAviso("Jogo não encontrado.");
+            return;
+        }
+
+        const corEsq = placarDigital.corEsquerda;
+        const corDir = placarDigital.corDireita;
+        const ptsEsq = placarDigital.esquerda !== undefined ? placarDigital.esquerda : 0;
+        const ptsDir = placarDigital.direita !== undefined ? placarDigital.direita : 0;
+
+        let inputA = document.getElementById(`placarA-${idJogo}`);
+        let inputB = document.getElementById(`placarB-${idJogo}`);
+
+        if (!inputA || !inputB) return;
+
+        if (jogo.timeA === corEsq && jogo.timeB === corDir) {
+            inputA.value = ptsEsq;
+            inputB.value = ptsDir;
+            mostrarAviso("Placar puxado com sucesso!", "sucesso");
+        } else if (jogo.timeA === corDir && jogo.timeB === corEsq) {
+            inputA.value = ptsDir;
+            inputB.value = ptsEsq;
+            mostrarAviso("Placar puxado (lados invertidos ajustados automaticamente).", "sucesso");
+        } else {
+            inputA.value = ptsEsq;
+            inputB.value = ptsDir;
+            mostrarAviso("Atenção: As cores do placar digital diferem deste jogo.", "info");
+        }
+    }).catch(err => {
+        console.error("Erro ao puxar placar:", err);
+        mostrarAviso("Erro ao se conectar com o banco de dados.");
+    });
+}
+
+function editarPlacar(idJogo, isMataMata = false, fase = '') {
+    let jogo;
+    if (!isMataMata) {
+        jogo = partidas.find(p => p.id === idJogo);
+    } else if (fase === 'semi') {
+        jogo = semiFinais.find(p => p.id === idJogo);
+    } else {
+        jogo = finais.find(p => p.id === idJogo);
+    }
+
+    if (jogo) {
+        jogo.finalizada = false;
+        if (!isMataMata) {
+            database.ref('torneio').update({ partidas: partidas });
+        } else if (fase === 'semi') {
+            database.ref('torneio').update({ semiFinais: semiFinais });
+        } else {
+            database.ref('torneio').update({ finais: finais });
+        }
+        mostrarAviso("Placar liberado para edição.", "info");
+    }
+}
+
+window.addEventListener('message', (event) => {
+    if (event.data && event.data.acao === "ATUALIZAR_PLACAR_GRUPO") {
+        const { corEsquerda, corDireita, pontosEsquerda, pontosDireita } = event.data;
+        
+        let jogoAlvo = partidas.find(p => !p.finalizada && ((p.timeA === corEsquerda && p.timeB === corDireita) || (p.timeA === corDireita && p.timeB === corEsquerda)));
+        
+        if (!jogoAlvo) {
+            let todosMata = [...semiFinais, ...finais];
+            jogoAlvo = todosMata.find(p => !p.finalizada && ((p.timeA === corEsquerda && p.timeB === corDireita) || (p.timeA === corDireita && p.timeB === corEsquerda)));
+        }
+
+        if (jogoAlvo) {
+            const inputA = document.getElementById(`placarA-${jogoAlvo.id}`);
+            const inputB = document.getElementById(`placarB-${jogoAlvo.id}`);
+            
+            if (inputA && inputB) {
+                if (jogoAlvo.timeA === corEsquerda) {
+                    inputA.value = pontosEsquerda;
+                    inputB.value = pontosDireita;
+                } else {
+                    inputA.value = pontosDireita;
+                    inputB.value = pontosEsquerda;
+                }
+                mostrarAviso(`Placar do jogo ${jogoAlvo.timeA} x ${jogoAlvo.timeB} sincronizado!`, "sucesso");
+            }
+        }
+    }
+});
+
+function renderizarJogos() {
+    const listaJogos = document.getElementById('lista-jogos');
+    if (!listaJogos) return;
+    listaJogos.innerHTML = '';
+
+    partidas.forEach(jogo => {
+        let vencedorStr = '-';
+        if (jogo.finalizada) {
+            vencedorStr = jogo.pontosA > jogo.pontosB ? jogo.timeA : jogo.timeB;
+        }
+
+        let ptsA = jogo.pontosA !== null && jogo.pontosA !== undefined ? jogo.pontosA : '';
+        let ptsB = jogo.pontosB !== null && jogo.pontosB !== undefined ? jogo.pontosB : '';
+
+        const divJogo = document.createElement('div');
+        divJogo.className = 'jogo-card';
+        
+        divJogo.innerHTML = `
+            <div class="jogo-grid">
+                <div class="header-cell">${jogo.timeA || 'Time'}</div>
+                <div class="header-cell vazia"></div>
+                <div class="header-cell">${jogo.timeB || 'Time'}</div>
+                <div class="header-cell vencedor-header">VENCEDOR</div>
+
+                <div class="data-cell">
+                    <div class="controle-placar">
+                        <button type="button" class="btn-ponto" onclick="alterarPlacar('placarA-${jogo.id}', -1)" ${jogo.finalizada ? 'disabled' : ''}>-</button>
+                        <input type="number" id="placarA-${jogo.id}" placeholder="Pts" value="${ptsA}" ${jogo.finalizada ? 'disabled' : ''}>
+                        <button type="button" class="btn-ponto btn-ponto-positivo" onclick="alterarPlacar('placarA-${jogo.id}', 1)" ${jogo.finalizada ? 'disabled' : ''}>+</button>
+                        <button type="button" class="btn-ponto btn-ponto-positivo" style="width: auto; padding: 0 6px; font-size: 12px; margin-left: 2px;" onclick="alterarPlacar('placarA-${jogo.id}', 5)" ${jogo.finalizada ? 'disabled' : ''}>+5</button>
+                    </div>
+                </div>
+                <div class="data-cell x-cell">X</div>
+                <div class="data-cell">
+                    <div class="controle-placar">
+                        <button type="button" class="btn-ponto" onclick="alterarPlacar('placarB-${jogo.id}', -1)" ${jogo.finalizada ? 'disabled' : ''}>-</button>
+                        <input type="number" id="placarB-${jogo.id}" placeholder="Pts" value="${ptsB}" ${jogo.finalizada ? 'disabled' : ''}>
+                        <button type="button" class="btn-ponto btn-ponto-positivo" onclick="alterarPlacar('placarB-${jogo.id}', 1)" ${jogo.finalizada ? 'disabled' : ''}>+</button>
+                        <button type="button" class="btn-ponto btn-ponto-positivo" style="width: auto; padding: 0 6px; font-size: 12px; margin-left: 2px;" onclick="alterarPlacar('placarB-${jogo.id}', 5)" ${jogo.finalizada ? 'disabled' : ''}>+5</button>
+                    </div>
+                </div>
+                <div class="data-cell vencedor-cell">${vencedorStr}</div>
+            </div>
+            <div class="acoes-jogo">
+                <button class="btn-puxar-emoji" onclick="puxarPlacarParaJogo(${jogo.id}, false)" title="Puxar Placar">📥</button>
+                <button class="btn-salvar-emoji" onclick="salvarResultado(${jogo.id})" title="Salvar Placar" ${jogo.finalizada ? 'style="opacity:0.5; cursor:not-allowed;"' : ''}>💾</button>
+                <button class="btn-editar-emoji" onclick="editarPlacar(${jogo.id}, false)" title="Editar Placar">✏️</button>
+            </div>
+        `;
+        listaJogos.appendChild(divJogo);
+    });
+}
+
+function renderizarMataMata() {
+    const divMataMata = document.getElementById('mata-mata');
+    if (!divMataMata) return;
+    
+    if (semiFinais.length === 0) {
+        divMataMata.innerHTML = '<p style="text-align:center; color: var(--azul-oficial); margin-top:20px;">As finais serão liberadas após o término da fase de grupos.</p>';
+        return;
+    }
+
+    divMataMata.innerHTML = '<h3 style="margin-bottom: 15px; color: var(--azul-oficial); text-align: center;">SEMIFINAIS</h3>';
+
+    semiFinais.forEach(jogo => {
+        let vencedorStr = '-';
+        if (jogo.finalizada) {
+            vencedorStr = jogo.pontosA > jogo.pontosB ? jogo.timeA : jogo.timeB;
+        }
+
+        let ptsA = jogo.pontosA !== null && jogo.pontosA !== undefined ? jogo.pontosA : '';
+        let ptsB = jogo.pontosB !== null && jogo.pontosB !== undefined ? jogo.pontosB : '';
+
+        divMataMata.innerHTML += `
+            <div class="jogo-card">
+                <div class="jogo-grid">
+                    <div class="header-cell">${jogo.timeA}</div>
+                    <div class="header-cell vazia"></div>
+                    <div class="header-cell">${jogo.timeB}</div>
+                    <div class="header-cell vencedor-header">VENCEDOR</div>
+
+                    <div class="data-cell">
+                        <div class="controle-placar">
+                            <button type="button" class="btn-ponto" onclick="alterarPlacar('placarA-${jogo.id}', -1)" ${jogo.finalizada ? 'disabled' : ''}>-</button>
+                            <input type="number" id="placarA-${jogo.id}" placeholder="Pts" value="${ptsA}" ${jogo.finalizada ? 'disabled' : ''}>
+                            <button type="button" class="btn-ponto btn-ponto-positivo" onclick="alterarPlacar('placarA-${jogo.id}', 1)" ${jogo.finalizada ? 'disabled' : ''}>+</button>
+                            <button type="button" class="btn-ponto btn-ponto-positivo" style="width: auto; padding: 0 6px; font-size: 12px; margin-left: 2px;" onclick="alterarPlacar('placarA-${jogo.id}', 5)" ${jogo.finalizada ? 'disabled' : ''}>+5</button>
+                        </div>
+                    </div>
+                    <div class="data-cell x-cell">X</div>
+                    <div class="data-cell">
+                        <div class="controle-placar">
+                            <button type="button" class="btn-ponto" onclick="alterarPlacar('placarB-${jogo.id}', -1)" ${jogo.finalizada ? 'disabled' : ''}>-</button>
+                            <input type="number" id="placarB-${jogo.id}" placeholder="Pts" value="${ptsB}" ${jogo.finalizada ? 'disabled' : ''}>
+                            <button type="button" class="btn-ponto btn-ponto-positivo" onclick="alterarPlacar('placarB-${jogo.id}', 1)" ${jogo.finalizada ? 'disabled' : ''}>+</button>
+                            <button type="button" class="btn-ponto btn-ponto-positivo" style="width: auto; padding: 0 6px; font-size: 12px; margin-left: 2px;" onclick="alterarPlacar('placarB-${jogo.id}', 5)" ${jogo.finalizada ? 'disabled' : ''}>+5</button>
+                        </div>
+                    </div>
+                    <div class="data-cell vencedor-cell">${vencedorStr}</div>
+                </div>
+                <div class="acoes-jogo">
+                    <button class="btn-puxar-emoji" onclick="puxarPlacarParaJogo('${jogo.id}', true)" title="Puxar Placar">📥</button>
+                    <button class="btn-salvar-emoji" onclick="salvarMataMata('${jogo.id}', 'semi')" title="Salvar Placar" ${jogo.finalizada ? 'style="opacity:0.5; cursor:not-allowed;"' : ''}>💾</button>
+                    <button class="btn-editar-emoji" onclick="editarPlacar('${jogo.id}', true, 'semi')" title="Editar Placar">✏️</button>
+                </div>
+            </div>
+        `;
+    });
+
+    if (finais.length > 0) {
+        divMataMata.innerHTML += '<h3 style="margin-top: 25px; margin-bottom: 15px; color: var(--azul-oficial); text-align: center;">FINAIS</h3>';
+        finais.forEach(jogo => {
+            let vencedorStr = '-';
+            if (jogo.finalizada) {
+                vencedorStr = jogo.pontosA > jogo.pontosB ? jogo.timeA : jogo.timeB;
+            }
+            let tituloJogo = jogo.tipo === '3lugar' ? 'DISPUTA 3º LUGAR' : 'GRANDE FINAL';
+            
+            let ptsA = jogo.pontosA !== null && jogo.pontosA !== undefined ? jogo.pontosA : '';
+            let ptsB = jogo.pontosB !== null && jogo.pontosB !== undefined ? jogo.pontosB : '';
+
+            divMataMata.innerHTML += `
+                <p style="font-size: 0.9rem; color: var(--azul-oficial); margin-top: 10px; margin-bottom: 5px; text-align:center; font-weight:bold;">${tituloJogo}</p>
+                <div class="jogo-card">
+                    <div class="jogo-grid">
+                        <div class="header-cell">${jogo.timeA}</div>
+                        <div class="header-cell vazia"></div>
+                        <div class="header-cell">${jogo.timeB}</div>
+                        <div class="header-cell vencedor-header">VENCEDOR</div>
+
+                        <div class="data-cell">
+                            <div class="controle-placar">
+                                <button type="button" class="btn-ponto" onclick="alterarPlacar('placarA-${jogo.id}', -1)" ${jogo.finalizada ? 'disabled' : ''}>-</button>
+                                <input type="number" id="placarA-${jogo.id}" placeholder="Pts" value="${ptsA}" ${jogo.finalizada ? 'disabled' : ''}>
+                                <button type="button" class="btn-ponto btn-ponto-positivo" onclick="alterarPlacar('placarA-${jogo.id}', 1)" ${jogo.finalizada ? 'disabled' : ''}>+</button>
+                                <button type="button" class="btn-ponto btn-ponto-positivo" style="width: auto; padding: 0 6px; font-size: 12px; margin-left: 2px;" onclick="alterarPlacar('placarA-${jogo.id}', 5)" ${jogo.finalizada ? 'disabled' : ''}>+5</button>
+                            </div>
+                        </div>
+                        <div class="data-cell x-cell">X</div>
+                        <div class="data-cell">
+                            <div class="controle-placar">
+                                <button type="button" class="btn-ponto" onclick="alterarPlacar('placarB-${jogo.id}', -1)" ${jogo.finalizada ? 'disabled' : ''}>-</button>
+                                <input type="number" id="placarB-${jogo.id}" placeholder="Pts" value="${ptsB}" ${jogo.finalizada ? 'disabled' : ''}>
+                                <button type="button" class="btn-ponto btn-ponto-positivo" onclick="alterarPlacar('placarB-${jogo.id}', 1)" ${jogo.finalizada ? 'disabled' : ''}>+</button>
+                                <button type="button" class="btn-ponto btn-ponto-positivo" style="width: auto; padding: 0 6px; font-size: 12px; margin-left: 2px;" onclick="alterarPlacar('placarB-${jogo.id}', 5)" ${jogo.finalizada ? 'disabled' : ''}>+5</button>
+                            </div>
+                        </div>
+                        <div class="data-cell vencedor-cell">${vencedorStr}</div>
+                    </div>
+                    <div class="acoes-jogo">
+                        <button class="btn-puxar-emoji" onclick="puxarPlacarParaJogo('${jogo.id}', true)" title="Puxar Placar">📥</button>
+                        <button class="btn-salvar-emoji" onclick="salvarMataMata('${jogo.id}', 'final')" title="Salvar Placar" ${jogo.finalizada ? 'style="opacity:0.5; cursor:not-allowed;"' : ''}>💾</button>
+                        <button class="btn-editar-emoji" onclick="editarPlacar('${jogo.id}', true, 'final')" title="Editar Placar">✏️</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+}
+
+function alterarPlacar(inputId, valor) {
+    const input = document.getElementById(inputId);
+    if(input && !input.disabled) {
+        let atual = parseInt(input.value) || 0;
+        let novo = atual + valor;
+        if (novo < 0) novo = 0;
+        input.value = novo;
+    }
+}
+
+function salvarResultado(idJogo) {
+    const pontosA = parseInt(document.getElementById(`placarA-${idJogo}`).value);
+    const pontosB = parseInt(document.getElementById(`placarB-${idJogo}`).value);
+
+    if (isNaN(pontosA) || isNaN(pontosB)) return mostrarAviso("Preencha a pontuação dos dois times.");
+    if (pontosA === pontosB) return mostrarAviso("No vôlei não existe empate!");
+
+    const validacao = validarPlacar(pontosA, pontosB);
+    if (!validacao.valido) return mostrarAviso(validacao.erro);
+
+    const jogo = partidas.find(p => p.id === idJogo);
+    if(jogo) {
+        jogo.pontosA = pontosA;
+        jogo.pontosB = pontosB;
+        jogo.finalizada = true;
+    }
+
+    const todosFinalizados = partidas.every(j => j.finalizada === true);
+    if (todosFinalizados && semiFinais.length === 0) {
+        gerarSemifinais();
+        mostrarAviso("Fase de grupos concluída! Semifinais liberadas.", "info");
+    }
+
+    database.ref('torneio').update({
+        partidas: partidas,
+        semiFinais: semiFinais.length > 0 ? semiFinais : null
+    });
+}
+
+function salvarMataMata(idJogo, fase) {
+    const pontosA = parseInt(document.getElementById(`placarA-${idJogo}`).value);
+    const pontosB = parseInt(document.getElementById(`placarB-${idJogo}`).value);
+
+    if (isNaN(pontosA) || isNaN(pontosB)) return mostrarAviso("Preencha a pontuação.");
+    if (pontosA === pontosB) return mostrarAviso("Vôlei não tem empate!");
+
+    const validacao = validarPlacar(pontosA, pontosB);
+    if (!validacao.valido) return mostrarAviso(validacao.erro);
+
+    let jogo = fase === 'semi' ? semiFinais.find(p => p.id === idJogo) : finais.find(p => p.id === idJogo);
+    if(jogo) {
+        jogo.pontosA = pontosA;
+        jogo.pontosB = pontosB;
+        jogo.finalizada = true;
+    }
+
+    if (fase === 'semi') {
+        const todasSemiFinalizadas = semiFinais.every(j => j.finalizada === true);
+        if (todasSemiFinalizadas && finais.length === 0) {
+            gerarFinais();
+        }
+    }
+
+    database.ref('torneio').update({
+        semiFinais: semiFinais.length > 0 ? semiFinais : null,
+        finais: finais.length > 0 ? finais : null
+    });
+
+    if (fase === 'final') {
+        verificarTorneioConcluido();
+    }
+}
+
+function atualizarClassificacao() {
+    let tabela = {};
+    times.forEach(time => tabela[time] = 0);
+
+    partidas.forEach(jogo => {
+        if (jogo.finalizada) {
+            if (jogo.pontosA > jogo.pontosB) tabela[jogo.timeA]++;
+            else tabela[jogo.timeB]++;
+        }
+    });
+
+    let ranking = Object.keys(tabela).map(time => {
+        return { nome: time, vitorias: tabela[time] };
+    });
+
+    ranking.sort((a, b) => {
+        if (b.vitorias !== a.vitorias) return b.vitorias - a.vitorias;
+        const jogoDireto = partidas.find(p => 
+            (p.timeA === a.nome && p.timeB === b.nome) || 
+            (p.timeA === b.nome && p.timeB === a.nome)
+        );
+        if (jogoDireto && jogoDireto.finalizada) {
+            const vencedorDireto = jogoDireto.pontosA > jogoDireto.pontosB ? jogoDireto.timeA : jogoDireto.timeB;
+            if (vencedorDireto === a.nome) return -1;
+            if (vencedorDireto === b.nome) return 1;
+        }
+        return 0;
+    });
+
+    const corpoTabela = document.getElementById('corpo-tabela');
+    if (!corpoTabela) return;
+    corpoTabela.innerHTML = '';
+
+    ranking.forEach((time, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${index + 1}º</td>
+            <td>${time.nome}</td>
+            <td>${time.vitorias}</td>
+        `;
+        corpoTabela.appendChild(tr);
+    });
+}
+
+function gerarSemifinais() {
+    let tabela = {};
+    times.forEach(time => tabela[time] = 0);
+    partidas.forEach(jogo => {
+        if (jogo.finalizada) {
+            if (jogo.pontosA > jogo.pontosB) tabela[jogo.timeA]++;
+            else tabela[jogo.timeB]++;
+        }
+    });
+
+    let rankingFinal = Object.keys(tabela).map(time => { return { nome: time, vitorias: tabela[time] }; });
+    rankingFinal.sort((a, b) => {
+        if (b.vitorias !== a.vitorias) return b.vitorias - a.vitorias;
+        const jogoDireto = partidas.find(p => (p.timeA === a.nome && p.timeB === b.nome) || (p.timeA === b.nome && p.timeB === a.nome));
+        if (jogoDireto && jogoDireto.finalizada) {
+            const vencedor = jogoDireto.pontosA > jogoDireto.pontosB ? jogoDireto.timeA : jogoDireto.timeB;
+            return vencedor === a.nome ? -1 : 1;
+        }
+        return 0;
+    });
+
+    semiFinais = [
+        { id: 'semi1', timeA: rankingFinal[0].nome, timeB: rankingFinal[3].nome, pontosA: null, pontosB: null, finalizada: false },
+        { id: 'semi2', timeA: rankingFinal[1].nome, timeB: rankingFinal[2].nome, pontosA: null, pontosB: null, finalizada: false }
+    ];
+}
+
+function gerarFinais() {
+    const vencedorSemi1 = semiFinais[0].pontosA > semiFinais[0].pontosB ? semiFinais[0].timeA : semiFinais[0].timeB;
+    const perdedorSemi1 = semiFinais[0].pontosA < semiFinais[0].pontosB ? semiFinais[0].timeA : semiFinais[0].timeB;
+    const vencedorSemi2 = semiFinais[1].pontosA > semiFinais[1].pontosB ? semiFinais[1].timeA : semiFinais[1].timeB;
+    const perdedorSemi2 = semiFinais[1].pontosA < semiFinais[1].pontosB ? semiFinais[1].timeA : semiFinais[1].timeB;
+
+    finais = [
+        { id: 'final_3lugar', tipo: '3lugar', timeA: perdedorSemi1, timeB: perdedorSemi2, pontosA: null, pontosB: null, finalizada: false },
+        { id: 'final_1lugar', tipo: '1lugar', timeA: vencedorSemi1, timeB: vencedorSemi2, pontosA: null, pontosB: null, finalizada: false }
+    ];
+}
+
+function verificarTorneioConcluido() {
+    const todasFinalizadas = finais.every(jogo => jogo.finalizada === true);
+    if (todasFinalizadas) {
+        const jogoFinal = finais.find(f => f.tipo === '1lugar');
+        const campeao = jogoFinal.pontosA > jogoFinal.pontosB ? jogoFinal.timeA : jogoFinal.timeB;
+        setTimeout(() => { mostrarAviso(`🏆 O Time ${campeao} é o CAMPEÃO! 🏆`, "sucesso"); }, 300);
+    }
+}
+
+function validarPlacar(pontosA, pontosB) {
+    const vencedor = Math.max(pontosA, pontosB);
+    const perdedor = Math.min(pontosA, pontosB);
+    const diferenca = vencedor - perdedor;
+
+    if (vencedor < 15) return { valido: false, erro: "O set precisa ter pelo menos 15 pontos." };
+    if (vencedor === 15 && perdedor <= 13) return { valido: true, erro: null };
+    if (vencedor > 15) {
+        if (diferenca === 2) return { valido: true, erro: null };
+        else return { valido: false, erro: "Acima de 14x14, a vitória exige exatos 2 pontos de diferença." };
+    }
+    return { valido: false, erro: "Placar inválido." };
+}
+
+function mudarAba(abaId) {
+    document.querySelectorAll('.aba').forEach(aba => aba.classList.remove('ativa'));
+    document.querySelectorAll('.menu button').forEach(btn => btn.classList.remove('ativo'));
+    document.getElementById(abaId).classList.add('ativa');
+    document.getElementById(`btn-${abaId}`).classList.add('ativo');
+}
+
+function mostrarAviso(mensagem, tipo = 'erro') {
+    const toast = document.getElementById('toast');
+    toast.textContent = mensagem;
+
+    toast.className = 'toast';
+    if (tipo === 'info') toast.classList.add('info');
+    if (tipo === 'sucesso') toast.classList.add('sucesso');
+
+    toast.classList.add('show');
+    setTimeout(() => { toast.classList.remove('show'); }, 3000);
+}
+
+function resetarTorneio() {
+    const confirmar = confirm("🚨 ATENÇÃO: Isso vai zerar os placares e esvaziar os times. Os jogadores cadastrados NÃO serão apagados. Deseja continuar?");
+    
+    if (confirmar) {
+        database.ref('torneio/partidas').remove();
+        database.ref('torneio/semiFinais').remove();
+        database.ref('torneio/finais').remove();
+        
+        if (typeof elenco !== 'undefined' && elenco.length > 0) {
+            elenco.forEach(j => {
+                j.presente = false;
+                j.time = 'Sem Time';
+            });
+            salvarElencoNuvem();
+        }
+        
+        if (typeof partidas !== 'undefined') partidas = [];
+        if (typeof semiFinais !== 'undefined') semiFinais = [];
+        if (typeof finais !== 'undefined') finais = [];
+        
+        mudarAba('elenco');
+        mostrarAviso("Novo torneio iniciado! Os cadastros foram mantidos.", "sucesso");
+    }
+}
+
+let idEmEdicao = null;
+
+function adicionarJogador() {
+    const nomeInput = document.getElementById('novo-nome');
+    const tipoInput = document.getElementById('novo-tipo');
+    const nomeCadastrar = nomeInput.value.trim();
+    
+    if (nomeCadastrar === '') return mostrarAviso("Digite o nome do jogador.");
+
+    const jogadorExistente = elenco.find(j => (j.nome || '').toLowerCase() === nomeCadastrar.toLowerCase());
+
+    if (idEmEdicao !== null) {
+        if (jogadorExistente && jogadorExistente.id !== idEmEdicao) {
+            return mostrarAviso("Este nome já está cadastrado em outro jogador!");
+        }
+        
+        const jogador = elenco.find(j => j.id === idEmEdicao);
+        if (jogador) {
+            jogador.nome = nomeCadastrar;
+            jogador.tipo = tipoInput.value;
+        }
+        
+        idEmEdicao = null;
+        const btnSalvar = document.querySelector('.card-cadastro .btn-salvar');
+        btnSalvar.textContent = "Salvar no Sistema";
+        btnSalvar.style.backgroundColor = ""; 
+        btnSalvar.style.color = "";
+        
+        mostrarAviso("Cadastro atualizado com sucesso!", "sucesso");
+
+    } else {
+        if (jogadorExistente) {
+            return mostrarAviso("Este nome já está cadastrado! Use um sobrenome ou apelido para diferenciar.");
+        }
+
+        const novoJogador = {
+            id: Date.now().toString(),
+            nome: nomeCadastrar,
+            tipo: tipoInput.value,
+            presente: false,
+            time: 'Sem Time'
+        };
+        elenco.push(novoJogador);
+        mostrarAviso("Jogador cadastrado com sucesso!", "sucesso");
+    }
+
+    nomeInput.value = ''; 
+    salvarElencoNuvem();
+}
+
+function editarJogador(id) {
+    const jogador = elenco.find(j => j.id === id);
+    if (jogador) {
+        document.getElementById('novo-nome').value = jogador.nome;
+        document.getElementById('novo-tipo').value = jogador.tipo;
+        
+        idEmEdicao = id;
+        
+        const btnSalvar = document.querySelector('.card-cadastro .btn-salvar');
+        btnSalvar.textContent = "Salvar Edição";
+        btnSalvar.style.backgroundColor = "#ffc107"; 
+        btnSalvar.style.color = "#000";
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
+
+function identificarJogadorPorNome(nome) {
+    return elenco.find(j => (j.nome || '').toLowerCase() === nome.toLowerCase());
+}
+
+function escalarJogador() {
+    const inputJogador = document.getElementById('busca-jogador-input');
+    const nomeJogador = inputJogador.value.trim();
+    const timeEscolhido = document.getElementById('escolha-time').value;
+
+    if (!nomeJogador) return mostrarAviso("Digite ou selecione um jogador!");
+
+    const jogador = identificarJogadorPorNome(nomeJogador);
+    if (!jogador) {
+        return mostrarAviso("Jogador não encontrado! Verifique a grafia ou cadastre-o primeiro.");
+    }
+    
+    if (jogador.presente && jogador.time !== 'Sem Time') {
+        return mostrarAviso("Este jogador já está escalado em um time!");
+    }
+
+    const totalNoTime = elenco.filter(j => j.time === timeEscolhido && j.presente).length;
+    if (totalNoTime >= 4) {
+        return mostrarAviso(`O Time ${timeEscolhido} já está completo (máximo 4 jogadores)!`);
+    }
+
+    jogador.presente = true;
+    jogador.time = timeEscolhido;
+    
+    inputJogador.value = '';
+    
+    salvarElencoNuvem();
+    mostrarAviso(`${jogador.nome} escalado no time ${timeEscolhido}!`, "sucesso");
+}
+
+function removerDoTime(id) {
+    const jogador = elenco.find(j => j.id === id);
+    if (jogador) {
+        jogador.presente = false;
+        jogador.time = 'Sem Time';
+        salvarElencoNuvem();
+    }
+}
+
+function removerJogador(id) {
+    if(confirm("Tem certeza que deseja excluir este jogador do banco de dados permanentemente?")) {
+        elenco = elenco.filter(j => j.id !== id);
+        salvarElencoNuvem();
+    }
+}
+
+function salvarElencoNuvem() {
+    database.ref('torneio').update({ 
+        elenco: elenco.length > 0 ? elenco : null 
+    });
+}
+
+function renderizarElenco() {
+    const datalistBusca = document.getElementById('lista-jogadores-disponiveis');
+    const timesDiv = document.getElementById('times-formados');
+    const corpoTabela = document.getElementById('corpo-tabela-elenco');
+    
+    if (!datalistBusca || !timesDiv || !corpoTabela) return;
+    
+    datalistBusca.innerHTML = '';
+    let disponiveis = elenco.filter(j => j.time === 'Sem Time' || !j.presente);
+    
+    disponiveis.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+
+    disponiveis.forEach(j => {
+        datalistBusca.innerHTML += `<option value="${j.nome || ''}"></option>`;
+    });
+
+    timesDiv.innerHTML = '';
+    times.forEach(nomeTime => {
+        const jogadoresDoTime = elenco.filter(j => j.time === nomeTime && j.presente);
+        let coresBorda = { 'Amarelo': '#ffc107', 'Rosa': '#e83e8c', 'Azul': '#007bff', 'Roxo': '#6f42c1' };
+        
+        let listaHtml = jogadoresDoTime.length === 0 ? '<li style="color: #999; text-align:center; margin-top: 10px;">Vazio</li>' : '';
+        
+        jogadoresDoTime.forEach(j => {
+            let icone = j.tipo === 'mensalista' ? '⭐️' : '';
+            listaHtml += `
+                <li style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed #ddd;">
+                    <span style="font-weight: bold;">${j.nome || ''} ${icone}</span>
+                    <button onclick="removerDoTime('${j.id}')" style="background: transparent; border: none; color: #dc3545; font-size: 1.2rem; cursor: pointer; padding: 0 5px;">&times;</button>
+                </li>
+            `;
+        });
+
+        timesDiv.innerHTML += `
+            <div class="time-container" style="border-top: 4px solid ${coresBorda[nomeTime]}">
+                <div class="time-header" style="color: ${coresBorda[nomeTime]}; text-transform: uppercase;">${nomeTime} (${jogadoresDoTime.length}/4)</div>
+                <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem;">
+                    ${listaHtml}
+                </ul>
+            </div>
+        `;
+    });
+
+    corpoTabela.innerHTML = '';
+
+    let elencoOrdenado = [...elenco].sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+
+    elencoOrdenado.forEach(j => {
+        let tagClass = j.tipo === 'mensalista' ? 'background: #ffd700; color: #856404;' : 'background: #17a2b8; color: #fff;';
+        let texto = j.tipo === 'mensalista' ? 'Mensalista' : 'Diarista';
+        corpoTabela.innerHTML += `
+            <tr>
+                <td style="font-weight: bold; color: var(--azul-oficial);">${j.nome || ''}</td>
+                <td><span style="${tagClass} padding: 2px 6px; border-radius: 10px; font-size: 0.8rem;">${texto}</span></td>
+                <td>
+                    <button style="background: #ffc107; color: #000; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; margin-right: 5px;" onclick="editarJogador('${j.id}')" title="Editar">✏️</button>
+                    <button style="background: #dc3545; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer;" onclick="removerJogador('${j.id}')" title="Excluir">🗑️</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function exportarRelatorioPDF() {
+    const relatorio = document.createElement('div');
+    relatorio.style.padding = '30px';
+    relatorio.style.fontFamily = 'Arial, sans-serif';
+    relatorio.style.color = '#333';
+
+    const dataHoje = new Date().toLocaleDateString('pt-BR', { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric' 
+    });
+
+    let htmlConteudo = `
+        <div style="text-align: center; border-bottom: 2px solid #002d57; padding-bottom: 15px; margin-bottom: 25px;">
+            <h1 style="color: #002d57; margin: 0; font-size: 24px; text-transform: uppercase;">Relatório Oficial do Torneio</h1>
+            <p style="margin: 5px 0 0 0; font-weight: bold; color: #666;">Grupo Bola Fora — Rodada de ${dataHoje}</p>
+        </div>
+    `;
+
+    htmlConteudo += `
+        <h2 style="color: #002d57; font-size: 16px; border-left: 4px solid #ffc107; padding-left: 8px; margin-bottom: 10px;">CLASSIFICAÇÃO FINAL DA RODADA DE GRUPOS</h2>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 14px;">
+            <thead>
+                <tr style="background-color: #002d57; color: white; text-align: left;">
+                    <th style="padding: 8px; width: 15%;">Pos</th>
+                    <th style="padding: 8px; width: 55%;">Time</th>
+                    <th style="padding: 8px; width: 30%;">Vitórias</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    const linhasClassificacao = document.querySelectorAll('#corpo-tabela tr');
+    if (linhasClassificacao.length > 0) {
+        linhasClassificacao.forEach(linha => {
+            const colunas = linha.querySelectorAll('td');
+            htmlConteudo += `
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 8px; font-weight: bold;">${colunas[0].textContent}</td>
+                    <td style="padding: 8px;">${colunas[1].textContent}</td>
+                    <td style="padding: 8px;">${colunas[2].textContent}</td>
+                </tr>
+            `;
+        });
+    } else {
+        htmlConteudo += `<tr><td colspan="3" style="padding: 8px; text-align:center; color:#999;">Nenhum jogo computado nesta rodada.</td></tr>`;
+    }
+    htmlConteudo += `</tbody></table>`;
+
+    htmlConteudo += `
+        <h2 style="color: #002d57; font-size: 16px; border-left: 4px solid #ffc107; padding-left: 8px; margin-bottom: 15px;">INTEGRANTES DAS EQUIPES</h2>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; font-size: 13px;">
+    `;
+
+    times.forEach(nomeTime => {
+        const jogadoresDoTime = elenco.filter(j => j.time === nomeTime && j.presente);
+        let corTime = { 'Amarelo': '#ffc107', 'Rosa': '#e83e8c', 'Azul': '#007bff', 'Roxo': '#6f42c1' }[nomeTime];
+        
+        let jogadoresHtml = '';
+        if (jogadoresDoTime.length === 0) {
+            jogadoresHtml = '<li style="color:#999; list-style:none; padding-left:0;">Nenhum jogador</li>';
+        } else {
+            jogadoresHtml = jogadoresDoTime.map(j => `<li>${j.nome || ''} ${j.tipo === 'mensalista' ? '(⭐️)' : ''}</li>`).join('');
+        }
+
+        htmlConteudo += `
+            <div style="border: 1px solid #ddd; border-top: 4px solid ${corTime}; padding: 10px; border-radius: 4px; background-color: #fbfbfb;">
+                <div style="font-weight: bold; color: ${corTime}; margin-bottom: 5px; text-transform: uppercase;">TIME ${nomeTime}</div>
+                <ul style="padding-left: 15px; margin: 0; line-height: 1.4;">
+                    ${jogadoresHtml}
+                </ul>
+            </div>
+        `;
+    });
+    htmlConteudo += `</div>`;
+
+    relatorio.innerHTML = htmlConteudo;
+
+    const opt = {
+        margin:       10,
+        filename:     `relatorio_bola_fora_${dataHoje.replace(/\//g, '-')}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().from(relatorio).set(opt).save();
+}
+    </script>
+</body>
+</html>
