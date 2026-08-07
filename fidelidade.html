@@ -239,7 +239,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      padding: 0 24px;
+      padding: 0 10px;
     }
 
     .item-registro-datas {
@@ -336,6 +336,83 @@
       opacity: 0.7;
       text-align: center;
       min-width: 26px;
+    }
+
+    /* Estilos de Avatar / Foto */
+    .avatar-circle {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1.5px solid #d9b246;
+      cursor: pointer;
+      background-color: #e1d8cd;
+      flex-shrink: 0;
+    }
+
+    .avatar-placeholder {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background-color: #e1d8cd;
+      border: 1px dashed #d9b246;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 10px;
+      color: #12364e;
+      flex-shrink: 0;
+    }
+
+    /* Modal de Seleção de Fotos */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 400px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    }
+
+    .galeria-fotos-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      max-height: 280px;
+      overflow-y: auto;
+      padding: 4px;
+    }
+
+    .galeria-foto-item {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 8px;
+      object-fit: cover;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: border-color 0.2s;
+    }
+
+    .galeria-foto-item:hover {
+      border-color: #d9b246;
     }
 
     /* Rodapé com botão Voltar */
@@ -453,6 +530,20 @@
 
   </main>
 
+  <!-- Modal para Seleção de Fotos -->
+  <div class="modal-overlay" id="modal-fotos">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px;">
+        <span class="titulo-secao" style="margin:0; border:none; padding:0;">Escolher Foto</span>
+        <button onclick="fecharModalFotos()" style="background:none; border:none; font-size:16px; font-weight:bold; cursor:pointer; color:#12364e;">✕</button>
+      </div>
+      <div id="lista-fotos-galeria" class="galeria-fotos-grid">
+        <!-- Fotos carregadas do banco de dados -->
+      </div>
+      <div style="font-size: 11px; opacity: 0.7; text-align: center;">Selecione uma imagem para definir a foto da diarista.</div>
+    </div>
+  </div>
+
   <footer class="footer-navegacao">
     <a href="dashboard.html" class="btn-voltar-painel">
       <span>↩</span> Voltar
@@ -491,14 +582,22 @@
       });
 
     let BD_Diaristas = {
-      "Ana Beatriz": 0, "Camila Souza": 0, "Fernanda Lima": 0,
-      "Juliana Mendes": 0, "Larissa Oliveira": 0, "Mariana Costa": 0,
-      "Patrícia Santos": 0, "Renata Almeida": 0, "Tatiane Rocha": 0,
-      "Vanessa Martins": 0
+      "Ana Beatriz": { presencas: 0, foto: "" },
+      "Camila Souza": { presencas: 0, foto: "" },
+      "Fernanda Lima": { presencas: 0, foto: "" },
+      "Juliana Mendes": { presencas: 0, foto: "" },
+      "Larissa Oliveira": { presencas: 0, foto: "" },
+      "Mariana Costa": { presencas: 0, foto: "" },
+      "Patrícia Santos": { presencas: 0, foto: "" },
+      "Renata Almeida": { presencas: 0, foto: "" },
+      "Tatiane Rocha": { presencas: 0, foto: "" },
+      "Vanessa Martins": { presencas: 0, foto: "" }
     };
 
     let BD_DiariasGratis = {};
     let BD_Registros = {};
+    let BD_FotosDisponiveis = [];
+    let diaristaSelecionadaParaFoto = null;
 
     function salvarDados() {
       db.ref('diarista_fidelidade').set(BD_Diaristas);
@@ -509,7 +608,14 @@
     db.ref('diarista_fidelidade').on('value', (snapshot) => {
       const dadosNuvem = snapshot.val();
       if (dadosNuvem) {
-        BD_Diaristas = dadosNuvem;
+        BD_Diaristas = {};
+        for (let [nome, val] of Object.entries(dadosNuvem)) {
+          if (typeof val === 'number') {
+            BD_Diaristas[nome] = { presencas: val, foto: "" };
+          } else {
+            BD_Diaristas[nome] = { presencas: val.presencas || 0, foto: val.foto || "" };
+          }
+        }
       } else {
         salvarDados();
       }
@@ -532,6 +638,55 @@
       atualizarTabelaRegistrosVisual();
     });
 
+    // Buscar fotos disponíveis de outras páginas/nós de upload no banco de dados (ex: 'fotos' ou 'imagens')
+    db.ref('fotos').on('value', (snapshot) => {
+      const val = snapshot.val();
+      if (val) {
+        BD_FotosDisponiveis = Object.values(val);
+      } else {
+        // Tenta nó alternativo comum
+        db.ref('imagens').once('value', (snap2) => {
+          const val2 = snap2.val();
+          if (val2) {
+            BD_FotosDisponiveis = Object.values(val2);
+          }
+        });
+      }
+    });
+
+    function abrirModalFotos(nomeDiarista) {
+      diaristaSelecionadaParaFoto = nomeDiarista;
+      const galeriaContainer = document.getElementById('lista-fotos-galeria');
+      galeriaContainer.innerHTML = '';
+
+      if (BD_FotosDisponiveis.length === 0) {
+        galeriaContainer.innerHTML = `<div style="grid-column: span 3; text-align: center; padding: 20px; font-size: 12px; opacity: 0.6;">Nenhuma foto encontrada no banco de dados. Faça upload na página correspondente.</div>`;
+      } else {
+        BD_FotosDisponiveis.forEach(fotoUrl => {
+          const img = document.createElement('img');
+          img.src = fotoUrl;
+          img.className = 'galeria-foto-item';
+          img.onclick = () => selecionarFotoParaDiarista(fotoUrl);
+          galeriaContainer.appendChild(img);
+        });
+      }
+
+      document.getElementById('modal-fotos').style.display = 'flex';
+    }
+
+    function fecharModalFotos() {
+      document.getElementById('modal-fotos').style.display = 'none';
+      diaristaSelecionadaParaFoto = null;
+    }
+
+    function selecionarFotoParaDiarista(url) {
+      if (diaristaSelecionadaParaFoto && BD_Diaristas[diaristaSelecionadaParaFoto]) {
+        BD_Diaristas[diaristaSelecionadaParaFoto].foto = url;
+        salvarDados();
+        fecharModalFotos();
+      }
+    }
+
     function atualizarTabelaVisual() {
       const container = document.getElementById('tabela-diaristas');
       container.innerHTML = '';
@@ -541,12 +696,19 @@
       if (diaristasOrdenadas.length === 0) {
         container.innerHTML = `<div style="text-align:center; padding: 15px; font-size:12px; opacity:0.6;">Nenhuma diarista cadastrada.</div>`;
       } else {
-        diaristasOrdenadas.forEach(([nome, presencas]) => {
+        diaristasOrdenadas.forEach(([nome, dados]) => {
+          const presencas = dados.presencas;
+          const foto = dados.foto;
           const item = document.createElement('div');
           item.className = 'item-fidelidade';
           
+          let elementoFoto = foto 
+            ? `<img src="${foto}" class="avatar-circle" onclick="abrirModalFotos('${nome}')" title="Alterar foto">` 
+            : `<div class="avatar-placeholder" onclick="abrirModalFotos('${nome}')" title="Adicionar foto">+Foto</div>`;
+
           item.innerHTML = `
-            <div style="display: flex; align-items: center; min-width: 0; flex: 1; margin-right: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; margin-right: 6px;">
+              ${elementoFoto}
               <span class="nome-diarista" title="${nome}">${nome}</span>
             </div>
             <div class="bloco-controles">
@@ -563,6 +725,7 @@
       }
 
       atualizarTabelaGratisVisual();
+      atualizarTabelaRegistrosVisual();
     }
 
     function atualizarTabelaGratisVisual() {
@@ -616,10 +779,18 @@
       registrosOrdenados.forEach(([id, reg]) => {
         const item = document.createElement('div');
         item.className = 'item-registro';
+
+        // Pega a mesma foto cadastrada na listagem de presenças se existir
+        const fotoDiarista = (BD_Diaristas[reg.nome] && BD_Diaristas[reg.nome].foto) ? BD_Diaristas[reg.nome].foto : '';
+        let elementoFotoRegistro = fotoDiarista 
+          ? `<img src="${fotoDiarista}" class="avatar-circle" style="cursor: default;" title="Foto da diarista">` 
+          : `<div class="avatar-placeholder" style="cursor: default; opacity: 0.5;">-</div>`;
         
         item.innerHTML = `
           <div class="item-registro-topo">
-            <div style="width: 24px;"></div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              ${elementoFotoRegistro}
+            </div>
             <span class="nome-diarista-centralizado" title="${reg.nome}">${reg.nome}</span>
             <button class="btn-deletar-ranking" onclick="excluirRegistro('${id}')" title="Excluir registro">✕</button>
           </div>
@@ -647,9 +818,13 @@
     }
 
     window.alterarPresenca = function(nome, delta) {
-      let valorAtual = BD_Diaristas[nome] !== undefined ? BD_Diaristas[nome] : 0;
-      let novoValor = valorAtual + delta;
+      let diarista = BD_Diaristas[nome];
+      if (!diarista) {
+        diarista = { presencas: 0, foto: "" };
+        BD_Diaristas[nome] = diarista;
+      }
 
+      let novoValor = diarista.presencas + delta;
       if (novoValor < 0) novoValor = 0;
 
       if (novoValor >= 3) {
@@ -657,7 +832,7 @@
         BD_DiariasGratis[nome] = (BD_DiariasGratis[nome] || 0) + 1;
       }
 
-      BD_Diaristas[nome] = novoValor;
+      diarista.presencas = novoValor;
       salvarDados();
     }
 
@@ -671,7 +846,7 @@
         return;
       }
 
-      BD_Diaristas[nome] = 0;
+      BD_Diaristas[nome] = { presencas: 0, foto: "" };
       salvarDados();
       input.value = '';
     });
