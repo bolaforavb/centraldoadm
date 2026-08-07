@@ -639,7 +639,7 @@
     });
 
     // Buscar fotos disponíveis de outras páginas/nós de upload no banco de dados (ex: 'fotos' ou 'imagens')
-    db.ref('fotos').on('value', (snapshot) => {
+    db.ref('arquivos_enviados').on('value', (snapshot) => {
       const val = snapshot.val();
       if (val) {
         BD_FotosDisponiveis = Object.values(val);
