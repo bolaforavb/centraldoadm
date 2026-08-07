@@ -240,6 +240,12 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       padding: 0 10px;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .nome-diarista-centralizado:hover {
+      color: #d9b246;
+      text-decoration: underline;
     }
 
     .item-registro-datas {
@@ -280,6 +286,12 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .nome-diarista:hover {
+      color: #d9b246;
+      text-decoration: underline;
     }
 
     .bloco-controles {
@@ -288,7 +300,6 @@
       gap: 8px;
     }
 
-    /* Estilização exata das setinhas e número centralizado do painel */
     .botoes-setas { 
       display: flex; 
       align-items: center; 
@@ -322,6 +333,16 @@
       border: none;
       color: #d93025;
       font-weight: bold;
+      font-size: 13px;
+      padding: 2px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-editar-registro {
+      background: none;
+      border: none;
+      color: #12364e;
       font-size: 13px;
       padding: 2px;
       cursor: pointer;
@@ -365,7 +386,7 @@
       flex-shrink: 0;
     }
 
-    /* Modal de Seleção de Fotos */
+    /* Modais Overlay */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -544,6 +565,59 @@
     </div>
   </div>
 
+  <!-- Modal para Visualização Ampliada da Foto da Diarista -->
+  <div class="modal-overlay" id="modal-ver-foto">
+    <div class="modal-content" style="align-items: center; text-align: center;">
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px;">
+        <span id="titulo-ver-foto" class="titulo-secao" style="margin:0; border:none; padding:0;">Foto da Diarista</span>
+        <button onclick="fecharModalVerFoto()" style="background:none; border:none; font-size:16px; font-weight:bold; cursor:pointer; color:#12364e;">✕</button>
+      </div>
+      <div id="conteudo-ver-foto" style="width: 100%; display: flex; justify-content: center; padding: 10px 0;">
+        <!-- Imagem ampliada ou aviso -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para Edição de Registro -->
+  <div class="modal-overlay" id="modal-editar-registro">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px;">
+        <span class="titulo-secao" style="margin:0; border:none; padding:0;">Editar Registro</span>
+        <button onclick="fecharModalEditarRegistro()" style="background:none; border:none; font-size:16px; font-weight:bold; cursor:pointer; color:#12364e;">✕</button>
+      </div>
+      <form id="form-editar-registro" class="form-registros">
+        <input type="hidden" id="edit-reg-id">
+        <div class="campo-data-grupo" style="align-items: flex-start;">
+          <label for="edit-reg-nome">Nome do Diarista</label>
+          <input type="text" id="edit-reg-nome" required style="width: 100%;">
+        </div>
+        <div class="datas-grid">
+          <div class="datas-linha">
+            <div class="campo-data-grupo">
+              <label for="edit-reg-p1">Presença 1</label>
+              <input type="date" id="edit-reg-p1">
+            </div>
+            <div class="campo-data-grupo">
+              <label for="edit-reg-p2">Presença 2</label>
+              <input type="date" id="edit-reg-p2">
+            </div>
+          </div>
+          <div class="datas-linha">
+            <div class="campo-data-grupo">
+              <label for="edit-reg-p3">Presença 3</label>
+              <input type="date" id="edit-reg-p3">
+            </div>
+            <div class="campo-data-grupo">
+              <label for="edit-reg-gratis">Dia Grátis</label>
+              <input type="date" id="edit-reg-gratis">
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="btn-add-tabela" style="margin-top: 8px;">Salvar Alterações</button>
+      </form>
+    </div>
+  </div>
+
   <footer class="footer-navegacao">
     <a href="dashboard.html" class="btn-voltar-painel">
       <span>↩</span> Voltar
@@ -638,7 +712,6 @@
       atualizarTabelaRegistrosVisual();
     });
 
-    // Busca correta na tabela de arquivos enviados (armazenados na página de Arquivos)
     db.ref('arquivos_enviados').on('value', (snapshot) => {
       const val = snapshot.val();
       BD_FotosDisponiveis = [];
@@ -686,6 +759,102 @@
       }
     }
 
+    // --- FUNÇÕES DE VISUALIZAÇÃO AMPLIADA DA FOTO ---
+    window.abrirModalVerFoto = function(nome) {
+      document.getElementById('titulo-ver-foto').innerText = nome;
+      const containerFoto = document.getElementById('conteudo-ver-foto');
+      containerFoto.innerHTML = '';
+
+      const fotoUrl = (BD_Diaristas[nome] && BD_Diaristas[nome].foto) ? BD_Diaristas[nome].foto : '';
+
+      if (fotoUrl) {
+        const img = document.createElement('img');
+        img.src = fotoUrl;
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '65vh';
+        img.style.borderRadius = '12px';
+        img.style.objectFit = 'contain';
+        containerFoto.appendChild(img);
+      } else {
+        containerFoto.innerHTML = `<div style="padding: 30px; font-size: 13px; opacity: 0.6;">Nenhuma foto cadastrada para esta diarista. Clique no ícone de avatar ao lado para adicionar.</div>`;
+      }
+
+      document.getElementById('modal-ver-foto').style.display = 'flex';
+    }
+
+    function fecharModalVerFoto() {
+      document.getElementById('modal-ver-foto').style.display = 'none';
+    }
+
+    // --- FUNÇÃO PARA EDITAR NOME DA DIARISTA E PROPAGAR AOS REGISTROS ---
+    window.renomearDiarista = function(nomeAntigo) {
+      const novoNome = prompt("Digite o novo nome para a diarista:", nomeAntigo);
+      if (!novoNome || novoNome.trim() === "") return;
+      const nomeFormatado = novoNome.trim();
+
+      if (nomeFormatado === nomeAntigo) return;
+
+      if (BD_Diaristas.hasOwnProperty(nomeFormatado)) {
+        alert("Já existe uma diarista com este nome!");
+        return;
+      }
+
+      // 1. Atualiza na lista de Presenças
+      BD_Diaristas[nomeFormatado] = BD_Diaristas[nomeAntigo];
+      delete BD_Diaristas[nomeAntigo];
+
+      // 2. Atualiza no histórico de Diárias Grátis, se houver
+      if (BD_DiariasGratis.hasOwnProperty(nomeAntigo)) {
+        BD_DiariasGratis[nomeFormatado] = BD_DiariasGratis[nomeAntigo];
+        delete BD_DiariasGratis[nomeAntigo];
+      }
+
+      // 3. Atualiza automaticamente nos Registros cadastrados
+      for (let id in BD_Registros) {
+        if (BD_Registros[id].nome === nomeAntigo) {
+          BD_Registros[id].nome = nomeFormatado;
+        }
+      }
+
+      salvarDados();
+    };
+
+    // --- FUNÇÕES DE EDIÇÃO DE REGISTRO ---
+    window.abrirModalEditarRegistro = function(id) {
+      const reg = BD_Registros[id];
+      if (!reg) return;
+
+      document.getElementById('edit-reg-id').value = id;
+      document.getElementById('edit-reg-nome').value = reg.nome || '';
+      document.getElementById('edit-reg-p1').value = reg.p1 || '';
+      document.getElementById('edit-reg-p2').value = reg.p2 || '';
+      document.getElementById('edit-reg-p3').value = reg.p3 || '';
+      document.getElementById('edit-reg-gratis').value = reg.gratis || '';
+
+      document.getElementById('modal-editar-registro').style.display = 'flex';
+    }
+
+    function fecharModalEditarRegistro() {
+      document.getElementById('modal-editar-registro').style.display = 'none';
+    }
+
+    document.getElementById('form-editar-registro').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const id = document.getElementById('edit-reg-id').value;
+      if (!id || !BD_Registros[id]) return;
+
+      BD_Registros[id] = {
+        nome: document.getElementById('edit-reg-nome').value.trim(),
+        p1: document.getElementById('edit-reg-p1').value,
+        p2: document.getElementById('edit-reg-p2').value,
+        p3: document.getElementById('edit-reg-p3').value,
+        gratis: document.getElementById('edit-reg-gratis').value
+      };
+
+      salvarDados();
+      fecharModalEditarRegistro();
+    });
+
     function atualizarTabelaVisual() {
       const container = document.getElementById('tabela-diaristas');
       container.innerHTML = '';
@@ -708,7 +877,8 @@
           item.innerHTML = `
             <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; margin-right: 6px;">
               ${elementoFoto}
-              <span class="nome-diarista" title="${nome}">${nome}</span>
+              <span class="nome-diarista" onclick="abrirModalVerFoto('${nome}')" title="Ver foto de ${nome}">${nome}</span>
+              <button class="btn-editar-registro" onclick="renomearDiarista('${nome}')" title="Editar nome">✏️</button>
             </div>
             <div class="bloco-controles">
               <div class="botoes-setas">
@@ -744,7 +914,7 @@
         
         item.innerHTML = `
           <div style="display: flex; align-items: center; min-width: 0; flex: 1; margin-right: 6px;">
-            <span class="nome-diarista" title="${nome}">${nome}</span>
+            <span class="nome-diarista" onclick="abrirModalVerFoto('${nome}')" title="Ver foto de ${nome}">${nome}</span>
           </div>
           <div class="bloco-controles">
             <span class="valor-presenca" style="background-color: #d9b246;">${totalGratis}</span>
@@ -781,16 +951,19 @@
 
         const fotoDiarista = (BD_Diaristas[reg.nome] && BD_Diaristas[reg.nome].foto) ? BD_Diaristas[reg.nome].foto : '';
         let elementoFotoRegistro = fotoDiarista 
-          ? `<img src="${fotoDiarista}" class="avatar-circle" style="cursor: default;" title="Foto da diarista">` 
-          : `<div class="avatar-placeholder" style="cursor: default; opacity: 0.5;">-</div>`;
+          ? `<img src="${fotoDiarista}" class="avatar-circle" onclick="abrirModalFotos('${reg.nome}')" title="Alterar foto">` 
+          : `<div class="avatar-placeholder" onclick="abrirModalFotos('${reg.nome}')" title="Adicionar foto">+Foto</div>`;
         
         item.innerHTML = `
           <div class="item-registro-topo">
             <div style="display: flex; align-items: center; gap: 6px;">
               ${elementoFotoRegistro}
             </div>
-            <span class="nome-diarista-centralizado" title="${reg.nome}">${reg.nome}</span>
-            <button class="btn-deletar-ranking" onclick="excluirRegistro('${id}')" title="Excluir registro">✕</button>
+            <span class="nome-diarista-centralizado" onclick="abrirModalVerFoto('${reg.nome}')" title="Ver foto de ${reg.nome}">${reg.nome}</span>
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <button class="btn-editar-registro" onclick="abrirModalEditarRegistro('${id}')" title="Editar registro">✏️</button>
+              <button class="btn-deletar-ranking" onclick="excluirRegistro('${id}')" title="Excluir registro">✕</button>
+            </div>
           </div>
           <div class="item-registro-datas">
             <div class="badge-data">
