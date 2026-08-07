@@ -279,14 +279,32 @@
       min-width: 0;
     }
 
-    .btn-visibilidade {
+    .btn-visibilidade, .btn-estrela {
       background: none;
       border: none;
       font-size: 16px;
       padding: 0;
-      color: #12364e;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-visibilidade {
+      color: #12364e;
+    }
+
+    .btn-estrela {
+      filter: grayscale(100%);
+      opacity: 0.3;
+      transition: filter 0.2s, opacity 0.2s, transform 0.1s;
+    }
+
+    .btn-estrela.ativo {
+      filter: none;
+      opacity: 1;
+    }
+
+    .btn-estrela:active {
+      transform: scale(1.2);
     }
 
     .nome-item { 
@@ -372,6 +390,22 @@
       padding: 2px 6px;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
+    }
+
+    /* RODAPÉ DO BLOCO DE NÍVEIS (LEGENDA DA ESTRELA) */
+    .bloco-niveis-footer {
+      display: none;
+      margin-top: 15px;
+      padding-top: 10px;
+      border-top: 1px dashed #e1d8cd;
+      font-size: 12px;
+      color: #555;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .expandido #bloco-niveis-footer {
+      display: flex;
     }
 
     /* ESTILOS DA SEÇÃO DE LEGENDA DE TAGS */
@@ -623,6 +657,10 @@
           </div>
           
           <div class="lista-usuarios" id="lista-usuarios"></div>
+
+          <div class="bloco-niveis-footer" id="bloco-niveis-footer">
+            <span class="btn-estrela ativo" style="cursor: default;">⭐</span> Mensalista
+          </div>
         </div>
       </div>
 
@@ -757,15 +795,24 @@
       listaUI.innerHTML = '';
       
       if (dados) {
-        Object.keys(dados).forEach(id => {
+        // Ordena os jogadores em ordem alfabética estrita pelo nome
+        const chavesOrdenadas = Object.keys(dados).sort((a, b) => {
+          const nomeA = (dados[a].nome || '').toLowerCase();
+          const nomeB = (dados[b].nome || '').toLowerCase();
+          return nomeA.localeCompare(nomeB, 'pt-BR');
+        });
+
+        chavesOrdenadas.forEach(id => {
           const player = dados[id];
           const item = document.createElement('div');
           item.className = 'item-usuario' + (player.inativo ? ' inativo' : '');
           const iconeOlho = player.inativo ? '👁️‍🗨️' : '👁️';
+          const classeEstrela = player.mensalista ? 'btn-estrela ativo' : 'btn-estrela';
           
           item.innerHTML = `
             <div class="wrapper-nome">
-              <button class="btn-visibilidade" data-id="${id}">${iconeOlho}</button>
+              <button class="${classeEstrela}" data-id="${id}" title="Alternar status de mensalista">⭐</button>
+              <button class="btn-visibilidade" data-id="${id}" title="Alternar visibilidade">${iconeOlho}</button>
               <span class="nome-item" title="${player.nome}">${player.nome}</span>
             </div>
             <div class="controles-nivel">
@@ -865,7 +912,8 @@
       dadosJogadoresGlobais[novoId] = {
         nome: nomeCompleto,
         nivel: parseFloat(nivelSelect.value),
-        inativo: false
+        inativo: false,
+        mensalista: false
       };
 
       salvarNoFirebase(dadosJogadoresGlobais);
@@ -934,6 +982,17 @@
     });
 
     function distribuirEventosDinamicos() {
+      document.querySelectorAll('.btn-estrela').forEach(btn => {
+        btn.onclick = function(e) {
+          e.stopPropagation();
+          const id = this.getAttribute('data-id');
+          if(dadosJogadoresGlobais[id]) {
+            dadosJogadoresGlobais[id].mensalista = !dadosJogadoresGlobais[id].mensalista;
+            salvarNoFirebase(dadosJogadoresGlobais);
+          }
+        };
+      });
+
       document.querySelectorAll('.btn-visibilidade').forEach(btn => {
         btn.onclick = function(e) {
           e.stopPropagation();
@@ -1183,3 +1242,4 @@
   </script>
 </body>
 </html>
+```[cite: 1]
