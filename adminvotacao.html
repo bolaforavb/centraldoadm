@@ -35,21 +35,19 @@
     
     .form-inline { display: flex; gap: 8px; width: 100%; }
     .form-inline input { flex: 1; }
-    .form-candidato { display: flex; flex-direction: column; gap: 10px; width: 100%; }
     
     .btn-add-tabela { padding: 10px 16px; background-color: #d9b246; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; white-space: nowrap; }
     .btn-add-tabela:hover { background-color: #af8a23; }
     
-    /* Listas com rolagem interna e controle para manter tudo organizado */
     .lista-fidelidade { display: flex; flex-direction: column; gap: 8px; width: 100%; max-height: 220px; overflow-y: auto; padding-right: 4px; }
     
     .item-fidelidade { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background-color: #f7f5f2; border-radius: 8px; border-left: 3px solid #d9b246; flex-shrink: 0; }
-    .nome-diarista { font-size: 12px; font-weight: 500; color: #12364e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .posicao-votante { font-size: 11px; font-weight: bold; color: #7f8c8d; margin-right: 4px; min-width: 24px; }
+    .nome-diarista { font-size: 12px; font-weight: 500; color: #12364e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; transition: color 0.2s; }
+    .nome-diarista:hover { color: #d9b246; text-decoration: underline; }
     
     .botoes-acao { display: flex; gap: 8px; align-items: center; }
     .btn-acao-txt { background: none; border: none; font-weight: bold; font-size: 12px; cursor: pointer; padding: 2px 4px; }
-    .btn-editar { color: #12364e; }
+    .btn-editar { color: #12364e; font-size: 13px; }
     .btn-excluir { color: #d93025; }
     .badge-status { font-size: 9px; font-weight: bold; background: #12364e; color: white; padding: 2px 6px; border-radius: 4px; }
     
@@ -70,8 +68,95 @@
     .btn-perigo { background-color: #d93025; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 12px; padding: 8px 12px; cursor: pointer; width: 100%; }
     .btn-perigo:hover { background-color: #a5221a; }
     
+    .avatar-circle {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1.5px solid #d9b246;
+      cursor: pointer;
+      background-color: #e1d8cd;
+      flex-shrink: 0;
+    }
+
+    .avatar-placeholder {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background-color: #e1d8cd;
+      border: 1px dashed #d9b246;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 9px;
+      color: #12364e;
+      flex-shrink: 0;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 400px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    }
+
+    .galeria-fotos-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      max-height: 250px;
+      overflow-y: auto;
+      padding: 4px;
+    }
+
+    .galeria-foto-item {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 8px;
+      object-fit: cover;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: border-color 0.2s;
+    }
+
+    .galeria-foto-item:hover {
+      border-color: #d9b246;
+    }
+
     .hidden { display: none !important; }
     
+    .filtro-selecao {
+      padding: 2px 4px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 9px;
+      color: #12364e;
+      background: white;
+      outline: none;
+      cursor: pointer;
+      width: 40%;
+    }
+
     .footer-navegacao { width: 100%; max-width: 600px; padding: 8px 16px 30px 16px; display: flex; flex-direction: column; gap: 8px; }
     .btn-voltar-painel { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; background-color: transparent; color: #e1d8cd; border: 2px solid #e1d8cd; border-radius: 8px; font-weight: bold; font-size: 14px; text-decoration: none; text-align: center; }
     .btn-voltar-painel:hover { background-color: #e1d8cd; color: #12364e; }
@@ -85,7 +170,15 @@
 
   <main class="main-container">
     <div class="bloco-card">
-      <div class="titulo-secao" style="border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px; margin-bottom: 12px;">Lista de Votantes Autorizados</div>
+      <div class="header-secao-wrapper" style="margin-bottom: 12px;">
+        <div class="titulo-secao">Lista de Votantes Autorizados</div>
+        <select id="filtro-votantes" class="filtro-selecao" onchange="atualizarFiltroVotantes()">
+          <option value="todos">Mostrar todos</option>
+          <option value="visiveis">Visíveis</option>
+          <option value="ocultos">Ocultos</option>
+          <option value="mensalistas">Mensalistas</option>
+        </select>
+      </div>
       <form id="form-novo-votante" class="form-inline" onsubmit="adicionarVotante(event)">
         <input type="text" id="novo-votante-nome" placeholder="Nome do(a) mensalista" required>
         <button type="submit" class="btn-add-tabela">Add</button>
@@ -97,54 +190,19 @@
     </div>
 
     <div class="bloco-card">
-      <div class="titulo-secao" style="border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px; margin-bottom: 12px;">Atualizar Foto do(a) Mensalista</div>
-      <form id="form-candidato" class="form-candidato" onsubmit="salvarCandidato(event)">
-        <div style="display: flex; flex-direction: column; gap: 4px;">
-          <label style="font-size: 12px; font-weight: bold; color: #12364e;">Mensalista:</label>
-          <select id="candidato-select" required>
-            <option value="">Selecione um nome...</option>
-          </select>
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 4px;">
-          <label style="font-size: 12px; font-weight: bold; color: #12364e;">Foto:</label>
-          <input type="file" id="candidato-foto" accept="image/*" required>
-        </div>
-        <div style="display: flex; gap: 8px;">
-          <button type="submit" class="btn-add-tabela" style="flex: 1;">Salvar foto</button>
-          <button type="button" onclick="limparFormCandidato()" style="padding: 10px; background: #ccc; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Limpar</button>
-        </div>
-      </form>
-      <div style="margin-top: 15px;" class="lista-fidelidade" id="tabela-candidatos"></div>
-    </div>
-
-    <div class="bloco-card">
-      <div class="titulo-secao" style="border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px; margin-bottom: 12px;">Cadastrar Diaristas</div>
+      <div class="header-secao-wrapper" style="margin-bottom: 12px;">
+        <div class="titulo-secao">Cadastrar Diaristas</div>
+        <select id="filtro-diaristas" class="filtro-selecao" onchange="atualizarFiltroDiaristas()">
+          <option value="todos">Mostrar todos</option>
+          <option value="visiveis">Visíveis</option>
+          <option value="ocultos">Ocultos</option>
+        </select>
+      </div>
       <form id="form-novo-destaque" class="form-inline" onsubmit="adicionarDestaque(event)">
         <input type="text" id="novo-destaque-nome" placeholder="Nome do(a) diarista" required>
         <button type="submit" class="btn-add-tabela">Add</button>
       </form>
       <div style="margin-top: 12px;" class="lista-fidelidade" id="tabela-destaques-nomes"></div>
-    </div>
-
-    <div class="bloco-card">
-      <div class="titulo-secao" style="border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px; margin-bottom: 12px;">Atualizar Foto do Diarista</div>
-      <form id="form-destaque-foto" class="form-candidato" onsubmit="salvarDestaqueFoto(event)">
-        <div style="display: flex; flex-direction: column; gap: 4px;">
-          <label style="font-size: 12px; font-weight: bold; color: #12364e;">Diarista:</label>
-          <select id="destaque-select" required>
-            <option value="">Selecione um nome...</option>
-          </select>
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 4px;">
-          <label style="font-size: 12px; font-weight: bold; color: #12364e;">Foto:</label>
-          <input type="file" id="destaque-foto-input" accept="image/*" required>
-        </div>
-        <div style="display: flex; gap: 8px;">
-          <button type="submit" class="btn-add-tabela" style="flex: 1;">Salvar foto</button>
-          <button type="button" onclick="limparFormDestaqueFoto()" style="padding: 10px; background: #ccc; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Limpar</button>
-        </div>
-      </form>
-      <div style="margin-top: 15px;" class="lista-fidelidade" id="tabela-destaques-fotos"></div>
     </div>
 
     <div class="bloco-card">
@@ -174,6 +232,38 @@
     </div>
   </main>
 
+  <!-- Modal para Seleção e Upload de Fotos -->
+  <div class="modal-overlay" id="modal-fotos">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px;">
+        <span class="titulo-secao" style="margin:0; border:none; padding:0;">Escolher ou Enviar Foto</span>
+        <button onclick="fecharModalFotos()" style="background:none; border:none; font-size:16px; font-weight:bold; cursor:pointer; color:#12364e;">✕</button>
+      </div>
+      
+      <div style="background-color: #f7f5f2; padding: 10px; border-radius: 8px; display: flex; flex-direction: column; gap: 6px;">
+        <label for="input-upload-nova-foto" style="font-size: 11px; font-weight: bold; color: #12364e; text-transform: uppercase;">Enviar nova foto do dispositivo</label>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="file" id="input-upload-nova-foto" accept="image/*" style="font-size: 12px; flex: 1;">
+          <button type="button" class="btn-add-tabela" onclick="fazerUploadNovaFotoNoBanco()" style="padding: 6px 12px; font-size: 12px;">Enviar</button>
+        </div>
+      </div>
+
+      <div style="font-size: 11px; font-weight: bold; color: #12364e; margin-top: 4px;">Ou selecione do banco de arquivos:</div>
+      <div id="lista-fotos-galeria" class="galeria-fotos-grid"></div>
+    </div>
+  </div>
+
+  <!-- Modal para Visualização Ampliada da Foto -->
+  <div class="modal-overlay" id="modal-ver-foto">
+    <div class="modal-content" style="align-items: center; text-align: center;">
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px;">
+        <span id="titulo-ver-foto" class="titulo-secao" style="margin:0; border:none; padding:0;">Foto</span>
+        <button onclick="fecharModalVerFoto()" style="background:none; border:none; font-size:16px; font-weight:bold; cursor:pointer; color:#12364e;">✕</button>
+      </div>
+      <div id="conteudo-ver-foto" style="width: 100%; display: flex; justify-content: center; padding: 10px 0;"></div>
+    </div>
+  </div>
+
   <footer class="footer-navegacao">
     <a href="votacao.html" class="btn-voltar-painel" target="_blank"><span>🔗</span> Abrir Página de Votação &nearr;</a>
     <a href="dashboard.html" class="btn-voltar-painel"><span>↩</span> Voltar</a>
@@ -182,7 +272,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getDatabase, ref, onValue, set, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, onValue, set, get, child, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
@@ -197,6 +287,10 @@
 
     let ultimosDadosRanking = [];
     let ultimosDadosDestaques = [];
+    let BD_FotosDisponiveis = [];
+    let itemSelecionadoParaFoto = null;
+    let tipoItemSelecionado = null; // 'mensalista' ou 'diarista'
+    let cacheDadosGlobais = null;
 
     onAuthStateChanged(auth, (user) => {
       if (!user) {
@@ -204,16 +298,46 @@
       }
     });
 
+    onValue(ref(db, 'arquivos_enviados'), (snapshot) => {
+      const val = snapshot.val();
+      BD_FotosDisponiveis = [];
+      if (val) {
+        const listaArquivos = Array.isArray(val) ? val : Object.values(val);
+        listaArquivos.forEach(item => {
+          if (!item) return;
+          const urlOuBase64 = item.dadosBase64 || item.url || item.base64 || item.arquivo || (typeof item === 'string' ? item : null);
+          if (urlOuBase64) {
+            const ehUrlOuBase64 = typeof urlOuBase64 === 'string' && (
+              urlOuBase64.startsWith('data:image/') || 
+              urlOuBase64.startsWith('http://') || 
+              urlOuBase64.startsWith('https://') ||
+              /\.(jpg|jpeg|png|gif|webp)$/i.test(urlOuBase64)
+            );
+            const ehTipoImagem = item.tipoMime && typeof item.tipoMime === 'string' && item.tipoMime.startsWith('image/');
+            if (ehUrlOuBase64 || ehTipoImagem) {
+              BD_FotosDisponiveis.push(urlOuBase64);
+            }
+          }
+        });
+      }
+      if (document.getElementById('modal-fotos').style.display === 'flex') {
+        renderizarGaleriaFotosModal();
+      }
+    });
+
     onValue(ref(db, '/'), (snapshot) => {
       const data = snapshot.val() || {};
-      let voters = data.voters || [];
-      let candidates = data.candidates || [];
-      let destaqueCandidates = data.destaqueCandidates || [];
-      let votedUsers = data.votedUsers || [];
-      let votes = data.votes || {};
-
-      renderizarInterface(voters, candidates, destaqueCandidates, votedUsers, votes);
+      cacheDadosGlobais = data;
+      renderizarInterface(data);
     });
+
+    window.atualizarFiltroVotantes = function() {
+      if (cacheDadosGlobais) renderizarInterface(cacheDadosGlobais);
+    }
+
+    window.atualizarFiltroDiaristas = function() {
+      if (cacheDadosGlobais) renderizarInterface(cacheDadosGlobais);
+    }
 
     window.adicionarVotante = function(e) {
       e.preventDefault();
@@ -242,11 +366,36 @@
       });
     }
 
-    window.removerVotante = function(index) {
+    window.removerVotante = function(voterName) {
       get(child(ref(db), 'voters')).then((snapshot) => {
         let voters = snapshot.val() || [];
-        voters.splice(index, 1);
+        voters = voters.filter(v => v !== voterName);
         set(ref(db, 'voters'), voters);
+      });
+    }
+
+    window.renomearMensalista = function(nomeAntigo) {
+      const novoNome = prompt("Digite o novo nome para o(a) mensalista:", nomeAntigo);
+      if (!novoNome || novoNome.trim() === "") return;
+      const nomeFormatado = novoNome.trim();
+      if (nomeFormatado === nomeAntigo) return;
+
+      get(child(ref(db), 'voters')).then((snapshot) => {
+        let voters = snapshot.val() || [];
+        if (voters.some(v => v.localeCompare(nomeFormatado, 'pt-BR', { sensitivity: 'base' }) === 0)) {
+          alert("Já existe um(a) mensalista com este nome!");
+          return;
+        }
+        
+        voters = voters.map(v => v === nomeAntigo ? nomeFormatado : v);
+        voters.sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
+        set(ref(db, 'voters'), voters);
+
+        get(child(ref(db), 'candidates')).then((candSnapshot) => {
+          let candidates = candSnapshot.val() || [];
+          candidates = candidates.map(c => c.name === nomeAntigo ? { ...c, name: nomeFormatado } : c);
+          set(ref(db, 'candidates'), candidates);
+        });
       });
     }
 
@@ -266,39 +415,118 @@
       });
     }
 
-    window.salvarCandidato = function(e) {
-      e.preventDefault();
-      const nomeSelecionado = document.getElementById('candidato-select').value;
-      const fileInput = document.getElementById('candidato-foto');
-      if (!nomeSelecionado || !fileInput.files[0]) return;
+    window.abrirModalFotos = function(identificador, tipo) {
+      itemSelecionadoParaFoto = identificador;
+      tipoItemSelecionado = tipo;
+      document.getElementById('input-upload-nova-foto').value = '';
+      renderizarGaleriaFotosModal();
+      document.getElementById('modal-fotos').style.display = 'flex';
+    }
+
+    window.fecharModalFotos = function() {
+      document.getElementById('modal-fotos').style.display = 'none';
+      itemSelecionadoParaFoto = null;
+      tipoItemSelecionado = null;
+    }
+
+    function renderizarGaleriaFotosModal() {
+      const galeriaContainer = document.getElementById('lista-fotos-galeria');
+      galeriaContainer.innerHTML = '';
+
+      if (BD_FotosDisponiveis.length === 0) {
+        galeriaContainer.innerHTML = `<div style="grid-column: span 3; text-align: center; padding: 20px; font-size: 12px; opacity: 0.6;">Nenhuma foto encontrada no banco.</div>`;
+      } else {
+        BD_FotosDisponiveis.forEach(fotoUrl => {
+          const img = document.createElement('img');
+          img.src = fotoUrl;
+          img.className = 'galeria-foto-item';
+          img.onclick = () => selecionarFotoParaItem(fotoUrl);
+          galeriaContainer.appendChild(img);
+        });
+      }
+    }
+
+    window.fazerUploadNovaFotoNoBanco = function() {
+      const fileInput = document.getElementById('input-upload-nova-foto');
+      const file = fileInput.files[0];
+      if (!file) {
+        alert("Selecione um arquivo de imagem primeiro!");
+        return;
+      }
 
       const reader = new FileReader();
-      reader.onload = function(uploadEvent) {
-        const photoUrl = uploadEvent.target.result;
-        get(child(ref(db), 'candidates')).then((snapshot) => {
-          let candidates = snapshot.val() || [];
-          const existe = candidates.some(c => c.name.localeCompare(nomeSelecionado, 'pt-BR', { sensitivity: 'base' }) === 0);
-          if (existe) {
-            candidates = candidates.map(c => c.name.localeCompare(nomeSelecionado, 'pt-BR', { sensitivity: 'base' }) === 0 ? { ...c, photo: photoUrl } : c);
-          } else {
-            const safeId = Math.floor(Date.now() + Math.random() * 1000);
-            candidates.push({ id: safeId, name: nomeSelecionado, photo: photoUrl, hidden: false, favorito: false });
-          }
-          candidates.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
-          set(ref(db, 'candidates'), candidates);
-          limparFormCandidato();
+      reader.onload = function(e) {
+        const base64Data = e.target.result;
+        const novoArquivoRef = push(ref(db, 'arquivos_enviados'));
+        set(novoArquivoRef, {
+          nome: file.name,
+          tipoMime: file.type,
+          dadosBase64: base64Data,
+          dataEnvio: new Date().toISOString()
+        }).then(() => {
+          selecionarFotoParaItem(base64Data);
+        }).catch((err) => {
+          console.error("Erro ao enviar foto:", err);
+          alert("Erro ao enviar a foto para o banco.");
         });
       };
-      reader.readAsDataURL(fileInput.files[0]);
+      reader.readAsDataURL(file);
     }
 
-    window.selecionarParaEditar = function(nome) {
-      document.getElementById('candidato-select').value = nome;
+    function selecionarFotoParaItem(url) {
+      if (!itemSelecionadoParaFoto || !tipoItemSelecionado) return;
+
+      if (tipoItemSelecionado === 'mensalista') {
+        get(child(ref(db), 'candidates')).then((snapshot) => {
+          let candidates = snapshot.val() || [];
+          const existe = candidates.some(c => c.name.localeCompare(itemSelecionadoParaFoto, 'pt-BR', { sensitivity: 'base' }) === 0);
+          if (existe) {
+            candidates = candidates.map(c => c.name.localeCompare(itemSelecionadoParaFoto, 'pt-BR', { sensitivity: 'base' }) === 0 ? { ...c, photo: url } : c);
+          } else {
+            const safeId = Math.floor(Date.now() + Math.random() * 1000);
+            candidates.push({ id: safeId, name: itemSelecionadoParaFoto, photo: url, hidden: false, favorito: false });
+          }
+          set(ref(db, 'candidates'), candidates);
+          fecharModalFotos();
+        });
+      } else if (tipoItemSelecionado === 'diarista') {
+        get(child(ref(db), 'destaqueCandidates')).then((snapshot) => {
+          let destaques = snapshot.val() || [];
+          destaques = destaques.map(d => String(d.id) === String(itemSelecionadoParaFoto) ? { ...d, photo: url } : d);
+          set(ref(db, 'destaqueCandidates'), destaques);
+          fecharModalFotos();
+        });
+      }
     }
 
-    window.limparFormCandidato = function() {
-      document.getElementById('candidato-select').value = '';
-      document.getElementById('candidato-foto').value = '';
+    window.abrirModalVerFoto = function(nome, tipo) {
+      document.getElementById('titulo-ver-foto').innerText = `Foto de ${nome}`;
+      const containerFoto = document.getElementById('conteudo-ver-foto');
+      containerFoto.innerHTML = '';
+
+      const caminhoDb = tipo === 'mensalista' ? 'candidates' : 'destaqueCandidates';
+      get(child(ref(db), caminhoDb)).then((snapshot) => {
+        const itens = snapshot.val() || [];
+        const item = itens.find(i => tipo === 'mensalista' ? i.name.localeCompare(nome, 'pt-BR', { sensitivity: 'base' }) === 0 : String(i.id) === String(nome));
+        const fotoUrl = (item && item.photo) ? item.photo : '';
+
+        if (fotoUrl && fotoUrl !== "https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png") {
+          const img = document.createElement('img');
+          img.src = fotoUrl;
+          img.style.maxWidth = '100%';
+          img.style.maxHeight = '65vh';
+          img.style.borderRadius = '12px';
+          img.style.objectFit = 'contain';
+          containerFoto.appendChild(img);
+        } else {
+          containerFoto.innerHTML = `<div style="padding: 30px; font-size: 13px; opacity: 0.6;">Nenhuma foto cadastrada. Clique na bolinha de foto ao lado para adicionar.</div>`;
+        }
+        document.getElementById('modal-ver-foto').style.display = 'flex';
+      });
+    }
+
+    window.fecharModalVerFoto = function() {
+      document.getElementById('modal-ver-foto').style.display = 'none';
     }
 
     window.adicionarDestaque = function(e) {
@@ -327,40 +555,31 @@
       });
     }
 
+    window.renomearDestaque = function(idAntigo, nomeAntigo) {
+      const novoNome = prompt("Digite o novo nome para o(a) diarista:", nomeAntigo);
+      if (!novoNome || novoNome.trim() === "") return;
+      const nomeFormatado = novoNome.trim();
+      if (nomeFormatado === nomeAntigo) return;
+
+      get(child(ref(db), 'destaqueCandidates')).then((snapshot) => {
+        let destaques = snapshot.val() || [];
+        if (destaques.some(d => d.name.localeCompare(nomeFormatado, 'pt-BR', { sensitivity: 'base' }) === 0)) {
+          alert("Já existe um(a) diarista com este nome!");
+          return;
+        }
+        
+        destaques = destaques.map(d => String(d.id) === String(idAntigo) ? { ...d, name: nomeFormatado } : d);
+        destaques.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
+        set(ref(db, 'destaqueCandidates'), destaques);
+      });
+    }
+
     window.alternarVisibilidadeDestaque = function(id) {
       get(child(ref(db), 'destaqueCandidates')).then((snapshot) => {
         let destaques = snapshot.val() || [];
         destaques = destaques.map(d => String(d.id) === String(id) ? { ...d, hidden: !d.hidden } : d);
         set(ref(db, 'destaqueCandidates'), destaques);
       });
-    }
-
-    window.salvarDestaqueFoto = function(e) {
-      e.preventDefault();
-      const idSelecionado = document.getElementById('destaque-select').value;
-      const fileInput = document.getElementById('destaque-foto-input');
-      if (!idSelecionado || !fileInput.files[0]) return;
-
-      const reader = new FileReader();
-      reader.onload = function(uploadEvent) {
-        const photoUrl = uploadEvent.target.result;
-        get(child(ref(db), 'destaqueCandidates')).then((snapshot) => {
-          let destaques = snapshot.val() || [];
-          destaques = destaques.map(d => String(d.id) === String(idSelecionado) ? { ...d, photo: photoUrl } : d);
-          set(ref(db, 'destaqueCandidates'), destaques);
-          limparFormDestaqueFoto();
-        });
-      };
-      reader.readAsDataURL(fileInput.files[0]);
-    }
-
-    window.selecionarParaEditarDestaque = function(id) {
-      document.getElementById('destaque-select').value = id;
-    }
-
-    window.limparFormDestaqueFoto = function() {
-      document.getElementById('destaque-select').value = '';
-      document.getElementById('destaque-foto-input').value = '';
     }
 
     window.resetarVotos = function() {
@@ -403,70 +622,79 @@
       window.open(urlWhatsApp, '_blank');
     }
 
-    function renderizarInterface(voters, candidates, destaqueCandidates, votedUsers, votes) {
+    function renderizarInterface(data) {
+      let voters = data.voters || [];
+      let candidates = data.candidates || [];
+      let destaqueCandidates = data.destaqueCandidates || [];
+      let votedUsers = data.votedUsers || [];
+      let votes = data.votes || {};
+
       voters.sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
       candidates.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
       destaqueCandidates.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
 
+      // Bloco 1: Votantes Autorizados
+      const filtroVotantesValor = document.getElementById('filtro-votantes').value;
       const containerVotantes = document.getElementById('tabela-votantes');
       containerVotantes.innerHTML = '';
-      voters.forEach((voter, index) => {
+      
+      voters.forEach((voter) => {
         const jaVotou = votedUsers.includes(voter);
         const candObj = candidates.find(c => c.name.localeCompare(voter, 'pt-BR', { sensitivity: 'base' }) === 0);
         const isHidden = candObj ? candObj.hidden : false;
         const isFavorito = candObj ? candObj.favorito : false;
+        const fotoUrl = candObj ? candObj.photo : '';
+
+        if (filtroVotantesValor === 'visiveis' && isHidden) return;
+        if (filtroVotantesValor === 'ocultos' && !isHidden) return;
+        // O filtro "mensalistas" aqui mostra todos os votantes, pois a lista de votantes já é a lista de mensalistas.
+
+        let elementoFoto = (fotoUrl && fotoUrl !== "https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png")
+          ? `<img src="${fotoUrl}" class="avatar-circle" onclick="abrirModalFotos('${voter}', 'mensalista')" title="Alterar foto">` 
+          : `<div class="avatar-placeholder" onclick="abrirModalFotos('${voter}', 'mensalista')" title="Adicionar foto">+Foto</div>`;
         
         const item = document.createElement('div');
         item.className = 'item-fidelidade';
         if (isHidden) item.style.opacity = '0.6';
         item.innerHTML = `
-          <div style="display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1;">
-            <span class="posicao-votante">${index + 1}º</span>
-            <span class="nome-diarista">${voter} ${isHidden ? '(Oculto)' : ''}</span>
+          <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;">
+            ${elementoFoto}
+            <span class="nome-diarista" onclick="abrirModalVerFoto('${voter}', 'mensalista')" title="Ver foto de ${voter}">${voter} ${isHidden ? '(Oculto)' : ''}</span>
+            <button class="btn-acao-txt btn-editar" onclick="renomearMensalista('${voter}')" title="Editar nome">✏️</button>
             ${jaVotou ? '<span class="badge-status">Já votou</span>' : ''}
           </div>
           <div class="botoes-acao">
             ${candObj ? `<button class="btn-acao-txt" style="font-size: 15px;" onclick="alternarFavoritoCandidato('${candObj.id}')">${isFavorito ? '⭐' : '☆'}</button>` : ''}
             ${candObj ? `<button class="btn-acao-txt" style="font-size: 15px;" onclick="alternarVisibilidadeCandidato('${candObj.id}')">${isHidden ? '👁️‍🗨️' : '👁️'}</button>` : ''}
-            <button class="btn-acao-txt btn-excluir" onclick="removerVotante(${index})">✕</button>
+            <button class="btn-acao-txt btn-excluir" onclick="removerVotante('${voter}')">✕</button>
           </div>
         `;
         containerVotantes.appendChild(item);
       });
 
-      const selectCandidato = document.getElementById('candidato-select');
-      selectCandidato.innerHTML = '<option value="">Selecione um nome...</option>';
-      voters.forEach(voter => {
-        const option = document.createElement('option');
-        option.value = voter;
-        option.textContent = voter;
-        selectCandidato.appendChild(option);
-      });
-
-      const containerCandidatos = document.getElementById('tabela-candidatos');
-      containerCandidatos.innerHTML = '';
-      candidates.forEach(cand => {
-        const item = document.createElement('div');
-        item.className = 'item-fidelidade';
-        item.innerHTML = `
-          <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;">
-            <img src="${cand.photo}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;">
-            <span class="nome-diarista">${cand.name}</span>
-          </div>
-          <div class="botoes-acao"><button class="btn-acao-txt btn-editar" onclick="selecionarParaEditar('${cand.name}')">Editar Foto</button></div>
-        `;
-        containerCandidatos.appendChild(item);
-      });
-
+      // Bloco 2: Cadastrar Diaristas
+      const filtroDiaristasValor = document.getElementById('filtro-diaristas').value;
       const containerDestaqueNomes = document.getElementById('tabela-destaques-nomes');
       containerDestaqueNomes.innerHTML = '';
-      destaqueCandidates.forEach(dest => {
+      
+      destaqueCandidates.forEach((dest) => {
+        const fotoUrl = dest.photo;
+
+        if (filtroDiaristasValor === 'visiveis' && dest.hidden) return;
+        if (filtroDiaristasValor === 'ocultos' && !dest.hidden) return;
+
+        let elementoFoto = (fotoUrl && fotoUrl !== "https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png")
+          ? `<img src="${fotoUrl}" class="avatar-circle" onclick="abrirModalFotos('${dest.id}', 'diarista')" title="Alterar foto">` 
+          : `<div class="avatar-placeholder" onclick="abrirModalFotos('${dest.id}', 'diarista')" title="Adicionar foto">+Foto</div>`;
+
         const item = document.createElement('div');
         item.className = 'item-fidelidade';
         if (dest.hidden) item.style.opacity = '0.6';
         item.innerHTML = `
-          <div style="display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1;">
-            <span class="nome-diarista">${dest.name} ${dest.hidden ? '(Oculto)' : ''}</span>
+          <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;">
+            ${elementoFoto}
+            <span class="nome-diarista" onclick="abrirModalVerFoto('${dest.id}', 'diarista')" title="Ver foto de ${dest.name}">${dest.name} ${dest.hidden ? '(Oculto)' : ''}</span>
+            <button class="btn-acao-txt btn-editar" onclick="renomearDestaque('${dest.id}', '${dest.name}')" title="Editar nome">✏️</button>
           </div>
           <div class="botoes-acao">
             <button class="btn-acao-txt" style="font-size: 15px;" onclick="alternarVisibilidadeDestaque('${dest.id}')">${dest.hidden ? '👁️‍🗨️' : '👁️'}</button>
@@ -476,30 +704,7 @@
         containerDestaqueNomes.appendChild(item);
       });
 
-      const selectDestaque = document.getElementById('destaque-select');
-      selectDestaque.innerHTML = '<option value="">Selecione um nome...</option>';
-      destaqueCandidates.forEach(dest => {
-        const option = document.createElement('option');
-        option.value = dest.id;
-        option.textContent = dest.name;
-        selectDestaque.appendChild(option);
-      });
-
-      const containerDestaquesFotos = document.getElementById('tabela-destaques-fotos');
-      containerDestaquesFotos.innerHTML = '';
-      destaqueCandidates.forEach(dest => {
-        const item = document.createElement('div');
-        item.className = 'item-fidelidade';
-        item.innerHTML = `
-          <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;">
-            <img src="${dest.photo}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;">
-            <span class="nome-diarista">${dest.name}</span>
-          </div>
-          <div class="botoes-acao"><button class="btn-acao-txt btn-editar" onclick="selecionarParaEditarDestaque('${dest.id}')">Editar Foto</button></div>
-        `;
-        containerDestaquesFotos.appendChild(item);
-      });
-
+      // Bloco 3: Apuração e Votos Computados
       const containerRanking = document.getElementById('tabela-ranking');
       containerRanking.innerHTML = '';
       const somaNotas = {}, qtdVotosCandidato = {};
