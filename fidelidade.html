@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -110,24 +111,21 @@
       flex: 2; /* Campo de texto menor proporcionalmente */
     }
 
-    /* Botão de selecionar foto no formulário de novo diarista */
+    /* Botão de selecionar foto com a mesma formatação do botão Add */
     .btn-selecionar-foto-inline {
-      padding: 10px 12px;
-      background-color: #e1d8cd;
-      color: #12364e;
-      border: 1px solid #ccc;
+      padding: 10px 16px;
+      background-color: #d9b246;
+      color: white;
+      border: none;
       border-radius: 8px;
       font-weight: bold;
-      font-size: 13px;
+      font-size: 14px;
       cursor: pointer;
       white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 4px;
       transition: background 0.2s;
     }
-    .btn-selecionar-foto-inline:hover {
-      background-color: #d1c7bc;
+    .btn-selecionar-foto-inline:hover { 
+      background-color: #af8a23; 
     }
 
     /* Formulário específico para o bloco de Registros */
@@ -502,17 +500,17 @@
 
   <main class="main-container">
     
-    <!-- Bloco Novo Diarista atualizado com o botão Selecionar foto -->
+    <!-- Bloco Novo Diarista -->
     <div class="bloco-card">
       <div class="titulo-secao">Novo Diarista</div>
       <form id="form-nova-diarista" class="form-inline">
         <input type="text" id="nome-novo" placeholder="Nome do Diarista" required>
-        <button type="button" class="btn-selecionar-foto-inline" onclick="abrirModalFotosParaNovoDiarista()" title="Selecionar foto inicial">📷 Foto</button>
+        <button type="button" class="btn-selecionar-foto-inline" onclick="abrirModalFotosParaNovoDiarista()" title="Selecionar foto inicial">Selecionar foto</button>
         <button type="submit" class="btn-add-tabela">Add</button>
       </form>
     </div>
 
-    <!-- Bloco de Presenças estendido com legenda no rodapé -->
+    <!-- Bloco de Presenças -->
     <div class="bloco-card">
       <div class="header-resultado-linha">
         <div class="titulo-secao">Presenças</div>
@@ -572,9 +570,9 @@
         <button onclick="fecharModalFotos()" style="background:none; border:none; font-size:16px; font-weight:bold; cursor:pointer; color:#12364e;">✕</button>
       </div>
       <div id="lista-fotos-galeria" class="galeria-fotos-grid">
-        <!-- Fotos carregadas da página de arquivos -->
+        <!-- Fotos carregadas do banco de dados arquivos_enviados -->
       </div>
-      <div style="font-size: 11px; opacity: 0.7; text-align: center;">Selecione uma imagem enviada na página de Arquivos.</div>
+      <div style="font-size: 11px; opacity: 0.7; text-align: center;">Selecione uma imagem enviada no banco de dados "arquivos_enviados".</div>
     </div>
   </div>
 
@@ -685,7 +683,7 @@
     let BD_Registros = {};
     let BD_FotosDisponiveis = [];
     let diaristaSelecionadaParaFoto = null;
-    let fotoTemporariaNovoDiarista = ""; // Variável para armazenar a foto selecionada ao criar um novo diarista
+    let fotoTemporariaNovoDiarista = "";
 
     function salvarDados() {
       db.ref('diarista_fidelidade').set(BD_Diaristas);
@@ -730,11 +728,25 @@
       const val = snapshot.val();
       BD_FotosDisponiveis = [];
       if (val) {
-        Object.values(val).forEach(item => {
-          const ehImagem = (item.tipoMime && item.tipoMime.startsWith('image/')) ||
-                           (item.nomeOriginal && item.nomeOriginal.match(/\.(jpg|jpeg|png|gif|webp)$/i));
-          if (ehImagem && item.dadosBase64) {
-            BD_FotosDisponiveis.push(item.dadosBase64);
+        const listaArquivos = Array.isArray(val) ? val : Object.values(val);
+        
+        listaArquivos.forEach(item => {
+          if (!item) return;
+          const urlOuBase64 = item.dadosBase64 || item.url || item.base64 || item.arquivo || (typeof item === 'string' ? item : null);
+          
+          if (urlOuBase64) {
+            const ehUrlOuBase64 = typeof urlOuBase64 === 'string' && (
+              urlOuBase64.startsWith('data:image/') || 
+              urlOuBase64.startsWith('http://') || 
+              urlOuBase64.startsWith('https://') ||
+              /\.(jpg|jpeg|png|gif|webp)$/i.test(urlOuBase64)
+            );
+
+            const ehTipoImagem = item.tipoMime && typeof item.tipoMime === 'string' && item.tipoMime.startsWith('image/');
+
+            if (ehUrlOuBase64 || ehTipoImagem) {
+              BD_FotosDisponiveis.push(urlOuBase64);
+            }
           }
         });
       }
@@ -746,7 +758,7 @@
       galeriaContainer.innerHTML = '';
 
       if (BD_FotosDisponiveis.length === 0) {
-        galeriaContainer.innerHTML = `<div style="grid-column: span 3; text-align: center; padding: 20px; font-size: 12px; opacity: 0.6;">Nenhuma foto encontrada na página de Arquivos. Faça o upload lá primeiro.</div>`;
+        galeriaContainer.innerHTML = `<div style="grid-column: span 3; text-align: center; padding: 20px; font-size: 12px; opacity: 0.6;">Nenhuma foto encontrada no banco "arquivos_enviados".</div>`;
       } else {
         BD_FotosDisponiveis.forEach(fotoUrl => {
           const img = document.createElement('img');
@@ -760,14 +772,13 @@
       document.getElementById('modal-fotos').style.display = 'flex';
     }
 
-    // Função específica para abrir a seleção de fotos para o bloco de Novo Diarista
     function abrirModalFotosParaNovoDiarista() {
       diaristaSelecionadaParaFoto = "__NOVO_DIARISTA__";
       const galeriaContainer = document.getElementById('lista-fotos-galeria');
       galeriaContainer.innerHTML = '';
 
       if (BD_FotosDisponiveis.length === 0) {
-        galeriaContainer.innerHTML = `<div style="grid-column: span 3; text-align: center; padding: 20px; font-size: 12px; opacity: 0.6;">Nenhuma foto encontrada na página de Arquivos. Faça o upload lá primeiro.</div>`;
+        galeriaContainer.innerHTML = `<div style="grid-column: span 3; text-align: center; padding: 20px; font-size: 12px; opacity: 0.6;">Nenhuma foto encontrada no banco "arquivos_enviados".</div>`;
       } else {
         BD_FotosDisponiveis.forEach(fotoUrl => {
           const img = document.createElement('img');
@@ -790,8 +801,8 @@
       if (diaristaSelecionadaParaFoto === "__NOVO_DIARISTA__") {
         fotoTemporariaNovoDiarista = url;
         const btnFoto = document.querySelector('.btn-selecionar-foto-inline');
-        btnFoto.style.borderColor = '#d9b246';
-        btnFoto.style.backgroundColor = '#f7f5f2';
+        btnFoto.innerText = "Foto selecionada ✓";
+        btnFoto.style.backgroundColor = '#2e7d32';
         fecharModalFotos();
       } else if (diaristaSelecionadaParaFoto && BD_Diaristas[diaristaSelecionadaParaFoto]) {
         BD_Diaristas[diaristaSelecionadaParaFoto].foto = url;
@@ -800,7 +811,6 @@
       }
     }
 
-    // --- FUNÇÕES DE VISUALIZAÇÃO AMPLIADA DA FOTO ---
     window.abrirModalVerFoto = function(nome) {
       document.getElementById('titulo-ver-foto').innerText = nome;
       const containerFoto = document.getElementById('conteudo-ver-foto');
@@ -827,7 +837,6 @@
       document.getElementById('modal-ver-foto').style.display = 'none';
     }
 
-    // --- FUNÇÃO PARA EDITAR NOME DA DIARISTA E PROPAGAR AOS REGISTROS ---
     window.renomearDiarista = function(nomeAntigo) {
       const novoNome = prompt("Digite o novo nome para a diarista:", nomeAntigo);
       if (!novoNome || novoNome.trim() === "") return;
@@ -840,17 +849,14 @@
         return;
       }
 
-      // 1. Atualiza na lista de Presenças
       BD_Diaristas[nomeFormatado] = BD_Diaristas[nomeAntigo];
       delete BD_Diaristas[nomeAntigo];
 
-      // 2. Atualiza no histórico de Diárias Grátis, se houver
       if (BD_DiariasGratis.hasOwnProperty(nomeAntigo)) {
         BD_DiariasGratis[nomeFormatado] = BD_DiariasGratis[nomeAntigo];
         delete BD_DiariasGratis[nomeAntigo];
       }
 
-      // 3. Atualiza automaticamente nos Registros cadastrados
       for (let id in BD_Registros) {
         if (BD_Registros[id].nome === nomeAntigo) {
           BD_Registros[id].nome = nomeFormatado;
@@ -860,7 +866,6 @@
       salvarDados();
     };
 
-    // --- FUNÇÕES DE EDIÇÃO DE REGISTRO ---
     window.abrirModalEditarRegistro = function(id) {
       const reg = BD_Registros[id];
       if (!reg) return;
@@ -1037,8 +1042,8 @@
       input.value = '';
       fotoTemporariaNovoDiarista = "";
       const btnFoto = document.querySelector('.btn-selecionar-foto-inline');
-      btnFoto.style.borderColor = '#ccc';
-      btnFoto.style.backgroundColor = '#e1d8cd';
+      btnFoto.innerText = "Selecionar foto";
+      btnFoto.style.backgroundColor = '#d9b246';
     });
 
     document.getElementById('form-novo-registro').addEventListener('submit', function(e) {
@@ -1079,3 +1084,5 @@
 
 </body>
 </html>
+
+```
