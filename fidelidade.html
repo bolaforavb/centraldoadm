@@ -61,19 +61,6 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
-    /* Container para colocar blocos lado a lado */
-    .linha-dupla {
-      display: flex;
-      gap: 12px;
-      width: 100%;
-    }
-
-    .linha-dupla .bloco-card {
-      flex: 1;
-      width: 50%;
-      padding: 14px;
-    }
-
     .titulo-secao {
       font-size: 14px;
       font-weight: bold;
@@ -120,7 +107,27 @@
     }
 
     .form-inline input {
-      flex: 1;
+      flex: 2; /* Campo de texto menor proporcionalmente */
+    }
+
+    /* Botão de selecionar foto no formulário de novo diarista */
+    .btn-selecionar-foto-inline {
+      padding: 10px 12px;
+      background-color: #e1d8cd;
+      color: #12364e;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.2s;
+    }
+    .btn-selecionar-foto-inline:hover {
+      background-color: #d1c7bc;
     }
 
     /* Formulário específico para o bloco de Registros */
@@ -386,6 +393,18 @@
       flex-shrink: 0;
     }
 
+    /* Rodapé Informativo do Bloco */
+    .bloco-legenda {
+      font-size: 11px;
+      color: #12364e;
+      opacity: 0.7;
+      text-align: center;
+      margin-top: 10px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      padding-top: 8px;
+      line-height: 1.4;
+    }
+
     /* Modais Overlay */
     .modal-overlay {
       position: fixed;
@@ -483,34 +502,28 @@
 
   <main class="main-container">
     
+    <!-- Bloco Novo Diarista atualizado com o botão Selecionar foto -->
     <div class="bloco-card">
       <div class="titulo-secao">Novo Diarista</div>
       <form id="form-nova-diarista" class="form-inline">
         <input type="text" id="nome-novo" placeholder="Nome do Diarista" required>
+        <button type="button" class="btn-selecionar-foto-inline" onclick="abrirModalFotosParaNovoDiarista()" title="Selecionar foto inicial">📷 Foto</button>
         <button type="submit" class="btn-add-tabela">Add</button>
       </form>
     </div>
 
-    <!-- Linha dupla: Contagem de Presenças e Histórico de Diárias Grátis lado a lado -->
-    <div class="linha-dupla">
-      <div class="bloco-card">
-        <div class="header-resultado-linha">
-          <div class="titulo-secao">Presenças</div>
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <div style="display: flex; align-items: center; gap: 4px;">
-              <div class="label-presencas-topo">Qtd</div>
-            </div>
-          </div>
+    <!-- Bloco de Presenças estendido com legenda no rodapé -->
+    <div class="bloco-card">
+      <div class="header-resultado-linha">
+        <div class="titulo-secao">Presenças</div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="label-presencas-topo">Qtd</div>
+          <div class="label-presencas-topo" style="color: #d9b246;" title="Total de Diárias Grátis">Grátis</div>
         </div>
-        <div class="lista-fidelidade" id="tabela-diaristas"></div>
       </div>
-
-      <div class="bloco-card">
-        <div class="header-resultado-linha">
-          <div class="titulo-secao">Diárias Grátis</div>
-          <div class="label-presencas-topo">Total</div>
-        </div>
-        <div class="lista-fidelidade" id="tabela-diarias-gratis"></div>
+      <div class="lista-fidelidade" id="tabela-diaristas"></div>
+      <div class="bloco-legenda">
+        Dica: Clique na foto para alterá-la ou no nome do diarista para visualizá-la em tamanho maior.
       </div>
     </div>
 
@@ -672,6 +685,7 @@
     let BD_Registros = {};
     let BD_FotosDisponiveis = [];
     let diaristaSelecionadaParaFoto = null;
+    let fotoTemporariaNovoDiarista = ""; // Variável para armazenar a foto selecionada ao criar um novo diarista
 
     function salvarDados() {
       db.ref('diarista_fidelidade').set(BD_Diaristas);
@@ -746,13 +760,40 @@
       document.getElementById('modal-fotos').style.display = 'flex';
     }
 
+    // Função específica para abrir a seleção de fotos para o bloco de Novo Diarista
+    function abrirModalFotosParaNovoDiarista() {
+      diaristaSelecionadaParaFoto = "__NOVO_DIARISTA__";
+      const galeriaContainer = document.getElementById('lista-fotos-galeria');
+      galeriaContainer.innerHTML = '';
+
+      if (BD_FotosDisponiveis.length === 0) {
+        galeriaContainer.innerHTML = `<div style="grid-column: span 3; text-align: center; padding: 20px; font-size: 12px; opacity: 0.6;">Nenhuma foto encontrada na página de Arquivos. Faça o upload lá primeiro.</div>`;
+      } else {
+        BD_FotosDisponiveis.forEach(fotoUrl => {
+          const img = document.createElement('img');
+          img.src = fotoUrl;
+          img.className = 'galeria-foto-item';
+          img.onclick = () => selecionarFotoParaDiarista(fotoUrl);
+          galeriaContainer.appendChild(img);
+        });
+      }
+
+      document.getElementById('modal-fotos').style.display = 'flex';
+    }
+
     function fecharModalFotos() {
       document.getElementById('modal-fotos').style.display = 'none';
       diaristaSelecionadaParaFoto = null;
     }
 
     function selecionarFotoParaDiarista(url) {
-      if (diaristaSelecionadaParaFoto && BD_Diaristas[diaristaSelecionadaParaFoto]) {
+      if (diaristaSelecionadaParaFoto === "__NOVO_DIARISTA__") {
+        fotoTemporariaNovoDiarista = url;
+        const btnFoto = document.querySelector('.btn-selecionar-foto-inline');
+        btnFoto.style.borderColor = '#d9b246';
+        btnFoto.style.backgroundColor = '#f7f5f2';
+        fecharModalFotos();
+      } else if (diaristaSelecionadaParaFoto && BD_Diaristas[diaristaSelecionadaParaFoto]) {
         BD_Diaristas[diaristaSelecionadaParaFoto].foto = url;
         salvarDados();
         fecharModalFotos();
@@ -867,6 +908,7 @@
         diaristasOrdenadas.forEach(([nome, dados]) => {
           const presencas = dados.presencas;
           const foto = dados.foto;
+          const totalGratis = BD_DiariasGratis[nome] || 0;
           const item = document.createElement('div');
           item.className = 'item-fidelidade';
           
@@ -883,9 +925,10 @@
             <div class="bloco-controles">
               <div class="botoes-setas">
                 <button class="btn-seta-up" onclick="alterarPresenca('${nome}', 1)">▲</button>
-                <span class="valor-presenca">${presencas}</span>
+                <span class="valor-presenca" title="Presenças">${presencas}</span>
                 <button class="btn-seta-down" onclick="alterarPresenca('${nome}', -1)">▼</button>
               </div>
+              <span class="valor-presenca" style="background-color: #d9b246;" title="Total de Diárias Grátis">${totalGratis}</span>
               <button class="btn-deletar-ranking" onclick="excluirDiarista('${nome}')" title="Excluir diarista">✕</button>
             </div>
           `;
@@ -893,36 +936,7 @@
         });
       }
 
-      atualizarTabelaGratisVisual();
       atualizarTabelaRegistrosVisual();
-    }
-
-    function atualizarTabelaGratisVisual() {
-      const containerGratis = document.getElementById('tabela-diarias-gratis');
-      containerGratis.innerHTML = '';
-
-      const gratisOrdenado = Object.entries(BD_DiariasGratis).sort((a, b) => b[1] - a[1]);
-
-      if (gratisOrdenado.length === 0) {
-        containerGratis.innerHTML = `<div style="text-align:center; padding: 15px; font-size:12px; opacity:0.6;">Nenhuma diária grátis ainda.</div>`;
-        return;
-      }
-
-      gratisOrdenado.forEach(([nome, totalGratis]) => {
-        const item = document.createElement('div');
-        item.className = 'item-fidelidade';
-        
-        item.innerHTML = `
-          <div style="display: flex; align-items: center; min-width: 0; flex: 1; margin-right: 6px;">
-            <span class="nome-diarista" onclick="abrirModalVerFoto('${nome}')" title="Ver foto de ${nome}">${nome}</span>
-          </div>
-          <div class="bloco-controles">
-            <span class="valor-presenca" style="background-color: #d9b246;">${totalGratis}</span>
-            <button class="btn-deletar-ranking" onclick="excluirDiariaGratis('${nome}')" title="Excluir do histórico">✕</button>
-          </div>
-        `;
-        containerGratis.appendChild(item);
-      });
     }
 
     function formatarDataBR(dataStr) {
@@ -1017,9 +1031,14 @@
         return;
       }
 
-      BD_Diaristas[nome] = { presencas: 0, foto: "" };
+      BD_Diaristas[nome] = { presencas: 0, foto: fotoTemporariaNovoDiarista };
       salvarDados();
+
       input.value = '';
+      fotoTemporariaNovoDiarista = "";
+      const btnFoto = document.querySelector('.btn-selecionar-foto-inline');
+      btnFoto.style.borderColor = '#ccc';
+      btnFoto.style.backgroundColor = '#e1d8cd';
     });
 
     document.getElementById('form-novo-registro').addEventListener('submit', function(e) {
@@ -1045,13 +1064,6 @@
     window.excluirDiarista = function(nome) {
       if (confirm(`Remover "${nome}" permanentemente da lista?`)) {
         delete BD_Diaristas[nome];
-        delete BD_DiariasGratis[nome];
-        salvarDados();
-      }
-    }
-
-    window.excluirDiariaGratis = function(nome) {
-      if (confirm(`Remover "${nome}" do histórico de diárias grátis?`)) {
         delete BD_DiariasGratis[nome];
         salvarDados();
       }
