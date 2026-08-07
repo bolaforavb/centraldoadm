@@ -434,7 +434,7 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      max-height: 280px;
+      max-height: 250px;
       overflow-y: auto;
       padding: 4px;
     }
@@ -562,17 +562,27 @@
 
   </main>
 
-  <!-- Modal para Seleção de Fotos -->
+  <!-- Modal para Seleção e Upload de Fotos -->
   <div class="modal-overlay" id="modal-fotos">
     <div class="modal-content">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px;">
-        <span class="titulo-secao" style="margin:0; border:none; padding:0;">Escolher Foto</span>
+        <span class="titulo-secao" style="margin:0; border:none; padding:0;">Escolher ou Enviar Foto</span>
         <button onclick="fecharModalFotos()" style="background:none; border:none; font-size:16px; font-weight:bold; cursor:pointer; color:#12364e;">✕</button>
       </div>
+      
+      <!-- Seção de Upload de Nova Foto -->
+      <div style="background-color: #f7f5f2; padding: 10px; border-radius: 8px; display: flex; flex-direction: column; gap: 6px;">
+        <label for="input-upload-nova-foto" style="font-size: 11px; font-weight: bold; color: #12364e; text-transform: uppercase;">Enviar nova foto do dispositivo</label>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="file" id="input-upload-nova-foto" accept="image/*" style="font-size: 12px; flex: 1;">
+          <button type="button" class="btn-add-tabela" onclick="fazerUploadNovaFotoNoBanco()" style="padding: 6px 12px; font-size: 12px;">Enviar</button>
+        </div>
+      </div>
+
+      <div style="font-size: 11px; font-weight: bold; color: #12364e; margin-top: 4px;">Ou selecione do banco de arquivos:</div>
       <div id="lista-fotos-galeria" class="galeria-fotos-grid">
         <!-- Fotos carregadas do banco de dados arquivos_enviados -->
       </div>
-      <div style="font-size: 11px; opacity: 0.7; text-align: center;">Selecione uma imagem enviada no banco de dados "arquivos_enviados".</div>
     </div>
   </div>
 
@@ -750,10 +760,13 @@
           }
         });
       }
+      // Atualiza a galeria se o modal estiver aberto
+      if (document.getElementById('modal-fotos').style.display === 'flex') {
+        renderizarGaleriaFotosModal();
+      }
     });
 
-    function abrirModalFotos(nomeDiarista) {
-      diaristaSelecionadaParaFoto = nomeDiarista;
+    function renderizarGaleriaFotosModal() {
       const galeriaContainer = document.getElementById('lista-fotos-galeria');
       galeriaContainer.innerHTML = '';
 
@@ -768,33 +781,55 @@
           galeriaContainer.appendChild(img);
         });
       }
+    }
 
+    function abrirModalFotos(nomeDiarista) {
+      diaristaSelecionadaParaFoto = nomeDiarista;
+      document.getElementById('input-upload-nova-foto').value = '';
+      renderizarGaleriaFotosModal();
       document.getElementById('modal-fotos').style.display = 'flex';
     }
 
     function abrirModalFotosParaNovoDiarista() {
       diaristaSelecionadaParaFoto = "__NOVO_DIARISTA__";
-      const galeriaContainer = document.getElementById('lista-fotos-galeria');
-      galeriaContainer.innerHTML = '';
-
-      if (BD_FotosDisponiveis.length === 0) {
-        galeriaContainer.innerHTML = `<div style="grid-column: span 3; text-align: center; padding: 20px; font-size: 12px; opacity: 0.6;">Nenhuma foto encontrada no banco "arquivos_enviados".</div>`;
-      } else {
-        BD_FotosDisponiveis.forEach(fotoUrl => {
-          const img = document.createElement('img');
-          img.src = fotoUrl;
-          img.className = 'galeria-foto-item';
-          img.onclick = () => selecionarFotoParaDiarista(fotoUrl);
-          galeriaContainer.appendChild(img);
-        });
-      }
-
+      document.getElementById('input-upload-nova-foto').value = '';
+      renderizarGaleriaFotosModal();
       document.getElementById('modal-fotos').style.display = 'flex';
     }
 
     function fecharModalFotos() {
       document.getElementById('modal-fotos').style.display = 'none';
       diaristaSelecionadaParaFoto = null;
+    }
+
+    function fazerUploadNovaFotoNoBanco() {
+      const fileInput = document.getElementById('input-upload-nova-foto');
+      const file = fileInput.files[0];
+      if (!file) {
+        alert("Selecione um arquivo de imagem primeiro!");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const base64Data = e.target.result;
+        
+        // Salva no banco de dados "arquivos_enviados"
+        const novoArquivoRef = db.ref('arquivos_enviados').push();
+        novoArquivoRef.set({
+          nome: file.name,
+          tipoMime: file.type,
+          dadosBase64: base64Data,
+          dataEnvio: new Date().toISOString()
+        }).then(() => {
+          // Seleciona automaticamente essa nova foto para a diarista atual
+          selecionarFotoParaDiarista(base64Data);
+        }).catch((err) => {
+          console.error("Erro ao enviar foto:", err);
+          alert("Erro ao enviar a foto para o banco.");
+        });
+      };
+      reader.readAsDataURL(file);
     }
 
     function selecionarFotoParaDiarista(url) {
