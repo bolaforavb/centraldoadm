@@ -428,7 +428,10 @@
     </div>
     <div id="auth-logged-in" class="hidden" style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
       <span style="color: #2e7d32; font-weight: bold;">✔ Administrador Autenticado</span>
-      <button class="btn-acao" style="height: 28px; font-size: 11px; background: #d32f2f;" onclick="fazerLogout()">Deslogar</button>
+      <div style="display: flex; gap: 6px; align-items: center;">
+        <button class="btn-acao" style="height: 28px; font-size: 11px; background: #2980b9;" onclick="window.location.href='dashboard.html'">Central do Adm</button>
+        <button class="btn-acao" style="height: 28px; font-size: 11px; background: #d32f2f;" onclick="fazerLogout()">Deslogar</button>
+      </div>
     </div>
   </div>
 
