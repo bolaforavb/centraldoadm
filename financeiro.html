@@ -114,6 +114,7 @@
       gap: 10px;
     }
     select { padding: 5px; border-radius: 8px; border: 1px solid #ccc; font-size: 13px; background: white; }
+    select:disabled { background-color: #f5f5f5; color: #999; cursor: not-allowed; }
     .selecao-data-container {
       display: flex;
       gap: 5px;
@@ -190,7 +191,7 @@
       gap: 8px;
       height: 280px;
       overflow-y: auto;
-      overflow-x: hidden; /* Corrigido: evita barra de rolagem horizontal desnecessária */
+      overflow-x: hidden;
       padding-right: 4px;
       flex: none;
     }
@@ -390,7 +391,6 @@
 
     .hidden { display: none !important; }
 
-    /* Estilo barra de login administrativa */
     .admin-auth-bar {
       width: 100%;
       max-width: 600px;
@@ -419,7 +419,6 @@
     <img src="https://i.ibb.co/twJd6BRq/Whats-App-Image-2026-06-29-at-10-42-05.jpg" alt="Banner">
   </header>
 
-  <!-- Barra de Autenticação do Administrador -->
   <div class="admin-auth-bar" id="admin-auth-bar">
     <div id="auth-logged-out" style="display: flex; gap: 5px; align-items: center; width: 100%; flex-wrap: wrap;">
       <span style="font-weight: bold; color: #12364e;">Login:</span>
@@ -641,6 +640,10 @@
       const elementosAdmin = document.querySelectorAll('.admin-only');
       const logoutDiv = document.getElementById('auth-logged-in');
       const logoutOutDiv = document.getElementById('auth-logged-out');
+      const mesSelect = document.getElementById('mes-select');
+      const anoSelect = document.getElementById('ano-select');
+      const diaDevedoresSelect = document.getElementById('dia-devedores-select');
+      const mesDevedoresSelect = document.getElementById('mes-devedores-select');
 
       if (user) {
         usuarioAutenticado = true;
@@ -648,12 +651,20 @@
         logoutDiv.style.display = 'flex';
         logoutDiv.classList.remove('hidden');
         logoutOutDiv.style.display = 'none';
+        mesSelect.disabled = false;
+        anoSelect.disabled = false;
+        diaDevedoresSelect.disabled = false;
+        mesDevedoresSelect.disabled = false;
       } else {
         usuarioAutenticado = false;
         elementosAdmin.forEach(el => el.classList.add('hidden'));
         logoutDiv.style.display = 'none';
         logoutDiv.classList.add('hidden');
         logoutOutDiv.style.display = 'flex';
+        mesSelect.disabled = true;
+        anoSelect.disabled = true;
+        diaDevedoresSelect.disabled = true;
+        mesDevedoresSelect.disabled = true;
       }
       
       carregarListasNaTela();
