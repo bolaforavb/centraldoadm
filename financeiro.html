@@ -329,6 +329,17 @@
       border-style: solid;
       border-color: transparent transparent #12364e transparent;
     }
+    .tooltip-texto.tooltip-esquerda {
+      left: auto;
+      right: 0;
+      transform: none;
+    }
+    .tooltip-texto.tooltip-esquerda::after {
+      left: auto;
+      right: 8px;
+      transform: none;
+    }
+
     .info-tooltip-container:hover .tooltip-texto,
     .info-tooltip-container.ativo-tooltip .tooltip-texto {
       visibility: visible;
@@ -923,6 +934,7 @@
           const horaFormatada = item.hora || '';
           
           const textoTooltip = horaFormatada ? `Inscrito em: ${dataFormatada} às ${horaFormatada}` : `Inscrito em: ${dataFormatada}`;
+          const classeTooltipEsquerda = !usuarioAutenticado ? 'tooltip-esquerda' : '';
 
           const div = document.createElement('div');
           div.className = 'item-pagamento';
@@ -942,7 +954,7 @@
             <div class="item-acoes">
               <div class="info-tooltip-container" onclick="this.classList.toggle('ativo-tooltip')">
                 <button class="btn-info-circulo" type="button" title="${textoTooltip}">i</button>
-                <div class="tooltip-texto">${textoTooltip}</div>
+                <div class="tooltip-texto ${classeTooltipEsquerda}">${textoTooltip}</div>
               </div>
               ${botoesAcoesHtml}
             </div>
