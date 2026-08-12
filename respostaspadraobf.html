@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel de Pedidos - Central Bola Fora</title>
+  <link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
+  
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: sans-serif; background-color: #12364e; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; color: #12364e; }
+    .header-banner { width: 100%; max-width: 600px; background-color: #e1d8cd; overflow: hidden; display: flex; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .header-banner img { width: 100%; height: 100%; object-fit: cover; }
+    .main-container { width: 100%; max-width: 600px; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+    .bloco-card { background-color: white; border-radius: 16px; width: 100%; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .titulo-secao { font-size: 15px; font-weight: bold; color: #12364e; margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
+    .info-linha { font-size: 14px; color: #12364e; margin-bottom: 8px; display: flex; justify-content: space-between; }
+    .info-label { font-weight: bold; color: #555; }
+    .comprovante-img { width: 100%; max-height: 200px; object-fit: contain; border-radius: 8px; border: 1px solid #ccc; margin-top: 10px; cursor: pointer; background-color: #f9f9f9; }
+    .btn-excluir { background-color: #e74c3c; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+    .btn-excluir:hover { background-color: #c0392b; }
+    .sem-pedidos { text-align: center; color: #666; font-size: 14px; font-weight: 500; padding: 10px 0; }
+    
+    /* Estilos dos novos botões do rodapé */
+    .botoes-rodape { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; margin-bottom: 20px; width: 100%; }
+    .btn-voltar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px;
+      background-color: transparent;
+      color: #e1d8cd;
+      border: 2px solid #e1d8cd;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-voltar:hover {
+      background-color: #e1d8cd;
+      color: #12364e;
+    }
+    .btn-formulario { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; background-color: transparent; color: #e1d8cd; border: 2px solid #e1d8cd; border-radius: 8px; font-weight: bold; font-size: 14px; text-decoration: none; text-align: center; }
+    .btn-formulario:hover { background-color: #e1d8cd; color: #12364e; }
+  </style>
+</head>
+<body>
+
+  <header class="header-banner">
+    <img src="https://i.ibb.co/twJd6BRq/Whats-App-Image-2026-06-29-at-10-42-05.jpg" alt="Banner Central do Adm">
+  </header>
+
+  <main class="main-container">
+
+    <!-- Container onde os pedidos serão injetados dinamicamente -->
+    <div id="lista-pedidos" style="display: flex; flex-direction: column; gap: 16px;">
+      <div class="bloco-card">
+        <div class="sem-pedidos">Carregando pedidos...</div>
+      </div>
+    </div>
+
+    <!-- Botões de navegação do rodapé -->
+    <div class="botoes-rodape">
+      <a href="dashboard.html" class="btn-voltar"><span>↩</span> Voltar</a>
+      <a href="padraobf.html" target="_blank" class="btn-formulario"><span>🔗</span> Abrir o formulário &nearr;</a>
+    </div>
+
+  </main>
+
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
+      databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com",
+      projectId: "central-adm-bolafora"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const listaPedidosDiv = document.getElementById('lista-pedidos');
+
+    // Escuta em tempo real os dados do Firebase
+    db.ref('aquisicao_padrao_bf').on('value', (snapshot) => {
+      listaPedidosDiv.innerHTML = '';
+      const dados = snapshot.val();
+
+      if (!dados) {
+        listaPedidosDiv.innerHTML = `
+          <div class="bloco-card">
+            <div class="sem-pedidos">Nenhum pedido cadastrado até o momento.</div>
+          </div>
+        `;
+        return;
+      }
+
+      const chaves = Object.keys(dados);
+
+      // Inverte a ordem para exibir os mais recentes primeiro
+      chaves.reverse().forEach((key) => {
+        const pedido = dados[key];
+
+        const card = document.createElement('div');
+        card.className = 'bloco-card';
+
+        card.innerHTML = `
+          <div class="titulo-secao">
+            <span>${pedido.nomeUsuario || 'Sem nome'}</span>
+            <button class="btn-excluir" onclick="excluirPedido('${key}')">Excluir</button>
+          </div>
+          
+          <div class="info-linha">
+            <span class="info-label">Nome no verso:</span>
+            <span>${pedido.nomeVerso || '-'}</span>
+          </div>
+          
+          <div class="info-linha">
+            <span class="info-label">Número no verso:</span>
+            <span>${pedido.numeroVerso || '-'}</span>
+          </div>
+          
+          <div class="info-linha">
+            <span class="info-label">Modelo:</span>
+            <span>${pedido.modeloCamisa || '-'}</span>
+          </div>
+          
+          <div class="info-linha">
+            <span class="info-label">Tamanho:</span>
+            <span style="font-weight: bold; color: #d9b246;">${pedido.tamanhoCamisa || '-'}</span>
+          </div>
+
+          <div class="info-linha">
+            <span class="info-label">Data do registro:</span>
+            <span style="font-size: 12px; color: #666;">${pedido.dataRegistro || '-'}</span>
+          </div>
+
+          <div style="margin-top: 12px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 10px;">
+            <span class="info-label" style="display: block; margin-bottom: 4px;">Comprovante de pagamento:</span>
+            ${pedido.comprovanteBase64 
+              ? `<a href="${pedido.comprovanteBase64}" target="_blank" title="Clique para ver em tamanho real">
+                   <img src="${pedido.comprovanteBase64}" class="comprovante-img" alt="Comprovante">
+                 </a>
+                 <span style="font-size: 11px; color: #666; display: block; text-align: center; margin-top: 4px;">💡 Clique na imagem para abrir em tela cheia.</span>`
+              : '<span style="font-size: 13px; color: #999;">Nenhum comprovante anexado.</span>'
+            }
+          </div>
+        `;
+
+        listaPedidosDiv.appendChild(card);
+      });
+    });
+
+    // Função para excluir um pedido do painel
+    function excluirPedido(key) {
+      if (confirm("Tem certeza de que deseja excluir este pedido permanentemente?")) {
+        db.ref('aquisicao_padrao_bf/' + key).remove()
+          .then(() => {
+            alert("Pedido excluído com sucesso.");
+          })
+          .catch((error) => {
+            alert("Erro ao excluir: " + error.message);
+          });
+      }
+    }
+  </script>
+</body>
+</html>
