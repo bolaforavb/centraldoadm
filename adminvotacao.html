@@ -177,6 +177,7 @@
           <option value="visiveis">Visíveis</option>
           <option value="ocultos">Ocultos</option>
           <option value="mensalistas">Mensalistas</option>
+          <option value="ainda-nao-votou">Ainda não votou</option>
         </select>
       </div>
       <form id="form-novo-votante" class="form-inline" onsubmit="adicionarVotante(event)">
@@ -289,7 +290,7 @@
     let ultimosDadosDestaques = [];
     let BD_FotosDisponiveis = [];
     let itemSelecionadoParaFoto = null;
-    let tipoItemSelecionado = null; // 'mensalista' ou 'diarista'
+    let tipoItemSelecionado = null; 
     let cacheDadosGlobais = null;
 
     onAuthStateChanged(auth, (user) => {
@@ -647,7 +648,9 @@
 
         if (filtroVotantesValor === 'visiveis' && isHidden) return;
         if (filtroVotantesValor === 'ocultos' && !isHidden) return;
-        // O filtro "mensalistas" aqui mostra todos os votantes, pois a lista de votantes já é a lista de mensalistas.
+        if (filtroVotantesValor === 'mensalistas' && !isFavorito) return;
+        // Filtro "Ainda não votou": exige não ter votado, ser mensalista (!isFavorito) e não estar oculto (!isHidden)
+        if (filtroVotantesValor === 'ainda-nao-votou' && (jaVotou || !isFavorito || isHidden)) return;
 
         let elementoFoto = (fotoUrl && fotoUrl !== "https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png")
           ? `<img src="${fotoUrl}" class="avatar-circle" onclick="abrirModalFotos('${voter}', 'mensalista')" title="Alterar foto">` 
