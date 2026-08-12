@@ -68,6 +68,9 @@
     .btn-perigo { background-color: #d93025; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 12px; padding: 8px 12px; cursor: pointer; width: 100%; }
     .btn-perigo:hover { background-color: #a5221a; }
     
+    .btn-fechar-votacao { background-color: #d93025; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 4px 8px; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: background-color 0.2s; }
+    .btn-fechar-votacao:hover { background-color: #a5221a; }
+
     .avatar-circle {
       width: 28px;
       height: 28px;
@@ -185,8 +188,13 @@
         <button type="submit" class="btn-add-tabela">Add</button>
       </form>
       <div style="margin-top: 12px;" class="lista-fidelidade" id="tabela-votantes"></div>
-      <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.06); display: flex; align-items: center; gap: 6px; font-size: 11px; color: #7f8c8d;">
-        <span>⭐</span> <span>Mensalista</span>
+      
+      <!-- Rodapé de legenda mensalista e botão de fechar votação na mesma linha -->
+      <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #7f8c8d;">
+          <span>⭐</span> <span>Mensalista</span>
+        </div>
+        <button type="button" class="btn-fechar-votacao" onclick="ocultarTodosVotantes()">🔒 Ocultar todos/fechar votação</button>
       </div>
     </div>
 
@@ -406,6 +414,16 @@
         candidates = candidates.map(c => String(c.id) === String(id) ? { ...c, hidden: !c.hidden } : c);
         set(ref(db, 'candidates'), candidates);
       });
+    }
+
+    window.ocultarTodosVotantes = function() {
+      if (confirm("Deseja ocultar todos os candidatos/votantes, fechando assim a votação na tela pública?")) {
+        get(child(ref(db), 'candidates')).then((snapshot) => {
+          let candidates = snapshot.val() || [];
+          candidates = candidates.map(c => ({ ...c, hidden: true }));
+          set(ref(db, 'candidates'), candidates);
+        });
+      }
     }
 
     window.alternarFavoritoCandidato = function(id) {
@@ -649,7 +667,6 @@
         if (filtroVotantesValor === 'visiveis' && isHidden) return;
         if (filtroVotantesValor === 'ocultos' && !isHidden) return;
         if (filtroVotantesValor === 'mensalistas' && !isFavorito) return;
-        // Filtro "Ainda não votou": exige não ter votado, ser mensalista (!isFavorito) e não estar oculto (!isHidden)
         if (filtroVotantesValor === 'ainda-nao-votou' && (jaVotou || !isFavorito || isHidden)) return;
 
         let elementoFoto = (fotoUrl && fotoUrl !== "https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png")
