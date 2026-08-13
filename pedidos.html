@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aquisição do Padrão BF - Central Bola Fora</title>
+  <title>Relação de Pedidos - Central do Adm</title>
   <link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
   
   <style>
@@ -13,13 +13,41 @@
     .header-banner img { width: 100%; height: 100%; object-fit: cover; }
     .main-container { width: 100%; max-width: 600px; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
     .bloco-card { background-color: white; border-radius: 16px; width: 100%; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-    .titulo-secao { font-size: 15px; font-weight: bold; color: #12364e; margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px; text-transform: uppercase; }
-    input[type="text"], input[type="file"] { padding: 10px; border: 1px solid #ccc; border-radius: 8px; width: 100%; outline: none; }
-    input[type="text"]:disabled { background-color: #f0f0f0; color: #999; cursor: not-allowed; border-color: #e0e0e0; }
-    .label-check-radio { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; color: #12364e; cursor: pointer; margin-top: 10px; }
-    .aviso-limite { font-size: 11px; color: #666; margin-top: 8px; display: block; }
-    .btn-acao-principal { width: 100%; padding: 12px; background-color: #d9b246; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 16px; }
-    .opcao-grupo { display: flex; flex-direction: row; justify-content: space-around; gap: 12px; margin-top: 10px; }
+    .titulo-secao { font-size: 15px; font-weight: bold; color: #12364e; margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
+    .info-linha { font-size: 14px; color: #12364e; margin-bottom: 8px; display: flex; justify-content: space-between; }
+    .info-label { font-weight: bold; color: #555; }
+    .comprovante-img { width: 100%; max-height: 200px; object-fit: contain; border-radius: 8px; border: 1px solid #ccc; margin-top: 10px; cursor: pointer; background-color: #f9f9f9; }
+    .btn-excluir { background-color: #e74c3c; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+    .btn-excluir:hover { background-color: #c0392b; }
+    .sem-pedidos { text-align: center; color: #666; font-size: 14px; font-weight: 500; padding: 10px 0; }
+    
+    /* Estilos dos novos botões do rodapé */
+    .botoes-rodape { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; margin-bottom: 20px; width: 100%; }
+    .btn-voltar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px;
+      background-color: transparent;
+      color: #e1d8cd;
+      border: 2px solid #e1d8cd;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-voltar:hover {
+      background-color: #e1d8cd;
+      color: #12364e;
+    }
+    .btn-formulario { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; background-color: transparent; color: #e1d8cd; border: 2px solid #e1d8cd; border-radius: 8px; font-weight: bold; font-size: 14px; text-decoration: none; text-align: center; }
+    .btn-formulario:hover { background-color: #e1d8cd; color: #12364e; }
   </style>
 </head>
 <body>
@@ -30,68 +58,22 @@
 
   <main class="main-container">
 
-    <!-- BLOCO 1: NOME E CHECKBOX -->
-    <div class="bloco-card">
-      <div class="titulo-secao">Identificação</div>
-      <input type="text" id="input-nome-principal" placeholder="Digite seu nome">
-      
-      <label class="label-check-radio">
-        <input type="checkbox" id="check-mesmo-nome" checked onchange="atualizarEstadoCampo()">
-        Quero este nome no verso da camisa
-      </label>
-    </div>
-
-    <!-- BLOCO 2: NOME PARA O VERSO -->
-    <div class="bloco-card">
-      <div class="titulo-secao">Nome para o verso da camisa</div>
-      <input type="text" id="input-nome-verso" placeholder="Nome que será estampado" disabled>
-    </div>
-
-    <!-- BLOCO 3: NÚMERO -->
-    <div class="bloco-card">
-      <div class="titulo-secao">Número do verso da camisa</div>
-      <input type="text" id="input-numero-verso" placeholder="Ex: 10">
-      <span class="aviso-limite">💡 Não adicionamos o número 0 em números de apenas um dígito.</span>
-    </div>
-
-    <!-- BLOCO 4: MODELO E TAMANHO -->
-    <div class="bloco-card">
-      <div class="titulo-secao">Modelo e Tamanho</div>
-      
-      <div class="opcao-grupo">
-        <label class="label-check-radio"><input type="radio" name="modelo-camisa" value="Com manga - R$ 40"> Com manga — R$ 40</label>
-        <label class="label-check-radio"><input type="radio" name="modelo-camisa" value="Regata - R$ 35"> Regata — R$ 35</label>
-      </div>
-
-      <div style="margin-top: 20px;">
-        <label style="font-size: 13px; font-weight: bold; color: #12364e; display: block; text-align: center;">Selecione o tamanho:</label>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;">
-          <label class="label-check-radio" style="justify-content: center;"><input type="radio" name="tamanho-camisa" value="PP"> PP</label>
-          <label class="label-check-radio" style="justify-content: center;"><input type="radio" name="tamanho-camisa" value="P"> P</label>
-          <label class="label-check-radio" style="justify-content: center;"><input type="radio" name="tamanho-camisa" value="M"> M</label>
-          <label class="label-check-radio" style="justify-content: center;"><input type="radio" name="tamanho-camisa" value="G"> G</label>
-          <label class="label-check-radio" style="justify-content: center;"><input type="radio" name="tamanho-camisa" value="GG"> GG</label>
-          <label class="label-check-radio" style="justify-content: center;"><input type="radio" name="tamanho-camisa" value="XG"> XG</label>
-        </div>
+    <!-- Container onde os pedidos serão injetados dinamicamente -->
+    <div id="lista-pedidos" style="display: flex; flex-direction: column; gap: 16px;">
+      <div class="bloco-card">
+        <div class="sem-pedidos">Carregando pedidos...</div>
       </div>
     </div>
 
-    <!-- BLOCO 5: COMPROVANTE -->
-    <div class="bloco-card">
-      <div class="titulo-secao">Comprovante de Pagamento</div>
-      <input type="file" id="input-comprovante" accept="image/*" onchange="validarTamanhoArquivo(this)">
-      
-      <div style="display: flex; align-items: center; gap: 6px; margin-top: 8px;">
-        <span class="aviso-limite" style="margin-top: 0; display: inline;">💡 Chave pix: cristiana.fs96@gmail.com</span>
-        <button type="button" onclick="copiarChavePix()" title="Copiar Chave Pix" style="background: none; border: none; cursor: pointer; padding: 0; display: inline-flex; align-items: center; color: #12364e; vertical-align: middle;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-        </button>
-      </div>
+    <!-- Botões de navegação do rodapé -->
+    <div class="botoes-rodape">
+      <a href="dashboard.html" class="btn-voltar"><span>↩</span> Voltar</a>
+      <a href="padraobf.html" target="_blank" class="btn-formulario"><span>🔗</span> Abrir o formulário &nearr;</a>
     </div>
 
-    <button type="button" class="btn-acao-principal" onclick="enviarPedido()">Enviar pedido</button>
   </main>
 
+  <!-- Firebase Scripts -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -105,70 +87,89 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function atualizarEstadoCampo() {
-      const checkbox = document.getElementById('check-mesmo-nome');
-      const inputNomeVerso = document.getElementById('input-nome-verso');
-      if (checkbox.checked) {
-        inputNomeVerso.disabled = true;
-        inputNomeVerso.value = '';
-      } else {
-        inputNomeVerso.disabled = false;
-        inputNomeVerso.focus();
-      }
-    }
+    const listaPedidosDiv = document.getElementById('lista-pedidos');
 
-    function validarTamanhoArquivo(input) {
-      const file = input.files[0];
-      if (file && file.size > 1500000) {
-        alert("O arquivo é muito grande! Por favor, escolha uma imagem menor que 1.5MB.");
-        input.value = '';
-      }
-    }
+    // Escuta em tempo real os dados do Firebase
+    db.ref('aquisicao_padrao_bf').on('value', (snapshot) => {
+      listaPedidosDiv.innerHTML = '';
+      const dados = snapshot.val();
 
-    function copiarChavePix() {
-      const chave = "cristiana.fs96@gmail.com";
-      navigator.clipboard.writeText(chave).then(() => {
-        alert("Chave Pix copiada com sucesso!");
-      }).catch(err => {
-        alert("Erro ao copiar a chave Pix.");
-      });
-    }
-
-    function enviarPedido() {
-      const nomePrincipal = document.getElementById('input-nome-principal').value.trim();
-      const checkbox = document.getElementById('check-mesmo-nome').checked;
-      const nomeVersoInput = document.getElementById('input-nome-verso').value.trim();
-      const numeroVerso = document.getElementById('input-numero-verso').value.trim();
-      const modeloSelecionado = document.querySelector('input[name="modelo-camisa"]:checked');
-      const tamanhoSelecionado = document.querySelector('input[name="tamanho-camisa"]:checked');
-      const arquivoInput = document.getElementById('input-comprovante');
-
-      if (!nomePrincipal || !numeroVerso || !modeloSelecionado || !tamanhoSelecionado || (!checkbox && !nomeVersoInput) || arquivoInput.files.length === 0) {
-        alert("Por favor, preencha todos os campos, selecione o tamanho e anexe o comprovante.");
+      if (!dados) {
+        listaPedidosDiv.innerHTML = `
+          <div class="bloco-card">
+            <div class="sem-pedidos">Nenhum pedido recebido até o momento.</div>
+          </div>
+        `;
         return;
       }
 
-      const file = arquivoInput.files[0];
-      const reader = new FileReader();
+      const chaves = Object.keys(dados);
 
-      reader.onload = function(e) {
-        db.ref('aquisicao_padrao_bf').push({
-          nomeUsuario: nomePrincipal,
-          nomeVerso: checkbox ? nomePrincipal : nomeVersoInput,
-          numeroVerso: numeroVerso,
-          modeloCamisa: modeloSelecionado.value,
-          tamanhoCamisa: tamanhoSelecionado.value,
-          comprovanteBase64: e.target.result,
-          dataRegistro: new Date().toLocaleString('pt-BR')
-        }).then(() => {
-          alert("Pedido e comprovante registrados com sucesso!");
-          location.reload();
-        }).catch(error => {
-          alert("Erro ao enviar: " + error.message);
-        });
-      };
+      // Inverte a ordem para exibir os mais recentes primeiro
+      chaves.reverse().forEach((key) => {
+        const pedido = dados[key];
 
-      reader.readAsDataURL(file);
+        const card = document.createElement('div');
+        card.className = 'bloco-card';
+
+        card.innerHTML = `
+          <div class="titulo-secao">
+            <span>${pedido.nomeUsuario || 'Sem nome'}</span>
+            <button class="btn-excluir" onclick="excluirPedido('${key}')">Excluir</button>
+          </div>
+          
+          <div class="info-linha">
+            <span class="info-label">Nome no verso:</span>
+            <span>${pedido.nomeVerso || '-'}</span>
+          </div>
+          
+          <div class="info-linha">
+            <span class="info-label">Número no verso:</span>
+            <span>${pedido.numeroVerso || '-'}</span>
+          </div>
+          
+          <div class="info-linha">
+            <span class="info-label">Modelo:</span>
+            <span>${pedido.modeloCamisa || '-'}</span>
+          </div>
+          
+          <div class="info-linha">
+            <span class="info-label">Tamanho:</span>
+            <span style="font-weight: bold; color: #d9b246;">${pedido.tamanhoCamisa || '-'}</span>
+          </div>
+
+          <div class="info-linha">
+            <span class="info-label">Data do registro:</span>
+            <span style="font-size: 12px; color: #666;">${pedido.dataRegistro || '-'}</span>
+          </div>
+
+          <div style="margin-top: 12px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 10px;">
+            <span class="info-label" style="display: block; margin-bottom: 4px;">Comprovante de pagamento:</span>
+            ${pedido.comprovanteBase64 
+              ? `<a href="${pedido.comprovanteBase64}" target="_blank" title="Clique para ver em tamanho real">
+                   <img src="${pedido.comprovanteBase64}" class="comprovante-img" alt="Comprovante">
+                 </a>
+                 <span style="font-size: 11px; color: #666; display: block; text-align: center; margin-top: 4px;">💡 Clique na imagem para abrir em tela cheia.</span>`
+              : '<span style="font-size: 13px; color: #999;">Nenhum comprovante anexado.</span>'
+            }
+          </div>
+        `;
+
+        listaPedidosDiv.appendChild(card);
+      });
+    });
+
+    // Função para excluir um pedido do painel
+    function excluirPedido(key) {
+      if (confirm("Tem certeza de que deseja excluir este pedido permanentemente?")) {
+        db.ref('aquisicao_padrao_bf/' + key).remove()
+          .then(() => {
+            alert("Pedido excluído com sucesso.");
+          })
+          .catch((error) => {
+            alert("Erro ao excluir: " + error.message);
+          });
+      }
     }
   </script>
 </body>
