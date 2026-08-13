@@ -66,12 +66,12 @@
       <div style="margin-top: 20px;">
         <label style="font-size: 13px; font-weight: bold; color: #12364e; display: block; text-align: center;">Selecione o tamanho:</label>
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;">
-          <label class="label-check-radio" style="justify-content: center;"><input type="radio" name="tamanho-camisa" value="PP"> PP (A65xL48)</label>
-          <label class="label-check-radio" style="justify-content: center;"><input type="radio" name="tamanho-camisa" value="P"> P (A69xL50)</label>
-          <label class="label-check-radio" style="justify-content: center;"><input type="radio" name="tamanho-camisa" value="M"> M (A72xL52)</label>
-          <label class="label-check-radio" style="justify-content: center;"><input type="radio" name="tamanho-camisa" value="G"> G (A74xL55)</label>
-          <label class="label-check-radio" style="justify-content: center;"><input type="radio" name="tamanho-camisa" value="GG"> GG (A78xL62)</label>
-          <label class="label-check-radio" style="justify-content: center;"><input type="radio" name="tamanho-camisa" value="XG"> XG (A80xL70)</label>
+          <label class="label-check-radio" style="justify-content: center;"><input type="radio" name="tamanho-camisa" value="PP"> PP</label>
+          <label class="label-check-radio" style="justify-content: center;"><input type="radio" name="tamanho-camisa" value="P"> P</label>
+          <label class="label-check-radio" style="justify-content: center;"><input type="radio" name="tamanho-camisa" value="M"> M</label>
+          <label class="label-check-radio" style="justify-content: center;"><input type="radio" name="tamanho-camisa" value="G"> G</label>
+          <label class="label-check-radio" style="justify-content: center;"><input type="radio" name="tamanho-camisa" value="GG"> GG</label>
+          <label class="label-check-radio" style="justify-content: center;"><input type="radio" name="tamanho-camisa" value="XG"> XG</label>
         </div>
       </div>
     </div>
@@ -80,7 +80,13 @@
     <div class="bloco-card">
       <div class="titulo-secao">Comprovante de Pagamento</div>
       <input type="file" id="input-comprovante" accept="image/*" onchange="validarTamanhoArquivo(this)">
-      <span class="aviso-limite">💡 Formato aceito: imagem (máx 1.5MB).</span>
+      
+      <div style="display: flex; align-items: center; gap: 6px; margin-top: 8px;">
+        <span class="aviso-limite" style="margin-top: 0; display: inline;">💡 Chave pix: cristiana.fs96@gmail.com</span>
+        <button type="button" onclick="copiarChavePix()" title="Copiar Chave Pix" style="background: none; border: none; cursor: pointer; padding: 0; display: inline-flex; align-items: center; color: #12364e; vertical-align: middle;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        </button>
+      </div>
     </div>
 
     <button type="button" class="btn-acao-principal" onclick="enviarPedido()">Enviar pedido</button>
@@ -117,6 +123,15 @@
         alert("O arquivo é muito grande! Por favor, escolha uma imagem menor que 1.5MB.");
         input.value = '';
       }
+    }
+
+    function copiarChavePix() {
+      const chave = "cristiana.fs96@gmail.com";
+      navigator.clipboard.writeText(chave).then(() => {
+        alert("Chave Pix copiada com sucesso!");
+      }).catch(err => {
+        alert("Erro ao copiar a chave Pix.");
+      });
     }
 
     function enviarPedido() {
