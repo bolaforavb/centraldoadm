@@ -660,6 +660,7 @@
     const saidasRef = db.ref('saidas');
     const saldoCaixaRef = db.ref('saldoCaixa');
     const configFiltroRef = db.ref('configFiltro_sexta');
+    const configVencimentoRef = db.ref('configVencimento_sexta');
 
     auth.onAuthStateChanged((user) => {
       const elementosAdmin = document.querySelectorAll('.admin-only');
@@ -710,6 +711,24 @@
       if (filtro) {
         if (filtro.mes) document.getElementById('mes-select').value = filtro.mes;
         if (filtro.ano) document.getElementById('ano-select').value = filtro.ano;
+      }
+    });
+
+    document.getElementById('dia-devedores-select').addEventListener('change', (e) => {
+      if (!usuarioAutenticado) return;
+      configVencimentoRef.update({ dia: e.target.value });
+    });
+
+    document.getElementById('mes-devedores-select').addEventListener('change', (e) => {
+      if (!usuarioAutenticado) return;
+      configVencimentoRef.update({ mes: e.target.value });
+    });
+
+    configVencimentoRef.on('value', (snapshot) => {
+      const filtro = snapshot.val();
+      if (filtro) {
+        if (filtro.dia) document.getElementById('dia-devedores-select').value = filtro.dia;
+        if (filtro.mes) document.getElementById('mes-devedores-select').value = filtro.mes;
       }
     });
 
