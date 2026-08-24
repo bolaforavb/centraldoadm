@@ -45,11 +45,27 @@
     .nome-diarista { font-size: 12px; font-weight: 500; color: #12364e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; transition: color 0.2s; }
     .nome-diarista:hover { color: #d9b246; text-decoration: underline; }
     
-    .botoes-acao { display: flex; gap: 8px; align-items: center; }
+    .botoes-acao { display: flex; gap: 6px; align-items: center; }
     .btn-acao-txt { background: none; border: none; font-weight: bold; font-size: 12px; cursor: pointer; padding: 2px 4px; }
     .btn-editar { color: #12364e; font-size: 13px; }
     .btn-excluir { color: #d93025; }
     .badge-status { font-size: 9px; font-weight: bold; background: #12364e; color: white; padding: 2px 6px; border-radius: 4px; }
+    
+    .btn-mensalista-terca {
+      display: inline-flex; align-items: center; gap: 3px; padding: 4px 6px; border-radius: 6px; font-size: 10px; font-weight: bold; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-mensalista-terca.aceso { background-color: #d9b246; border: 1.5px solid #af8a23; color: white; box-shadow: 0 2px 6px rgba(217, 178, 70, 0.4); }
+    .btn-mensalista-terca.aceso:hover { background-color: #af8a23; }
+    .btn-mensalista-terca.apagado { background: transparent; border: 1.5px solid #ccc; color: #999; opacity: 0.7; }
+    .btn-mensalista-terca.apagado:hover { background-color: rgba(0, 0, 0, 0.03); opacity: 1; }
+
+    .btn-mensalista-sexta {
+      display: inline-flex; align-items: center; gap: 3px; padding: 4px 6px; border-radius: 6px; font-size: 10px; font-weight: bold; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-mensalista-sexta.aceso { background-color: #12364e; border: 1.5px solid #0b2231; color: white; }
+    .btn-mensalista-sexta.aceso:hover { background-color: #1b4d70; }
+    .btn-mensalista-sexta.apagado { background: transparent; border: 1.5px solid #ccc; color: #999; opacity: 0.7; }
+    .btn-mensalista-sexta.apagado:hover { background-color: rgba(0, 0, 0, 0.03); opacity: 1; }
     
     .ranking-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background-color: #f7f5f2; border-radius: 8px; border-left: 3px solid #d9b246; font-size: 12px; flex-shrink: 0; }
     .ranking-info { display: flex; align-items: center; gap: 8px; overflow: hidden; }
@@ -71,94 +87,20 @@
     .btn-fechar-votacao { background-color: #d93025; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 4px 8px; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: background-color 0.2s; }
     .btn-fechar-votacao:hover { background-color: #a5221a; }
 
-    .avatar-circle {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 1.5px solid #d9b246;
-      cursor: pointer;
-      background-color: #e1d8cd;
-      flex-shrink: 0;
-    }
+    .avatar-circle { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1.5px solid #d9b246; cursor: pointer; background-color: #e1d8cd; flex-shrink: 0; }
+    .avatar-placeholder { width: 28px; height: 28px; border-radius: 50%; background-color: #e1d8cd; border: 1px dashed #d9b246; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 9px; color: #12364e; flex-shrink: 0; }
 
-    .avatar-placeholder {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background-color: #e1d8cd;
-      border: 1px dashed #d9b246;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 9px;
-      color: #12364e;
-      flex-shrink: 0;
-    }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
+    .modal-content { background: white; padding: 20px; border-radius: 16px; width: 90%; max-width: 400px; max-height: 80vh; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
 
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.6);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-
-    .modal-content {
-      background: white;
-      padding: 20px;
-      border-radius: 16px;
-      width: 90%;
-      max-width: 400px;
-      max-height: 80vh;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
-    }
-
-    .galeria-fotos-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      max-height: 250px;
-      overflow-y: auto;
-      padding: 4px;
-    }
-
-    .galeria-foto-item {
-      width: 100%;
-      aspect-ratio: 1;
-      border-radius: 8px;
-      object-fit: cover;
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: border-color 0.2s;
-    }
-
-    .galeria-foto-item:hover {
-      border-color: #d9b246;
-    }
+    .galeria-fotos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-height: 250px; overflow-y: auto; padding: 4px; }
+    .galeria-foto-item { width: 100%; aspect-ratio: 1; border-radius: 8px; object-fit: cover; cursor: pointer; border: 2px solid transparent; transition: border-color 0.2s; }
+    .galeria-foto-item:hover { border-color: #d9b246; }
 
     .hidden { display: none !important; }
     
-    .filtro-selecao {
-      padding: 2px 4px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 9px;
-      color: #12364e;
-      background: white;
-      outline: none;
-      cursor: pointer;
-      width: 40%;
-    }
+    .filtro-selecao { padding: 2px 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 9px; color: #12364e; background: white; outline: none; cursor: pointer; width: 45%; }
+    .contador-badge { font-size: 11px; font-weight: bold; color: #12364e; background: #e1d8cd; padding: 5px 6px; border-radius: 4px; }
 
     .footer-navegacao { width: 100%; max-width: 600px; padding: 8px 16px 30px 16px; display: flex; flex-direction: column; gap: 8px; }
     .btn-voltar-painel { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; background-color: transparent; color: #e1d8cd; border: 2px solid #e1d8cd; border-radius: 8px; font-weight: bold; font-size: 14px; text-decoration: none; text-align: center; }
@@ -179,7 +121,9 @@
           <option value="todos">Mostrar todos</option>
           <option value="visiveis">Visíveis</option>
           <option value="ocultos">Ocultos</option>
-          <option value="mensalistas">Mensalistas</option>
+          <option value="terca">Mensalistas da Terça</option>
+          <option value="sexta">Mensalistas da Sexta</option>
+          <option value="nao-mensalistas">Não-Mensalistas</option>
           <option value="ainda-nao-votou">Ainda não votou</option>
         </select>
       </div>
@@ -189,12 +133,16 @@
       </form>
       <div style="margin-top: 12px;" class="lista-fidelidade" id="tabela-votantes"></div>
       
-      <!-- Rodapé de legenda mensalista e botão de fechar votação na mesma linha -->
-      <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center;">
-        <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #7f8c8d;">
-          <span>⭐</span> <span>Mensalista</span>
+      <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+        <div style="display: flex; align-items: center; gap: 4px; font-size: 10px; color: #7f8c8d;">
+          <span class="btn-mensalista-terca aceso" style="cursor: default; pointer-events: none;">⭐ Terça</span>
+          <span class="btn-mensalista-sexta aceso" style="cursor: default; pointer-events: none;">⭐ Sexta</span>
+          <span>Mensalistas</span>
         </div>
-        <button type="button" class="btn-fechar-votacao" onclick="ocultarTodosVotantes()">🔒 Ocultar todos/fechar votação</button>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span id="contador-votantes" class="contador-badge">Exibindo: 0</span>
+          <button type="button" class="btn-fechar-votacao" onclick="ocultarTodosVotantes()">🔒 Ocultar todos/fechar votação</button>
+        </div>
       </div>
     </div>
 
@@ -241,7 +189,6 @@
     </div>
   </main>
 
-  <!-- Modal para Seleção e Upload de Fotos -->
   <div class="modal-overlay" id="modal-fotos">
     <div class="modal-content">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px;">
@@ -262,7 +209,6 @@
     </div>
   </div>
 
-  <!-- Modal para Visualização Ampliada da Foto -->
   <div class="modal-overlay" id="modal-ver-foto">
     <div class="modal-content" style="align-items: center; text-align: center;">
       <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px;">
@@ -365,8 +311,7 @@
             let candidates = candSnapshot.val() || [];
             if (!candidates.some(c => c.name.localeCompare(nome, 'pt-BR', { sensitivity: 'base' }) === 0)) {
               const safeId = Math.floor(Date.now() + Math.random() * 1000);
-              candidates.push({ id: safeId, name: nome, photo: "https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png", hidden: false, favorito: false });
-              candidates.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
+              candidates.push({ id: safeId, name: nome, photo: "https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png", hidden: false, favorito: false, favoritoSexta: false });
               set(ref(db, 'candidates'), candidates);
             }
           });
@@ -429,7 +374,27 @@
     window.alternarFavoritoCandidato = function(id) {
       get(child(ref(db), 'candidates')).then((snapshot) => {
         let candidates = snapshot.val() || [];
-        candidates = candidates.map(c => String(c.id) === String(id) ? { ...c, favorito: !c.favorito } : c);
+        candidates = candidates.map(c => {
+          if (String(c.id) === String(id)) {
+            const atual = c.favorito === true || c.favorito === "true";
+            return { ...c, favorito: !atual };
+          }
+          return c;
+        });
+        set(ref(db, 'candidates'), candidates);
+      });
+    }
+
+    window.alternarFavoritoSexta = function(id) {
+      get(child(ref(db), 'candidates')).then((snapshot) => {
+        let candidates = snapshot.val() || [];
+        candidates = candidates.map(c => {
+          if (String(c.id) === String(id)) {
+            const atual = c.favoritoSexta === true || c.favoritoSexta === "true";
+            return { ...c, favoritoSexta: !atual };
+          }
+          return c;
+        });
         set(ref(db, 'candidates'), candidates);
       });
     }
@@ -503,7 +468,7 @@
             candidates = candidates.map(c => c.name.localeCompare(itemSelecionadoParaFoto, 'pt-BR', { sensitivity: 'base' }) === 0 ? { ...c, photo: url } : c);
           } else {
             const safeId = Math.floor(Date.now() + Math.random() * 1000);
-            candidates.push({ id: safeId, name: itemSelecionadoParaFoto, photo: url, hidden: false, favorito: false });
+            candidates.push({ id: safeId, name: itemSelecionadoParaFoto, photo: url, hidden: false, favorito: false, favoritoSexta: false });
           }
           set(ref(db, 'candidates'), candidates);
           fecharModalFotos();
@@ -649,7 +614,17 @@
       let votes = data.votes || {};
 
       voters.sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
-      candidates.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
+
+      candidates.sort((a, b) => {
+        const aTem = (a.favorito === true || a.favorito === "true" || a.favoritoSexta === true || a.favoritoSexta === "true") ? 1 : 0;
+        const bTem = (b.favorito === true || b.favorito === "true" || b.favoritoSexta === true || b.favoritoSexta === "true") ? 1 : 0;
+
+        if (aTem !== bTem) {
+          return bTem - aTem; 
+        }
+        return a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
+      });
+
       destaqueCandidates.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
 
       // Bloco 1: Votantes Autorizados
@@ -657,17 +632,27 @@
       const containerVotantes = document.getElementById('tabela-votantes');
       containerVotantes.innerHTML = '';
       
+      let contadorFiltrados = 0;
+
       voters.forEach((voter) => {
         const jaVotou = votedUsers.includes(voter);
         const candObj = candidates.find(c => c.name.localeCompare(voter, 'pt-BR', { sensitivity: 'base' }) === 0);
         const isHidden = candObj ? candObj.hidden : false;
-        const isFavorito = candObj ? candObj.favorito : false;
+        
+        const isFavorito = candObj ? (candObj.favorito === true || candObj.favorito === "true") : false;
+        const isFavoritoSexta = candObj ? (candObj.favoritoSexta === true || candObj.favoritoSexta === "true") : false;
+        
         const fotoUrl = candObj ? candObj.photo : '';
 
+        // Regras de filtragem
         if (filtroVotantesValor === 'visiveis' && isHidden) return;
         if (filtroVotantesValor === 'ocultos' && !isHidden) return;
-        if (filtroVotantesValor === 'mensalistas' && !isFavorito) return;
-        if (filtroVotantesValor === 'ainda-nao-votou' && (jaVotou || !isFavorito || isHidden)) return;
+        if (filtroVotantesValor === 'terca' && !isFavorito) return;
+        if (filtroVotantesValor === 'sexta' && !isFavoritoSexta) return;
+        if (filtroVotantesValor === 'nao-mensalistas' && (isFavorito || isFavoritoSexta)) return;
+        if (filtroVotantesValor === 'ainda-nao-votou' && (jaVotou || (!isFavorito && !isFavoritoSexta) || isHidden)) return;
+
+        contadorFiltrados++;
 
         let elementoFoto = (fotoUrl && fotoUrl !== "https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png")
           ? `<img src="${fotoUrl}" class="avatar-circle" onclick="abrirModalFotos('${voter}', 'mensalista')" title="Alterar foto">` 
@@ -676,6 +661,10 @@
         const item = document.createElement('div');
         item.className = 'item-fidelidade';
         if (isHidden) item.style.opacity = '0.6';
+
+        const classeEstadoTerca = isFavorito ? 'aceso' : 'apagado';
+        const classeEstadoSexta = isFavoritoSexta ? 'aceso' : 'apagado';
+
         item.innerHTML = `
           <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;">
             ${elementoFoto}
@@ -684,13 +673,17 @@
             ${jaVotou ? '<span class="badge-status">Já votou</span>' : ''}
           </div>
           <div class="botoes-acao">
-            ${candObj ? `<button class="btn-acao-txt" style="font-size: 15px;" onclick="alternarFavoritoCandidato('${candObj.id}')">${isFavorito ? '⭐' : '☆'}</button>` : ''}
+            ${candObj ? `<button class="btn-mensalista-terca ${classeEstadoTerca}" onclick="alternarFavoritoCandidato('${candObj.id}')" title="Alternar status Terça-feira">⭐ Terça</button>` : ''}
+            ${candObj ? `<button class="btn-mensalista-sexta ${classeEstadoSexta}" onclick="alternarFavoritoSexta('${candObj.id}')" title="Alternar status Sexta-feira">⭐ Sexta</button>` : ''}
             ${candObj ? `<button class="btn-acao-txt" style="font-size: 15px;" onclick="alternarVisibilidadeCandidato('${candObj.id}')">${isHidden ? '👁️‍🗨️' : '👁️'}</button>` : ''}
             <button class="btn-acao-txt btn-excluir" onclick="removerVotante('${voter}')">✕</button>
           </div>
         `;
         containerVotantes.appendChild(item);
       });
+
+      // Atualiza o texto do contador na interface
+      document.getElementById('contador-votantes').textContent = `Exibindo: ${contadorFiltrados}`;
 
       // Bloco 2: Cadastrar Diaristas
       const filtroDiaristasValor = document.getElementById('filtro-diaristas').value;
