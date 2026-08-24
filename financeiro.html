@@ -174,8 +174,18 @@
     .btn-copiar-pix:hover {
       background-color: #1b5e20;
     }
+
+    .lista-devedores { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 8px; 
+      max-height: 120px; 
+      overflow-y: auto; 
+      padding-right: 4px;
+      flex: none;
+    }
     
-    .lista-pagamentos, .lista-devedores, .lista-custom, .lista-entradas, .lista-saidas { 
+    .lista-pagamentos, .lista-custom, .lista-entradas, .lista-saidas { 
       display: flex; 
       flex-direction: column; 
       gap: 8px; 
@@ -649,14 +659,15 @@
     const entradasRef = db.ref('entradas');
     const saidasRef = db.ref('saidas');
     const saldoCaixaRef = db.ref('saldoCaixa');
-    const vencimentoRef = db.ref('vencimentoDevedores'); // Referência no banco de dados para o vencimento
+    const vencimentoRef = db.ref('vencimentoDevedores');
+    const periodoPagamentosRef = db.ref('periodoPagamentos'); // Referência para salvar mês e ano de pagamentos
 
     const mesSelect = document.getElementById('mes-select');
     const anoSelect = document.getElementById('ano-select');
     const diaDevedoresSelect = document.getElementById('dia-devedores-select');
     const mesDevedoresSelect = document.getElementById('mes-devedores-select');
 
-    // Sincronização do Vencimento via Firebase (Banco de Dados)
+    // Sincronização do Vencimento via Firebase
     vencimentoRef.on('value', (snapshot) => {
       const dados = snapshot.val();
       if (dados) {
@@ -673,6 +684,25 @@
     mesDevedoresSelect.addEventListener('change', () => {
       if (!usuarioAutenticado) return;
       vencimentoRef.update({ mes: mesDevedoresSelect.value });
+    });
+
+    // Sincronização do Mês e Ano da Relação de Pagamentos via Firebase
+    periodoPagamentosRef.on('value', (snapshot) => {
+      const dados = snapshot.val();
+      if (dados) {
+        if (dados.mes) mesSelect.value = dados.mes;
+        if (dados.ano) anoSelect.value = dados.ano;
+      }
+    });
+
+    mesSelect.addEventListener('change', () => {
+      if (!usuarioAutenticado) return;
+      periodoPagamentosRef.update({ mes: mesSelect.value });
+    });
+
+    anoSelect.addEventListener('change', () => {
+      if (!usuarioAutenticado) return;
+      periodoPagamentosRef.update({ ano: anoSelect.value });
     });
 
     auth.onAuthStateChanged((user) => {
