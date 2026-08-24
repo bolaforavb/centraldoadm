@@ -650,6 +650,7 @@
     const saidasRef = db.ref('saidas');
     const saldoCaixaRef = db.ref('saldoCaixa');
     const configFiltroRef = db.ref('configFiltro_sexta');
+    const configVencimentoRef = db.ref('configVencimento_sexta'); // Nova referência adicionada
 
     auth.onAuthStateChanged((user) => {
       const elementosAdmin = document.querySelectorAll('.admin-only');
@@ -695,11 +696,31 @@
       configFiltroRef.update({ ano: e.target.value });
     });
 
+    // Eventos para salvar a alteração do vencimento no banco de dados
+    document.getElementById('dia-devedores-select').addEventListener('change', (e) => {
+      if (!usuarioAutenticado) return;
+      configVencimentoRef.update({ dia: e.target.value });
+    });
+
+    document.getElementById('mes-devedores-select').addEventListener('change', (e) => {
+      if (!usuarioAutenticado) return;
+      configVencimentoRef.update({ mes: e.target.value });
+    });
+
     configFiltroRef.on('value', (snapshot) => {
       const filtro = snapshot.val();
       if (filtro) {
         if (filtro.mes) document.getElementById('mes-select').value = filtro.mes;
         if (filtro.ano) document.getElementById('ano-select').value = filtro.ano;
+      }
+    });
+
+    // Ouvinte para atualizar o vencimento automaticamente na tela de todos os usuários
+    configVencimentoRef.on('value', (snapshot) => {
+      const vencimento = snapshot.val();
+      if (vencimento) {
+        if (vencimento.dia) document.getElementById('dia-devedores-select').value = vencimento.dia;
+        if (vencimento.mes) document.getElementById('mes-devedores-select').value = vencimento.mes;
       }
     });
 
