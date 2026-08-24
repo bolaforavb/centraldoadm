@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Financeiro (Sexta) - Central Bola Fora</title>
+  <link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
+  
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: sans-serif;
+      background-color: #12364e; 
+      margin: 0; padding: 0;
+      display: flex; flex-direction: column; align-items: center; 
+      min-height: 100vh; color: #12364e;
+    }
+    .header-banner {
+      width: 100%; max-width: 600px;
+      background-color: #e1d8cd; 
+      display: flex; justify-content: center; align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .header-banner img { width: 100%; height: auto; }
+    .main-container {
+      width: 100%; max-width: 600px;
+      padding: 16px; flex: 1;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .bloco-card {
+      background-color: white; 
+      border-radius: 16px;
+      width: 100%; max-width: 100%; padding: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      overflow: visible;
+    }
+    .grid-superior, .grid-inferior {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: stretch;
+    }
+    .grid-superior > .bloco-card {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .grid-inferior > .bloco-coluna-direita {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      min-width: 0;
+    }
+    .grid-inferior > .bloco-card {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    @media (max-width: 500px) {
+      .grid-superior, .grid-inferior {
+        grid-template-columns: 1fr;
+      }
+    }
+    .bloco-pix {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .bloco-pix img {
+      width: 120px;
+      height: 120px;
+      object-fit: contain;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #eee;
+    }
+    .titulo-secao {
+      font-size: 14px; font-weight: bold; color: #12364e;
+      margin: 0 0 12px 0; border-bottom: 1px solid rgba(0,0,0,0.1);
+      padding-bottom: 6px; text-transform: uppercase;
+      display: flex; justify-content: space-between; align-items: center;
+      width: 100%;
+      cursor: pointer;
+    }
+    
+    .titulo-secao-entrada {
+      background-color: #2e7d32;
+      color: white;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 0;
+      border-bottom: none;
+    }
+    .titulo-secao-saida {
+      background-color: #d32f2f;
+      color: white;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 0;
+      border-bottom: none;
+    }
+
+    .contador-limite {
+      font-size: 11px;
+      color: #666;
+      font-weight: normal;
+    }
+    .header-financeiro {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 15px;
+      gap: 10px;
+    }
+    select { padding: 5px; border-radius: 8px; border: 1px solid #ccc; font-size: 13px; background: white; }
+    select:disabled { background-color: #f5f5f5; color: #999; cursor: not-allowed; }
+    .selecao-data-container {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+    .texto-vencimento {
+      font-size: 12px;
+      color: #666;
+      font-weight: bold;
+    }
+    .footer-devedores {
+      margin-top: auto;
+      border-top: 1px solid rgba(0,0,0,0.1);
+      padding-top: 10px;
+      font-size: 12px;
+      color: #555;
+      text-align: center;
+      line-height: 1.4;
+    }
+    .pix-container {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f7f5f2;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-top: 2px;
+    }
+    .btn-copiar {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      transition: transform 0.1s;
+    }
+    .btn-copiar:active {
+      transform: scale(0.9);
+    }
+    .btn-copiar-pix {
+      background-color: #2e7d32;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 8px;
+      transition: background-color 0.2s;
+    }
+    .btn-copiar-pix:hover {
+      background-color: #1b5e20;
+    }
+    
+    .lista-pagamentos, .lista-devedores, .lista-custom, .lista-entradas, .lista-saidas { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 8px; 
+      max-height: 250px; 
+      overflow-y: auto; 
+      padding-right: 4px;
+      flex: none;
+    }
+    
+    .lista-espera-dinamica {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      height: 280px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 4px;
+      flex: none;
+    }
+
+    .item-pagamento {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 10px; background: #f7f5f2; border-radius: 8px;
+      font-size: 13px;
+    }
+    .item-devedor {
+      padding: 8px 10px; background: #fdf2f2; border-left: 3px solid #d32f2f;
+      border-radius: 6px; font-size: 13px; color: #333; font-weight: 500;
+    }
+    .item-conteudo {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .item-acoes {
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    .btn-pagamento {
+      background: #e0e0e0; border: none; font-size: 14px;
+      transition: all 0.2s;
+      width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: bold; color: #999;
+    }
+    .btn-pagamento.editavel { cursor: pointer; background-color: #ccc; color: #333; }
+    .btn-pagamento.ativo { background-color: #2e7d32; color: white; }
+
+    .btn-vaga {
+      font-size: 9px; font-weight: bold; padding: 5px 6px;
+      border-radius: 4px;
+      user-select: none; transition: all 0.3s;
+      width: 110px; text-align: center; border: 1px solid #ccc;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      box-sizing: border-box;
+      height: 25px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-vaga.editavel { cursor: pointer; }
+    .btn-vaga.temporaria { background-color: #ff9800; color: white; border-color: #f57c00; }
+    .btn-vaga.fixa { background-color: #2980b9; color: white; border-color: #1c5980; }
+
+    .btn-situacao-entrada {
+      font-size: 9px; font-weight: bold; padding: 5px 6px;
+      border-radius: 4px;
+      user-select: none; transition: all 0.3s;
+      width: 110px; text-align: center; border: 1px solid #ccc;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      box-sizing: border-box;
+      height: 25px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-situacao-entrada.editavel { cursor: pointer; }
+    .btn-situacao-entrada.pago { background-color: #2e7d32; color: white; border-color: #1b5e20; }
+    .btn-situacao-entrada.credito { background-color: #2980b9; color: white; border-color: #1c5980; }
+    .btn-situacao-entrada.aguardando { background-color: #d32f2f; color: white; border-color: #a32222; }
+
+    .btn-pausa-status {
+      font-size: 8px; font-weight: bold; padding: 4px 3px;
+      border-radius: 4px;
+      user-select: none; transition: all 0.3s;
+      width: 60px; text-align: center; border: 1px solid #1c5980;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      background-color: #2980b9; color: white;
+      box-sizing: border-box;
+      height: 25px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-pausa-status.editavel { cursor: pointer; }
+    .btn-pausa-status.zero { background-color: #7f8c8d; border-color: #626f70; }
+
+    .info-tooltip-container {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-info-circulo {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background-color: #2980b9;
+      color: white;
+      font-size: 11px;
+      font-weight: bold;
+      font-family: serif;
+      font-style: italic;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      padding: 0;
+      transition: background-color 0.2s;
+    }
+    .btn-info-circulo:hover {
+      background-color: #1c5980;
+    }
+    .tooltip-texto {
+      visibility: hidden;
+      background-color: #12364e;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 4px 8px;
+      position: absolute;
+      z-index: 100;
+      top: 135%;       
+      left: 50%;       
+      transform: translateX(-50%); 
+      white-space: nowrap;
+      font-size: 10px;
+      font-weight: normal;
+      box-shadow: 0px 2px 6px rgba(0,0,0,0.2);
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+    .tooltip-texto::after {
+      content: "";
+      position: absolute;
+      bottom: 100%;    
+      left: 50%;       
+      transform: translateX(-50%);
+      border-width: 4px;
+      border-style: solid;
+      border-color: transparent transparent #12364e transparent;
+    }
+    .tooltip-texto.tooltip-esquerda {
+      left: auto;
+      right: 0;
+      transform: none;
+    }
+    .tooltip-texto.tooltip-esquerda::after {
+      left: auto;
+      right: 8px;
+      transform: none;
+    }
+
+    .info-tooltip-container:hover .tooltip-texto,
+    .info-tooltip-container.ativo-tooltip .tooltip-texto {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .btn-acao { 
+      padding: 0 12px; 
+      height: 35px;
+      background: #d9b246; 
+      color: white; 
+      border: none; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      font-weight: bold; 
+      font-size: 12px; 
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+    
+    .btn-rename, .btn-delete { 
+      background: none; 
+      border: none; 
+      cursor: pointer; 
+      font-size: 14px; 
+      padding: 0 4px;
+      height: 25px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .miniatura-arquivo {
+      width: 25px;
+      height: 25px;
+      object-fit: cover;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #eee;
+      font-size: 10px;
+    }
+
+    #modal-imagem {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      justify-content: center; align-items: center;
+    }
+    #modal-imagem img {
+      max-width: 90%; max-height: 90%; border-radius: 8px;
+    }
+
+    .hidden { display: none !important; }
+
+    .admin-auth-bar {
+      width: 100%;
+      max-width: 600px;
+      background: #ffffff;
+      padding: 10px 16px;
+      border-radius: 0 0 12px 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+    .admin-auth-bar input {
+      padding: 5px 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 12px;
+      margin-right: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header-banner">
+    <img src="https://i.ibb.co/twJd6BRq/Whats-App-Image-2026-06-29-at-10-42-05.jpg" alt="Banner">
+  </header>
+
+  <div class="admin-auth-bar" id="admin-auth-bar">
+    <div id="auth-logged-out" style="display: flex; gap: 5px; align-items: center; width: 100%; flex-wrap: wrap;">
+      <span style="font-weight: bold; color: #12364e;">Login:</span>
+      <input type="text" id="admin-email" placeholder="Usuário" style="flex: 1; min-width: 120px;">
+      <input type="password" id="admin-senha" placeholder="Senha" style="flex: 1; min-width: 100px;">
+      <button class="btn-acao" style="height: 26px; font-size: 11px;" onclick="fazerLogin()">Entrar</button>
+    </div>
+    <div id="auth-logged-in" class="hidden" style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+      <span style="color: #2e7d32; font-weight: bold;">✔ Administrador Autenticado</span>
+      <div style="display: flex; gap: 6px; align-items: center;">
+        <button class="btn-acao" style="height: 28px; font-size: 11px; background: #2980b9;" onclick="window.location.href='dashboard.html'">Central do Adm</button>
+        <button class="btn-acao" style="height: 28px; font-size: 11px; background: #d32f2f;" onclick="fazerLogout()">Deslogar</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="main-container">
+    <div class="grid-superior">
+      <div class="bloco-card" style="display: flex; flex-direction: column;">
+        <div class="header-financeiro" style="margin-bottom: 10px;">
+          <div class="titulo-secao" style="border:none; margin:0; flex:1; cursor: default;">
+            Aguardando Pagamento
+          </div>
+        </div>
+        <div class="selecao-data-container" style="margin-bottom: 10px; justify-content: flex-start;">
+          <span class="texto-vencimento">Vencimento:</span>
+          <select id="dia-devedores-select">
+            <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8" selected>8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option><option value="26">26</option><option value="27">27</option><option value="28">28</option><option value="29">29</option><option value="30">30</option><option value="31">31</option>
+          </select>
+          <select id="mes-devedores-select">
+            <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option><option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option><option value="7">Julho</option><option value="8" selected>Agosto</option><option value="9">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+          </select>
+        </div>
+        <div class="lista-devedores" id="lista-devedores"></div>
+        <div class="footer-devedores" style="margin-top: auto;">
+          Mantenha-se em dia e contribua com a organização da pelada!
+        </div>
+      </div>
+
+      <div class="bloco-card bloco-pix">
+        <div class="titulo-secao" style="justify-content: center; cursor: default;">Pix</div>
+        <img src="https://bolaforavb.github.io/centraldoadm/WhatsApp%20Image%202026-08-10%20at%2014.13.46.jpeg" alt="QR Code Pix">
+        
+        <div style="font-size: 12px; color: #555; margin-bottom: 6px; text-align: center;">
+          Chave: 
+          <div class="pix-container">
+            <strong id="texto-pix">cristiana.fs96@gmail.com</strong>
+            <button class="btn-copiar" onclick="copiarPix('cristiana.fs96@gmail.com')" title="Copiar Chave Pix">📋</button>
+          </div> 
+          <br>Valor: <strong>R$ 40,00</strong>
+        </div>
+
+        <button class="btn-copiar-pix" onclick="copiarPix('00020101021126460014br.gov.bcb.pix0124cristiana.fs96@gmail.com520400005303986540540.005802BR5923CRISTIANA F S DE L SILV6006RECIFE62070503***6304BD3B')">
+          📋 Copiar Pix Copia e Cola
+        </button>
+      </div>
+    </div>
+
+    <div class="bloco-card">
+      <div class="header-financeiro">
+        <div class="titulo-secao" style="border:none; margin:0; flex:1; cursor: default;">
+          Relação de Pagamentos <span class="contador-limite" id="contador-limite">(0/16)</span>
+        </div>
+        <div class="selecao-data-container">
+          <select id="mes-select">
+            <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option><option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option><option value="7">Julho</option><option value="8" selected>Agosto</option><option value="9">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+          </select>
+          <select id="ano-select">
+            <option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="container-edit-controls" class="admin-only hidden" style="margin-bottom: 15px; display: flex; gap: 8px;">
+        <input type="text" id="novo-nome-input" placeholder="Novo nome" style="flex:1; height: 35px; padding:0 8px; font-size:13px; border-radius:8px; border:1px solid #ccc; box-sizing: border-box;" onkeydown="if(event.key === 'Enter') adicionarNome()">
+        <button class="btn-acao" onclick="adicionarNome()">Add</button>
+      </div>
+
+      <div class="lista-pagamentos" id="lista-pagamentos"></div>
+    </div>
+
+    <div class="grid-inferior">
+      <div class="bloco-card" style="display: flex; flex-direction: column;">
+        <div class="titulo-secao" style="cursor: default;">Lista de espera</div>
+
+        <div id="container-espera-controls" class="admin-only hidden" style="margin-bottom: 12px; display: flex; gap: 6px;">
+          <input type="text" id="novo-espera-nome-input" placeholder="Nome" style="flex:1; height: 35px; padding:0 8px; font-size:13px; border-radius:8px; border:1px solid #ccc; box-sizing: border-box;" onkeydown="if(event.key === 'Enter') adicionarEspera()">
+          <button class="btn-acao" onclick="adicionarEspera()">Add</button>
+        </div>
+
+        <div class="lista-espera-dinamica" id="lista-espera"></div>
+      </div>
+
+      <div class="bloco-coluna-direita">
+        <div class="bloco-card" style="padding-bottom: 12px;">
+          <div class="titulo-secao" style="margin-bottom: 8px; cursor: default;">Mensalistas em Pausa</div>
+          
+          <div id="container-pausa-controls" class="admin-only hidden" style="margin-bottom: 8px; display: flex; gap: 6px; align-items: center;">
+            <input type="text" id="novo-pausa-nome-input" placeholder="Nome" style="flex: 1; min-width: 0; height: 35px; padding: 0 8px; font-size: 13px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box;" onkeydown="if(event.key === 'Enter') adicionarPausa()">
+            <button class="btn-acao" style="flex-shrink: 0;" onclick="adicionarPausa()">Add</button>
+          </div>
+
+          <div class="lista-custom" id="lista-mensalistas-pausa" style="max-height: 110px;"></div>
+        </div>
+
+        <div class="bloco-card" style="display: flex; flex-direction: column; height: 100%;">
+          <div class="titulo-secao" style="cursor: default;">Saldo positivo individual</div>
+          
+          <div id="container-saldo-controls" class="admin-only hidden" style="margin-bottom: 8px; display: flex; gap: 6px; align-items: center; width: 100%; min-width: 0;">
+            <input type="text" id="novo-saldo-nome-input" placeholder="Nome" style="flex: 1.4; min-width: 0; height: 35px; padding: 0 8px; font-size: 13px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box;">
+            <input type="text" id="novo-saldo-valor-input" placeholder="R$ 0,00" style="flex: 0.9; min-width: 0; height: 35px; padding: 0 8px; font-size: 13px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box;" onkeydown="if(event.key === 'Enter') adicionarSaldo()">
+            <button class="btn-acao" style="flex-shrink: 0;" onclick="adicionarSaldo()">Add</button>
+          </div>
+
+          <div class="lista-custom" id="lista-saldo-positivo" style="max-height: 145px; flex: 1;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bloco-card">
+      <div class="titulo-secao titulo-secao-entrada" onclick="toggleCard(this)" title="Clique para expandir/recolher">
+        Entradas <span class="icone-toggle">➕</span>
+      </div>
+      <div class="conteudo-card hidden">
+        <div id="container-entrada-controls" class="admin-only hidden" style="margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <input type="date" id="entrada-data" style="height: 35px; padding: 0 7px; font-size: 13px; border-radius: 8px; border: 1px solid #ccc; background: white; color: #333; width: 100%; box-sizing: border-box;">
+            
+            <select id="nova-entrada-mensalista" style="height: 35px; padding: 0 8px; font-size: 13px; border-radius: 8px; border: 1px solid #ccc; color: #333; background: #fff; width: 100%; box-sizing: border-box;">
+              <option value="" style="color: #333;">Selecione o mensalista ausente</option>
+            </select>
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="nova-entrada-diarista" placeholder="Nome do diarista substituto" style="flex: 1; height: 35px; padding: 0 8px; font-size: 13px; border-radius: 8px; border: 1px solid #ccc; color: #333; background: #fff; box-sizing: border-box;">
+
+            <select id="nova-entrada-situacao" style="flex: 1; height: 35px; padding: 0 8px; font-size: 13px; border-radius: 8px; border: 1px solid #ccc; color: #333; background: white; box-sizing: border-box;">
+              <option value="" disabled selected style="color: #666;">Situação</option>
+              <option value="Pago">Pago</option>
+              <option value="Crédito">Crédito</option>
+              <option value="Aguardando pagamento">Aguardando pagamento</option>
+            </select>
+
+            <button class="btn-acao" onclick="adicionarEntrada()">Add</button>
+          </div>
+        </div>
+
+        <div class="lista-entradas" id="lista-entradas" style="margin-top: 12px;"></div>
+      </div>
+    </div>
+
+    <div class="bloco-card">
+      <div class="titulo-secao titulo-secao-saida" onclick="toggleCard(this)" title="Clique para expandir/recolher">
+        Saídas <span class="icone-toggle">➕</span>
+      </div>
+      <div class="conteudo-card hidden">
+        <div id="container-saida-controls" class="admin-only hidden" style="margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <input type="text" id="saida-referencia" placeholder="Referência" style="height: 35px; padding: 0 8px; font-size: 13px; border-radius: 8px; border: 1px solid #ccc; background: white; color: #333; width: 100%; box-sizing: border-box;">
+            <input type="text" id="saida-descricao" placeholder="Descrição" style="height: 35px; padding: 0 8px; font-size: 13px; border-radius: 8px; border: 1px solid #ccc; background: white; color: #333; width: 100%; box-sizing: border-box;">
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="text" id="saida-observacao" placeholder="Observação" style="flex: 1; height: 35px; padding: 0 8px; font-size: 13px; border-radius: 8px; border: 1px solid #ccc; background: white; color: #333; box-sizing: border-box;">
+            <input type="file" id="saida-arquivo" accept="image/*" style="display: none;" onchange="prepararArquivoSaida(this)">
+            <button class="btn-acao" type="button" id="btn-enviar-arquivo" onclick="document.getElementById('saida-arquivo').click()" style="background: #e0e0e0; color: #333; font-weight: normal;">Enviar arquivo</button>
+            <button class="btn-acao" onclick="adicionarSaida()">Add</button>
+          </div>
+        </div>
+
+        <div class="lista-saidas" id="lista-saidas" style="margin-top: 12px;"></div>
+      </div>
+    </div>
+    
+    <div class="bloco-card">
+      <div class="titulo-secao" style="cursor: default; justify-content: space-between;">
+        Saldo em caixa
+        <span id="btn-edit-saldo-caixa" class="admin-only hidden" onclick="editarSaldoCaixa()" style="cursor: pointer; font-size: 16px;">✏️</span>
+      </div>
+      <div style="text-align: center; padding: 10px 0;">
+        <div id="valor-saldo-caixa" style="font-size: 32px; font-weight: bold; color: #12364e;">R$ 0,00</div>
+      </div>
+    </div>
+  </main>
+
+  <div id="modal-imagem" onclick="fecharModalImagem()">
+    <img id="imagem-ampliada" src="" alt="Ampliado">
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
+      authDomain: "central-adm-bolafora.firebaseapp.com",
+      databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com",
+      projectId: "central-adm-bolafora",
+      storageBucket: "central-adm-bolafora.firebasestorage.app",
+      messagingSenderId: "429477810517",
+      appId: "1:429477810517:web:3be6c842269cbdfe4b5fdc"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+    
+    let usuarioAutenticado = false;
+    let totalItensAtual = 0;
+    let nomesPagamentosCache = [];
+    let arquivoSaidaTemp = '';
+
+    const pagamentosRef = db.ref('pagamentos_sexta');
+    const saldoPositivoRef = db.ref('saldoPositivo');
+    const mensalistasPausaRef = db.ref('mensalistasPausa_sexta');
+    const listaEsperaRef = db.ref('listaEspera_sexta');
+    const entradasRef = db.ref('entradas');
+    const saidasRef = db.ref('saidas');
+    const saldoCaixaRef = db.ref('saldoCaixa');
+
+    auth.onAuthStateChanged((user) => {
+      const elementosAdmin = document.querySelectorAll('.admin-only');
+      const logoutDiv = document.getElementById('auth-logged-in');
+      const logoutOutDiv = document.getElementById('auth-logged-out');
+      const mesSelect = document.getElementById('mes-select');
+      const anoSelect = document.getElementById('ano-select');
+      const diaDevedoresSelect = document.getElementById('dia-devedores-select');
+      const mesDevedoresSelect = document.getElementById('mes-devedores-select');
+
+      if (user) {
+        usuarioAutenticado = true;
+        elementosAdmin.forEach(el => el.classList.remove('hidden'));
+        logoutDiv.style.display = 'flex';
+        logoutDiv.classList.remove('hidden');
+        logoutOutDiv.style.display = 'none';
+        mesSelect.disabled = false;
+        anoSelect.disabled = false;
+        diaDevedoresSelect.disabled = false;
+        mesDevedoresSelect.disabled = false;
+      } else {
+        usuarioAutenticado = false;
+        elementosAdmin.forEach(el => el.classList.add('hidden'));
+        logoutDiv.style.display = 'none';
+        logoutDiv.classList.add('hidden');
+        logoutOutDiv.style.display = 'flex';
+        mesSelect.disabled = true;
+        anoSelect.disabled = true;
+        diaDevedoresSelect.disabled = true;
+        mesDevedoresSelect.disabled = true;
+      }
+      
+      carregarListasNaTela();
+    });
+
+    function fazerLogin() {
+      let email = document.getElementById('admin-email').value.trim();
+      const senha = document.getElementById('admin-senha').value.trim();
+
+      if (!email || !senha) {
+        alert("Preencha o usuário e a senha para autenticar.");
+        return;
+      }
+
+      if (!email.includes('@')) {
+        email += '@bolafora.internal';
+      }
+
+      auth.signInWithEmailAndPassword(email, senha)
+        .then(() => {
+          document.getElementById('admin-email').value = '';
+          document.getElementById('admin-senha').value = '';
+        })
+        .catch((error) => {
+          alert("Falha na autenticação: " + error.message);
+        });
+    }
+
+    function fazerLogout() {
+      auth.signOut().then(() => {
+        alert("Sessão encerrada com sucesso.");
+      });
+    }
+
+    saldoCaixaRef.on('value', (snapshot) => {
+        const valor = snapshot.val() || '0,00';
+        document.getElementById('valor-saldo-caixa').textContent = "R$ " + valor;
+    });
+
+    function editarSaldoCaixa() {
+      if (!usuarioAutenticado) return;
+      const novoValor = prompt("Digite o novo valor do saldo (ex: 150,00):");
+      if (novoValor !== null && novoValor.trim() !== "") {
+        saldoCaixaRef.set(novoValor.trim());
+      }
+    }
+
+    function toggleCard(headerElement) {
+      const card = headerElement.closest('.bloco-card');
+      const conteudo = card.querySelector('.conteudo-card');
+      const icone = headerElement.querySelector('.icone-toggle');
+      if (conteudo) {
+        conteudo.classList.toggle('hidden');
+        if (conteudo.classList.contains('hidden')) {
+          icone.textContent = '➕';
+        } else {
+          icone.textContent = '➖';
+        }
+      }
+    }
+
+    let cacheDados = {
+      pagamentos: null,
+      saldoPositivo: null,
+      mensalistasPausa: null,
+      listaEspera: null,
+      entradas: null,
+      saidas: null
+    };
+
+    pagamentosRef.on('value', (snapshot) => { cacheDados.pagamentos = snapshot.val(); carregarListasNaTela(); });
+    saldoPositivoRef.on('value', (snapshot) => { cacheDados.saldoPositivo = snapshot.val(); carregarListasNaTela(); });
+    mensalistasPausaRef.on('value', (snapshot) => { cacheDados.mensalistasPausa = snapshot.val(); carregarListasNaTela(); });
+    listaEsperaRef.on('value', (snapshot) => { cacheDados.listaEspera = snapshot.val(); carregarListasNaTela(); });
+    entradasRef.on('value', (snapshot) => { cacheDados.entradas = snapshot.val(); carregarListasNaTela(); });
+    saidasRef.on('value', (snapshot) => { cacheDados.saidas = snapshot.val(); carregarListasNaTela(); });
+
+    function carregarListasNaTela() {
+      renderizarPagamentos(cacheDados.pagamentos);
+      renderizarSaldoPositivo(cacheDados.saldoPositivo);
+      renderizarPausa(cacheDados.mensalistasPausa);
+      renderizarEspera(cacheDados.listaEspera);
+      renderizarEntradas(cacheDados.entradas);
+      renderizarSaidas(cacheDados.saidas);
+    }
+
+    function renderizarPagamentos(dados) {
+      const listaPagamentos = document.getElementById('lista-pagamentos');
+      const listaDevedores = document.getElementById('lista-devedores');
+      const contadorLimite = document.getElementById('contador-limite');
+      const selectMensalista = document.getElementById('nova-entrada-mensalista');
+      
+      listaPagamentos.innerHTML = '';
+      listaDevedores.innerHTML = '';
+      selectMensalista.innerHTML = '<option value="" style="color: #333;">Selecione o mensalista ausente</option>';
+      nomesPagamentosCache = [];
+      
+      if (dados) {
+        const itensArray = Object.keys(dados).map(key => ({ key, ...dados[key] }));
+        itensArray.sort((a, b) => (a.nome || '').toLowerCase().localeCompare((b.nome || '').toLowerCase(), 'pt-BR'));
+
+        totalItensAtual = itensArray.length;
+        contadorLimite.textContent = `(${totalItensAtual}/16)`;
+
+        itensArray.forEach(item => {
+          if (item.nome) {
+            nomesPagamentosCache.push(item.nome);
+            const opt = document.createElement('option');
+            opt.value = item.nome;
+            opt.textContent = item.nome;
+            opt.style.color = "#333";
+            selectMensalista.appendChild(opt);
+          }
+        });
+
+        const devedoresArray = itensArray.filter(item => !item.pago);
+        if (devedoresArray.length > 0) {
+          devedoresArray.forEach(item => {
+            const divDevedor = document.createElement('div');
+            divDevedor.className = 'item-devedor';
+            divDevedor.textContent = item.nome;
+            listaDevedores.appendChild(divDevedor);
+          });
+        } else {
+          listaDevedores.innerHTML = '<div style="font-size: 13px; color: #666; font-style: italic;">Nenhum devedor no momento. 🎉</div>';
+        }
+
+        itensArray.forEach((item, index) => {
+          const tipoVaga = item.tipoVaga || 'fixa';
+          const div = document.createElement('div');
+          div.className = 'item-pagamento';
+          
+          let botoesAcoesHtml = '';
+          if (usuarioAutenticado) {
+            botoesAcoesHtml = `
+              <button class="btn-vaga editavel ${tipoVaga}" onclick="toggleVaga('${item.key}', '${tipoVaga}')">
+                ${tipoVaga === 'temporaria' ? 'VAGA TEMPORÁRIA' : 'VAGA FIXA'}
+              </button>
+              <button class="btn-rename" onclick="renomearItem('${item.key}', '${item.nome}')" title="Renomear">✏️</button>
+              <button class="btn-delete" onclick="removerItem('${item.key}', '${item.nome}')" title="Excluir">🗑️</button>
+            `;
+          } else {
+            botoesAcoesHtml = `
+              <span class="btn-vaga ${tipoVaga}" style="cursor: default;">
+                ${tipoVaga === 'temporaria' ? 'VAGA TEMPORÁRIA' : 'VAGA FIXA'}
+              </span>
+            `;
+          }
+
+          div.innerHTML = `
+            <div class="item-conteudo">
+              <button class="btn-pagamento ${usuarioAutenticado ? 'editavel' : ''} ${item.pago ? 'ativo' : ''}" ${usuarioAutenticado ? `onclick="toggleCheck('${item.key}', ${item.pago})"` : ''}>$</button>
+              <span><strong>${index + 1}.</strong> ${item.nome}</span>
+            </div>
+            <div class="item-acoes">
+              ${botoesAcoesHtml}
+            </div>
+          `;
+          listaPagamentos.appendChild(div);
+        });
+      } else {
+        totalItensAtual = 0;
+        contadorLimite.textContent = `(0/16)`;
+        listaDevedores.innerHTML = '<div style="font-size: 13px; color: #666; font-style: italic;">Nenhum devedor no momento. 🎉</div>';
+      }
+    }
+
+    function renderizarSaldoPositivo(dados) {
+      const listaSaldo = document.getElementById('lista-saldo-positivo');
+      listaSaldo.innerHTML = '';
+      if (dados) {
+        const itensArray = Object.keys(dados).map(key => ({ key, ...dados[key] }));
+        itensArray.sort((a, b) => (a.nome || '').toLowerCase().localeCompare((b.nome || '').toLowerCase(), 'pt-BR'));
+        itensArray.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'item-pagamento';
+          
+          let botoesAcoesHtml = '';
+          if (usuarioAutenticado) {
+            botoesAcoesHtml = `
+              <button class="btn-rename" onclick="renomearSaldo('${item.key}', '${item.nome}', '${item.valor || ''}')" title="Renomear">✏️</button>
+              <button class="btn-delete" onclick="removerSaldo('${item.key}', '${item.nome}')" title="Excluir">🗑️</button>
+            `;
+          }
+
+          div.innerHTML = `
+            <div class="item-conteudo">
+              <span><strong>${item.nome}</strong> - R$ ${item.valor || '0,00'}</span>
+            </div>
+            <div class="item-acoes">
+              ${botoesAcoesHtml}
+            </div>
+          `;
+          listaSaldo.appendChild(div);
+        });
+      } else {
+        listaSaldo.innerHTML = '<div style="font-size: 13px; color: #666; font-style: italic;">Nenhum registro.</div>';
+      }
+    }
+
+    function renderizarPausa(dados) {
+      const listaPausa = document.getElementById('lista-mensalistas-pausa');
+      listaPausa.innerHTML = '';
+      if (dados) {
+        const itensArray = Object.keys(dados).map(key => ({ key, ...dados[key] }));
+        itensArray.sort((a, b) => (a.nome || '').toLowerCase().localeCompare((b.nome || '').toLowerCase(), 'pt-BR'));
+        itensArray.forEach(item => {
+          const statusPausa = item.statusPausa || '50%';
+          const div = document.createElement('div');
+          div.className = 'item-pagamento';
+          
+          let botoesAcoesHtml = '';
+          if (usuarioAutenticado) {
+            botoesAcoesHtml = `
+              <button class="btn-pausa-status editavel ${statusPausa === '0%' ? 'zero' : ''}" onclick="togglePausaStatus('${item.key}', '${statusPausa}')">
+                ${statusPausa} PAGO
+              </button>
+              <button class="btn-rename" onclick="renomearPausa('${item.key}', '${item.nome}')" title="Renomear">✏️</button>
+              <button class="btn-delete" onclick="removerPausa('${item.key}', '${item.nome}')" title="Excluir">🗑️</button>
+            `;
+          } else {
+            botoesAcoesHtml = `
+              <span class="btn-pausa-status ${statusPausa === '0%' ? 'zero' : ''}" style="cursor: default;">
+                ${statusPausa} PAGO
+              </span>
+            `;
+          }
+
+          div.innerHTML = `
+            <div class="item-conteudo">
+              <span><strong>${item.nome}</strong></span>
+            </div>
+            <div class="item-acoes">
+              ${botoesAcoesHtml}
+            </div>
+          `;
+          listaPausa.appendChild(div);
+        });
+      } else {
+        listaPausa.innerHTML = '<div style="font-size: 13px; color: #666; font-style: italic;">Nenhum registro.</div>';
+      }
+    }
+
+    function renderizarEspera(dados) {
+      const listaEsperaEl = document.getElementById('lista-espera');
+      listaEsperaEl.innerHTML = '';
+      if (dados) {
+        const itensArray = Object.keys(dados).map(key => ({ key, ...dados[key] }));
+
+        itensArray.forEach(item => {
+          const [ano, mes, dia] = (item.data || '').split('-');
+          const dataFormatada = (dia && mes && ano) ? `${dia}/${mes}/${ano}` : (item.data || '');
+          const horaFormatada = item.hora || '';
+          
+          const textoTooltip = horaFormatada ? `Inscrito em: ${dataFormatada} às ${horaFormatada}` : `Inscrito em: ${dataFormatada}`;
+          const classeTooltipEsquerda = !usuarioAutenticado ? 'tooltip-esquerda' : '';
+
+          const div = document.createElement('div');
+          div.className = 'item-pagamento';
+          
+          let botoesAcoesHtml = '';
+          if (usuarioAutenticado) {
+            botoesAcoesHtml = `
+              <button class="btn-rename" onclick="renomearEspera('${item.key}', '${item.nome}')" title="Renomear">✏️</button>
+              <button class="btn-delete" onclick="removerEspera('${item.key}', '${item.nome}')" title="Excluir">🗑️</button>
+            `;
+          }
+
+          div.innerHTML = `
+            <div class="item-conteudo">
+              <span><strong>${item.nome}</strong></span>
+            </div>
+            <div class="item-acoes">
+              <div class="info-tooltip-container" onclick="this.classList.toggle('ativo-tooltip')">
+                <button class="btn-info-circulo" type="button" title="${textoTooltip}">i</button>
+                <div class="tooltip-texto ${classeTooltipEsquerda}">${textoTooltip}</div>
+              </div>
+              ${botoesAcoesHtml}
+            </div>
+          `;
+          listaEsperaEl.appendChild(div);
+        });
+      } else {
+        listaEsperaEl.innerHTML = '<div style="font-size: 13px; color: #666; font-style: italic;">Nenhum registro na lista de espera.</div>';
+      }
+    }
+
+    function renderizarEntradas(dados) {
+      const listaEntradas = document.getElementById('lista-entradas');
+      listaEntradas.innerHTML = '';
+      if (dados) {
+        const itensArray = Object.keys(dados).map(key => ({ key, ...dados[key] }));
+        itensArray.sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+        itensArray.forEach(item => {
+          const [ano, mes, dia] = (item.data || '').split('-');
+          const dataFormatada = (dia && mes && ano) ? `${dia}/${mes}/${ano}` : '';
+          
+          let textoExibicao = '';
+          if (item.mensalista && item.diarista) {
+            textoExibicao = `⬆️ ${item.mensalista} &nbsp;&nbsp; ⬇️ ${item.diarista}`;
+          } else if (item.mensalista) {
+            textoExibicao = `⬆️ ${item.mensalista}`;
+          } else if (item.diarista) {
+            textoExibicao = `⬇️ ${item.diarista}`;
+          } else {
+            textoExibicao = 'Não especificado';
+          }
+
+          const situacaoAtual = item.situacao || 'Pago';
+          let situacaoClass = 'pago';
+          if (situacaoAtual === 'Crédito') situacaoClass = 'credito';
+          else if (situacaoAtual === 'Aguardando pagamento') situacaoClass = 'aguardando';
+
+          const div = document.createElement('div');
+          div.className = 'item-pagamento';
+
+          let botoesAcoesHtml = '';
+          if (usuarioAutenticado) {
+            botoesAcoesHtml = `
+              <button class="btn-situacao-entrada editavel ${situacaoClass}" onclick="toggleSituacaoEntrada('${item.key}', '${situacaoAtual}')">
+                ${situacaoAtual.toUpperCase()}
+              </button>
+              <button class="btn-delete" onclick="removerEntrada('${item.key}')" title="Excluir">🗑️</button>
+            `;
+          } else {
+            botoesAcoesHtml = `
+              <span class="btn-situacao-entrada ${situacaoClass}" style="cursor: default;">
+                ${situacaoAtual.toUpperCase()}
+              </span>
+            `;
+          }
+
+          div.innerHTML = `
+            <div class="item-conteudo">
+              <span style="font-size: 11px; color: #666; white-space: nowrap;">📅 ${dataFormatada}</span>
+              <span><strong>${textoExibicao}</strong></span>
+            </div>
+            <div class="item-acoes">
+              ${botoesAcoesHtml}
+            </div>
+          `;
+          listaEntradas.appendChild(div);
+        });
+      } else {
+        listaEntradas.innerHTML = '<div style="font-size: 13px; color: #666; font-style: italic;">Nenhuma entrada registrada.</div>';
+      }
+    }
+
+    function renderizarSaidas(dados) {
+      const listaSaidas = document.getElementById('lista-saidas');
+      listaSaidas.innerHTML = '';
+      if (dados) {
+        const itensArray = Object.keys(dados).map(key => ({ key, ...dados[key] }));
+        itensArray.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'item-pagamento';
+
+          let htmlMiniatura = '';
+          if (item.arquivo) {
+            htmlMiniatura = `<img src="${item.arquivo}" class="miniatura-arquivo" onclick="abrirModalImagem('${item.arquivo}')" title="Ver arquivo">`;
+          }
+
+          let botaoDeletarHtml = '';
+          if (usuarioAutenticado) {
+            botaoDeletarHtml = `<button class="btn-delete" onclick="removerSaida('${item.key}')" title="Excluir">🗑️</button>`;
+          }
+
+          div.innerHTML = `
+            <div class="item-conteudo">
+              <span><strong>${item.referencia}</strong>: ${item.descricao} ${item.observacao ? `(${item.observacao})` : ''}</span>
+            </div>
+            <div class="item-acoes">
+              ${htmlMiniatura}
+              ${botaoDeletarHtml}
+            </div>
+          `;
+          listaSaidas.appendChild(div);
+        });
+      } else {
+        listaSaidas.innerHTML = '<div style="font-size: 13px; color: #666; font-style: italic;">Nenhuma saída registrada.</div>';
+      }
+    }
+
+    function toggleCheck(key, status) { if (!usuarioAutenticado) return; pagamentosRef.child(key).update({ pago: !status }); }
+    function toggleVaga(key, tipo) { if (!usuarioAutenticado) return; pagamentosRef.child(key).update({ tipoVaga: tipo === 'temporaria' ? 'fixa' : 'temporaria' }); }
+    
+    function toggleSituacaoEntrada(key, situacaoAtual) {
+      if (!usuarioAutenticado) return;
+      let novaSituacao = 'Pago';
+      if (situacaoAtual === 'Pago') {
+        novaSituacao = 'Crédito';
+      } else if (situacaoAtual === 'Crédito') {
+        novaSituacao = 'Aguardando pagamento';
+      } else {
+        novaSituacao = 'Pago';
+      }
+      entradasRef.child(key).update({ situacao: novaSituacao });
+    }
+
+    function togglePausaStatus(key, statusAtual) {
+      if (!usuarioAutenticado) return;
+      const novoStatus = statusAtual === '50%' ? '0%' : '50%';
+      mensalistasPausaRef.child(key).update({ statusPausa: novoStatus });
+    }
+    
+    function copiarPix(texto) {
+      navigator.clipboard.writeText(texto).then(() => {
+        alert("Copiado com sucesso!");
+      }).catch(err => {
+        console.error('Erro ao copiar: ', err);
+      });
+    }
+
+    function adicionarNome() {
+      if (!usuarioAutenticado) return;
+      const input = document.getElementById('novo-nome-input');
+      const nomeTrim = input.value.trim();
+      
+      if (!nomeTrim) return;
+
+      if (totalItensAtual >= 16) {
+        alert("Limite atingido! O número máximo permitido é de 16 nomes.");
+        return;
+      }
+
+      pagamentosRef.push({ nome: nomeTrim, pago: false, tipoVaga: 'fixa' });
+      input.value = '';
+    }
+    function renomearItem(key, nome) {
+      if (!usuarioAutenticado) return;
+      const novo = prompt("Novo nome:", nome);
+      if (novo && novo.trim()) pagamentosRef.child(key).update({ nome: novo.trim() });
+    }
+    function removerItem(key, nome) { 
+      if (!usuarioAutenticado) return;
+      if(confirm(`Excluir ${nome}?`)) pagamentosRef.child(key).remove(); 
+    }
+
+    function adicionarSaldo() {
+      if (!usuarioAutenticado) return;
+      const inputNome = document.getElementById('novo-saldo-nome-input');
+      const inputValor = document.getElementById('novo-saldo-valor-input');
+      const nomeTrim = inputNome.value.trim();
+      const valorTrim = inputValor.value.trim();
+
+      if (!nomeTrim) return;
+
+      saldoPositivoRef.push({ nome: nomeTrim, valor: valorTrim || '0,00' });
+      inputNome.value = '';
+      inputValor.value = '';
+    }
+    function renomearSaldo(key, nomeAtual, valorAtual) {
+      if (!usuarioAutenticado) return;
+      const novoNome = prompt("Novo nome:", nomeAtual);
+      if (novoNome && novoNome.trim()) {
+        const novoValor = prompt("Novo valor (R$):", valorAtual);
+        saldoPositivoRef.child(key).update({ 
+          nome: novoNome.trim(), 
+          valor: novoValor !== null ? novoValor.trim() : valorAtual 
+        });
+      }
+    }
+    function removerSaldo(key, nome) {
+      if (!usuarioAutenticado) return;
+      if (confirm(`Excluir ${nome}?`)) saldoPositivoRef.child(key).remove();
+    }
+
+    function adicionarPausa() {
+      if (!usuarioAutenticado) return;
+      const input = document.getElementById('novo-pausa-nome-input');
+      const nomeTrim = input.value.trim();
+
+      if (!nomeTrim) return;
+
+      mensalistasPausaRef.push({ nome: nomeTrim, statusPausa: '50%' });
+      input.value = '';
+    }
+    function renomearPausa(key, nomeAtual) {
+      if (!usuarioAutenticado) return;
+      const novo = prompt("Novo nome:", nomeAtual);
+      if (novo && novo.trim()) mensalistasPausaRef.child(key).update({ nome: novo.trim() });
+    }
+    function removerPausa(key, nome) {
+      if (!usuarioAutenticado) return;
+      if (confirm(`Excluir ${nome}?`)) mensalistasPausaRef.child(key).remove();
+    }
+
+    function adicionarEspera() {
+      if (!usuarioAutenticado) return;
+      const inputNome = document.getElementById('novo-espera-nome-input');
+      const nomeTrim = inputNome.value.trim();
+
+      if (!nomeTrim) return;
+
+      const hoje = new Date();
+      const ano = hoje.getFullYear();
+      const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+      const dia = String(hoje.getDate()).padStart(2, '0');
+      const dataAtual = `${ano}-${mes}-${dia}`;
+      
+      const horas = String(hoje.getHours()).padStart(2, '0');
+      const minutos = String(hoje.getMinutes()).padStart(2, '0');
+      const segundos = String(hoje.getSeconds()).padStart(2, '0');
+      const horaAtual = `${horas}:${minutos}:${segundos}`;
+
+      listaEsperaRef.push({ nome: nomeTrim, data: dataAtual, hora: horaAtual });
+      inputNome.value = '';
+    }
+    function renomearEspera(key, nomeAtual) {
+      if (!usuarioAutenticado) return;
+      const novoNome = prompt("Novo nome:", nomeAtual);
+      if (novoNome && novoNome.trim()) {
+        listaEsperaRef.child(key).update({ nome: novoNome.trim() });
+      }
+    }
+    function removerEspera(key, nome) {
+      if (!usuarioAutenticado) return;
+      if (confirm(`Excluir ${nome} da lista de espera?`)) listaEsperaRef.child(key).remove();
+    }
+
+    function adicionarEntrada() {
+      if (!usuarioAutenticado) return;
+      const dataInput = document.getElementById('entrada-data').value;
+      const mensalistaSelect = document.getElementById('nova-entrada-mensalista').value;
+      const diaristaInput = document.getElementById('nova-entrada-diarista').value.trim();
+      const situacaoSelect = document.getElementById('nova-entrada-situacao').value;
+
+      if (!dataInput) {
+        alert("Por favor, selecione a data.");
+        return;
+      }
+      if (!mensalistaSelect && !diaristaInput) {
+        alert("Preencha ao menos o campo MENSALISTA ou DIARISTA.");
+        return;
+      }
+      if (!situacaoSelect) {
+        alert("Por favor, selecione a situação.");
+        return;
+      }
+
+      entradasRef.push({
+        data: dataInput,
+        mensalista: mensalistaSelect || '',
+        diarista: diaristaInput || '',
+        tipo: mensalistaSelect ? 'Mensalista' : 'Diarista',
+        situacao: situacaoSelect
+      });
+
+      document.getElementById('entrada-data').value = '';
+      document.getElementById('nova-entrada-mensalista').value = '';
+      document.getElementById('nova-entrada-diarista').value = '';
+      document.getElementById('nova-entrada-situacao').value = '';
+    }
+
+    function removerEntrada(key) {
+      if (!usuarioAutenticado) return;
+      if (confirm("Excluir esta entrada?")) entradasRef.child(key).remove();
+    }
+
+    function prepararArquivoSaida(input) {
+      if (!usuarioAutenticado) return;
+      const btnEnviar = document.getElementById('btn-enviar-arquivo');
+      if (input.files && input.files[0]) {
+        const nomeArquivo = input.files[0].name;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          arquivoSaidaTemp = e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+        
+        btnEnviar.textContent = "✔ " + nomeArquivo;
+        btnEnviar.style.background = "#2e7d32";
+        btnEnviar.style.color = "white";
+        btnEnviar.style.fontWeight = "bold";
+      } else {
+        btnEnviar.textContent = "Enviar arquivo";
+        btnEnviar.style.background = "#e0e0e0";
+        btnEnviar.style.color = "#333";
+        btnEnviar.style.fontWeight = "normal";
+        arquivoSaidaTemp = '';
+      }
+    }
+
+    function adicionarSaida() {
+      if (!usuarioAutenticado) return;
+      const referencia = document.getElementById('saida-referencia').value.trim();
+      const descricao = document.getElementById('saida-descricao').value.trim();
+      const observacao = document.getElementById('saida-observacao').value.trim();
+
+      if (!referencia || !descricao) {
+        alert("Preencha ao menos os campos Referência e Descrição.");
+        return;
+      }
+
+      saidasRef.push({
+        referencia: referencia,
+        descricao: descricao,
+        observacao: observacao,
+        arquivo: arquivoSaidaTemp || ''
+      });
+
+      document.getElementById('saida-referencia').value = '';
+      document.getElementById('saida-descricao').value = '';
+      document.getElementById('saida-observacao').value = '';
+      document.getElementById('saida-arquivo').value = '';
+      arquivoSaidaTemp = '';
+
+      const btnEnviar = document.getElementById('btn-enviar-arquivo');
+      btnEnviar.textContent = "Enviar arquivo";
+      btnEnviar.style.background = "#e0e0e0";
+      btnEnviar.style.color = "#333";
+      btnEnviar.style.fontWeight = "normal";
+    }
+
+    function removerSaida(key) {
+      if (!usuarioAutenticado) return;
+      if (confirm("Excluir esta saída?")) saidasRef.child(key).remove();
+    }
+
+    function abrirModalImagem(url) {
+      document.getElementById('imagem-ampliada').src = url;
+      document.getElementById('modal-imagem').style.display = 'flex';
+    }
+
+    function fecharModalImagem() {
+      document.getElementById('modal-imagem').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
