@@ -649,6 +649,7 @@
     const entradasRef = db.ref('entradas');
     const saidasRef = db.ref('saidas');
     const saldoCaixaRef = db.ref('saldoCaixa');
+    const configFiltroRef = db.ref('configFiltro_sexta');
 
     auth.onAuthStateChanged((user) => {
       const elementosAdmin = document.querySelectorAll('.admin-only');
@@ -682,6 +683,24 @@
       }
       
       carregarListasNaTela();
+    });
+
+    document.getElementById('mes-select').addEventListener('change', (e) => {
+      if (!usuarioAutenticado) return;
+      configFiltroRef.update({ mes: e.target.value });
+    });
+
+    document.getElementById('ano-select').addEventListener('change', (e) => {
+      if (!usuarioAutenticado) return;
+      configFiltroRef.update({ ano: e.target.value });
+    });
+
+    configFiltroRef.on('value', (snapshot) => {
+      const filtro = snapshot.val();
+      if (filtro) {
+        if (filtro.mes) document.getElementById('mes-select').value = filtro.mes;
+        if (filtro.ano) document.getElementById('ano-select').value = filtro.ano;
+      }
     });
 
     function fazerLogin() {
