@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relação Ponto/Ataque - Central do Adm</title>
+  <link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
+  
+  <style>
+    /* Reset global idêntico ao painel */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: sans-serif;
+      background-color: #12364e; 
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center; 
+      min-height: 100vh;
+      color: #12364e;
+    }
+
+    .header-banner {
+      width: 100%; 
+      max-width: 600px;
+      background-color: #e1d8cd; 
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .header-banner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; 
+    }
+
+    .main-container {
+      width: 100%;
+      max-width: 600px;
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Estrutura de Card baseada no design original */
+    .bloco-card {
+      background-color: white; 
+      border-radius: 16px;
+      width: 100%;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .titulo-secao {
+      font-size: 13px;
+      font-weight: bold;
+      color: #12364e;
+      margin: 0 0 12px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      padding-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .header-resultado-linha {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      padding-bottom: 6px;
+      width: 100%;
+    }
+
+    .header-resultado-linha.sem-margem-inferior {
+      margin-bottom: 0;
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .header-resultado-linha .titulo-secao {
+      margin: 0;
+      border: none;
+      padding: 0;
+      flex: 1;
+      font-size: 13px;
+    }
+
+    /* Botão Zerar Todos no Cabeçalho */
+    .btn-zerar-todos {
+      background-color: #d93025;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 4px 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-zerar-todos:hover {
+      background-color: #a8221a;
+    }
+
+    /* Botão Minimizar / Expandir Histórico */
+    .btn-toggle-historico {
+      background: none;
+      border: 1px solid #12364e;
+      color: #12364e;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: bold;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .btn-toggle-historico:hover {
+      background-color: #12364e;
+      color: white;
+    }
+
+    /* Conteúdo recolhível */
+    .conteudo-colapsavel {
+      display: none;
+      margin-top: 12px;
+    }
+    .conteudo-colapsavel.ativo {
+      display: block;
+    }
+
+    /* Inputs padronizados */
+    input[type="text"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #12364e;
+      outline: none;
+    }
+
+    .form-inline {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .form-inline input {
+      flex: 1;
+    }
+
+    .btn-add-tabela {
+      padding: 10px 16px;
+      background-color: #d9b246;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+    .btn-add-tabela:hover { background-color: #af8a23; }
+
+    /* Botão Registrar Contagem do Dia */
+    .btn-registrar-dia {
+      width: 100%;
+      margin-top: 12px;
+      padding: 12px;
+      background-color: #12364e;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-registrar-dia:hover {
+      background-color: #1b4f72;
+    }
+
+    /* Lista de Itens */
+    .lista-fidelidade {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .item-fidelidade {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background-color: #f7f5f2;
+      border-radius: 8px;
+      border-left: 3px solid #d9b246;
+      gap: 8px;
+    }
+
+    .nome-diarista {
+      font-size: 13px;
+      font-weight: 500;
+      color: #12364e;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+      min-width: 40px;
+    }
+
+    .bloco-controles-grupo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .bloco-contador-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      width: 52px;
+      flex-shrink: 0;
+    }
+
+    .label-contador-topo {
+      font-size: 9px;
+      font-weight: bold;
+      text-transform: uppercase;
+      color: #12364e;
+      opacity: 0.7;
+      white-space: nowrap;
+    }
+
+    .bloco-controles {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .botoes-setas { 
+      display: flex; 
+      align-items: center; 
+      gap: 2px; 
+    }
+
+    .btn-seta-up, .btn-seta-down {
+      background: none;
+      border: none;
+      color: #d9b246;
+      font-size: 11px;
+      padding: 1px;
+      line-height: 1;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .valor-presenca {
+      font-size: 11px;
+      font-weight: bold;
+      background: #12364e;
+      color: white;
+      padding: 2px 4px;
+      border-radius: 4px;
+      min-width: 22px;
+      text-align: center;
+      display: inline-block;
+    }
+
+    .bloco-porcentagem-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      width: 50px;
+      flex-shrink: 0;
+    }
+
+    .valor-porcentagem {
+      font-size: 11px;
+      font-weight: bold;
+      background: #d9b246;
+      color: white;
+      padding: 3px 4px;
+      border-radius: 6px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .acoes-jogador {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .btn-reiniciar-jogador {
+      background: none;
+      border: none;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 2px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-deletar-ranking {
+      background: none;
+      border: none;
+      color: #d93025;
+      font-weight: bold;
+      font-size: 12px;
+      padding: 2px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Estilos do Histórico */
+    .historico-bloco {
+      margin-top: 10px;
+      background: #fdfbf7;
+      border: 1px solid #e1d8cd;
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    .historico-data-titulo {
+      font-size: 12px;
+      font-weight: bold;
+      color: #d9b246;
+      margin-bottom: 6px;
+      border-bottom: 1px dashed #e1d8cd;
+      padding-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-deletar-historico {
+      background: none;
+      border: none;
+      color: #d93025;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .historico-item-linha {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.03);
+    }
+
+    .historico-item-nome {
+      font-weight: 500;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .historico-item-dados {
+      display: flex;
+      gap: 10px;
+      font-size: 11px;
+      color: #555;
+    }
+
+    /* Estilos do Ranking de Evolução */
+    .ranking-evolucao-linha {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      background-color: #f7f5f2;
+      border-radius: 8px;
+      font-size: 12px;
+      border-left: 3px solid #12364e;
+    }
+
+    .ranking-posicao {
+      font-weight: bold;
+      color: #d9b246;
+      margin-right: 8px;
+      min-width: 20px;
+    }
+
+    .ranking-nome {
+      flex: 1;
+      font-weight: 500;
+      color: #12364e;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ranking-dados-extra {
+      font-size: 11px;
+      color: #666;
+      margin-right: 10px;
+    }
+
+    .ranking-media-valor {
+      background: #12364e;
+      color: white;
+      font-weight: bold;
+      padding: 3px 6px;
+      border-radius: 6px;
+      font-size: 11px;
+    }
+
+    /* Rodapé com botão Voltar */
+    .footer-navegacao {
+      width: 100%;
+      max-width: 600px;
+      padding: 8px 16px 24px 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .btn-voltar-painel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px;
+      background-color: transparent;
+      color: #e1d8cd;
+      border: 2px solid #e1d8cd;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-voltar-painel:hover {
+      background-color: #e1d8cd;
+      color: #12364e;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header-banner">
+    <img src="https://i.ibb.co/twJd6BRq/Whats-App-Image-2026-06-29-at-10-42-05.jpg" alt="Banner Central do Adm">
+  </header>
+
+  <main class="main-container">
+    
+    <!-- Bloco Cadastrar Jogador -->
+    <div class="bloco-card">
+      <div class="titulo-secao">Cadastrar Jogador</div>
+      <form id="form-novo-jogador" class="form-inline">
+        <input type="text" id="nome-novo" placeholder="Nome do jogador" required>
+        <button type="submit" class="btn-add-tabela">Add</button>
+      </form>
+    </div>
+
+    <!-- Bloco de Listagem, Contadores Atuais e Botão de Registrar -->
+    <div class="bloco-card">
+      <div class="header-resultado-linha">
+        <div class="titulo-secao">Relação Ponto/Ataque e Conversão</div>
+        <button type="button" class="btn-zerar-todos" onclick="zerarTodosContadores()">ZERAR TODOS</button>
+      </div>
+      <div class="lista-fidelidade" id="tabela-conversao"></div>
+      
+      <!-- Botão Registrar Contagem do Dia posicionado abaixo dos nomes -->
+      <button type="button" class="btn-registrar-dia" onclick="registrarContagemDoDia()">Salvar no histórico</button>
+    </div>
+
+    <!-- Bloco de Histórico de Registros Diários (Minimizado por padrão) -->
+    <div class="bloco-card">
+      <div class="header-resultado-linha sem-margem-inferior" id="header-historico">
+        <div class="titulo-secao">Histórico</div>
+        <button type="button" class="btn-toggle-historico" id="btn-toggle-hist" onclick="alternarHistorico()">+</button>
+      </div>
+      <div class="conteudo-colapsavel" id="conteudo-historico">
+        <div class="lista-fidelidade" id="tabela-historico" style="margin-top: 12px;"></div>
+      </div>
+    </div>
+
+    <!-- Bloco de Ranking de Evolução (Baseado nos Históricos) -->
+    <div class="bloco-card">
+      <div class="header-resultado-linha">
+        <div class="titulo-secao">Ranking de Evolução</div>
+      </div>
+      <div class="lista-fidelidade" id="tabela-ranking-evolucao"></div>
+    </div>
+
+  </main>
+
+  <footer class="footer-navegacao">
+    <a href="dashboard.html" class="btn-voltar-painel">
+      <span>↩</span> Voltar
+    </a>
+  </footer>
+
+  <!-- Scripts Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
+      authDomain: "central-adm-bolafora.firebaseapp.com",
+      databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com",
+      projectId: "central-adm-bolafora",
+      storageBucket: "central-adm-bolafora.firebasestorage.app",
+      messagingSenderId: "429477810517",
+      appId: "1:429477810517:web:3be6c842269cbdfe4b5fdc"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
+
+    auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
+      .then(() => {
+        auth.onAuthStateChanged((user) => {
+          if (!user) {
+            window.location.href = 'index.html'; 
+          }
+        });
+      })
+      .catch((error) => {
+        console.error("Erro ao definir persistência de sessão:", error);
+      });
+
+    let BD_Conversao = {};
+    let BD_Historico = {};
+
+    function salvarDados() {
+      db.ref('relacao_ponto_ataque').set(BD_Conversao);
+    }
+
+    function salvarHistorico() {
+      db.ref('historico_ponto_ataque').set(BD_Historico);
+    }
+
+    db.ref('relacao_ponto_ataque').on('value', (snapshot) => {
+      const dadosNuvem = snapshot.val();
+      BD_Conversao = dadosNuvem || {};
+      atualizarTabelaVisual();
+    });
+
+    db.ref('historico_ponto_ataque').on('value', (snapshot) => {
+      const dadosNuvem = snapshot.val();
+      BD_Historico = dadosNuvem || {};
+      atualizarTabelaHistorico();
+      atualizarRankingEvolucao();
+    });
+
+    function calcularPorcentagem(ataqueComPonto, ataque) {
+      if (!ataque || ataque <= 0) return "0%";
+      const percentual = (ataqueComPonto / ataque) * 100;
+      return percentual.toFixed(1) + "%";
+    }
+
+    function alternarHistorico() {
+      const conteudo = document.getElementById('conteudo-historico');
+      const botao = document.getElementById('btn-toggle-hist');
+      const header = document.getElementById('header-historico');
+
+      conteudo.classList.toggle('ativo');
+      if (conteudo.classList.contains('ativo')) {
+        botao.textContent = '-';
+        header.classList.remove('sem-margem-inferior');
+      } else {
+        botao.textContent = '+';
+        header.classList.add('sem-margem-inferior');
+      }
+    }
+
+    function atualizarTabelaVisual() {
+      const container = document.getElementById('tabela-conversao');
+      container.innerHTML = '';
+
+      const itensOrdenados = Object.entries(BD_Conversao).sort();
+
+      if (itensOrdenados.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding: 15px; font-size:12px; opacity:0.6;">Nenhum registro cadastrado.</div>`;
+        return;
+      }
+
+      itensOrdenados.forEach(([nome, dados]) => {
+        const ataque = dados.ataque || 0;
+        const ataqueComPonto = dados.ataqueComPonto || 0;
+        const percentualStr = calcularPorcentagem(ataqueComPonto, ataque);
+
+        const item = document.createElement('div');
+        item.className = 'item-fidelidade';
+        
+        item.innerHTML = `
+          <span class="nome-diarista" title="${nome}">${nome}</span>
+          <div class="bloco-controles-grupo">
+            <!-- Contador de Ataque -->
+            <div class="bloco-contador-item">
+              <span class="label-contador-topo">Ataque</span>
+              <div class="bloco-controles">
+                <div class="botoes-setas">
+                  <button class="btn-seta-up" onclick="alterarContador('${nome}', 'ataque', 1)">▲</button>
+                  <span class="valor-presenca">${ataque}</span>
+                  <button class="btn-seta-down" onclick="alterarContador('${nome}', 'ataque', -1)">▼</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Contador de Ataque com Ponto -->
+            <div class="bloco-contador-item">
+              <span class="label-contador-topo">Atq c/ Ponto</span>
+              <div class="bloco-controles">
+                <div class="botoes-setas">
+                  <button class="btn-seta-up" onclick="alterarContador('${nome}', 'ataqueComPonto', 1)">▲</button>
+                  <span class="valor-presenca">${ataqueComPonto}</span>
+                  <button class="btn-seta-down" onclick="alterarContador('${nome}', 'ataqueComPonto', -1)">▼</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Porcentagem Calculada -->
+            <div class="bloco-porcentagem-item">
+              <span class="label-contador-topo">% Conv.</span>
+              <span class="valor-porcentagem" title="Percentual de Conversão">${percentualStr}</span>
+            </div>
+
+            <!-- Ações (Reiniciar e Excluir) -->
+            <div class="acoes-jogador">
+              <button class="btn-reiniciar-jogador" onclick="reiniciarJogador('${nome}')" title="Zerar contagem deste jogador">🔄</button>
+              <button class="btn-deletar-ranking" onclick="excluirItem('${nome}')" title="Excluir jogador">✕</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function atualizarTabelaHistorico() {
+      const container = document.getElementById('tabela-historico');
+      container.innerHTML = '';
+
+      const historicoOrdenado = Object.entries(BD_Historico).reverse();
+
+      if (historicoOrdenado.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding: 15px; font-size:12px; opacity:0.6;">Nenhum histórico registrado.</div>`;
+        return;
+      }
+
+      historicoOrdenado.forEach(([chaveId, registro]) => {
+        const bloco = document.createElement('div');
+        bloco.className = 'historico-bloco';
+
+        let itensHtml = '';
+        if (registro.dados) {
+          Object.entries(registro.dados).forEach(([nome, dados]) => {
+            const perc = calcularPorcentagem(dados.ataqueComPonto, dados.ataque);
+            itensHtml += `
+              <div class="historico-item-linha">
+                <span class="historico-item-nome">${nome}</span>
+                <div class="historico-item-dados">
+                  <span>Atq: <b>${dados.ataque}</b></span>
+                  <span>C/ Ponto: <b>${dados.ataqueComPonto}</b></span>
+                  <span>Conv: <b>${perc}</b></span>
+                </div>
+              </div>
+            `;
+          });
+        }
+
+        bloco.innerHTML = `
+          <div class="historico-data-titulo">
+            <span>📅 ${registro.dataHora}</span>
+            <button class="btn-deletar-historico" onclick="excluirHistorico('${chaveId}')" title="Excluir Registro">Excluir</button>
+          </div>
+          ${itensHtml || '<div style="font-size:11px; opacity:0.6;">Nenhum jogador registrado neste envio.</div>'}
+        `;
+        container.appendChild(bloco);
+      });
+    }
+
+    function atualizarRankingEvolucao() {
+      const container = document.getElementById('tabela-ranking-evolucao');
+      container.innerHTML = '';
+
+      let estatisticasJogadores = {};
+
+      // Agrega os dados de todos os históricos salvos
+      Object.values(BD_Historico).forEach(registro => {
+        if (registro.dados) {
+          Object.entries(registro.dados).forEach(([nome, dados]) => {
+            const ataque = dados.ataque || 0;
+            const ataqueComPonto = dados.ataqueComPonto || 0;
+            
+            if (!estatisticasJogadores[nome]) {
+              estatisticasJogadores[nome] = { somaPorcentagens: 0, totalRegistros: 0, totalAtq: 0, totalAtqPonto: 0 };
+            }
+
+            if (ataque > 0) {
+              const perc = (ataqueComPonto / ataque) * 100;
+              estatisticasJogadores[nome].somaPorcentagens += perc;
+              estatisticasJogadores[nome].totalRegistros += 1;
+            }
+            estatisticasJogadores[nome].totalAtq += ataque;
+            estatisticasJogadores[nome].totalAtqPonto += ataqueComPonto;
+          });
+        }
+      });
+
+      let listaRanking = [];
+      Object.entries(estatisticasJogadores).forEach(([nome, stats]) => {
+        if (stats.totalRegistros > 0) {
+          const media = stats.somaPorcentagens / stats.totalRegistros;
+          listaRanking.push({ nome, media, totalAtq: stats.totalAtq, totalAtqPonto: stats.totalAtqPonto });
+        }
+      });
+
+      // Ordena do maior para o menor percentual médio de conversão
+      listaRanking.sort((a, b) => b.media - a.media);
+
+      if (listaRanking.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding: 15px; font-size:12px; opacity:0.6;">Sem dados suficientes no histórico para gerar o ranking.</div>`;
+        return;
+      }
+
+      listaRanking.forEach((jogador, index) => {
+        const linha = document.createElement('div');
+        linha.className = 'ranking-evolucao-linha';
+        linha.innerHTML = `
+          <div style="display: flex; align-items: center; flex: 1; overflow: hidden;">
+            <span class="ranking-posicao">#${index + 1}</span>
+            <span class="ranking-nome" title="${jogador.nome}">${jogador.nome}</span>
+          </div>
+          <div style="display: flex; align-items: center; flex-shrink: 0;">
+            <span class="ranking-dados-extra">Atq: ${jogador.totalAtqPonto}/${jogador.totalAtq}</span>
+            <span class="ranking-media-valor" title="Média de Conversão nos Registros">${jogador.media.toFixed(1)}%</span>
+          </div>
+        `;
+        container.appendChild(linha);
+      });
+    }
+
+    window.zerarTodosContadores = function() {
+      if (Object.keys(BD_Conversao).length === 0) {
+        alert("Não há jogadores cadastrados.");
+        return;
+      }
+
+      if (confirm("Deseja realmente zerar a contagem de todos os jogadores?")) {
+        Object.keys(BD_Conversao).forEach(nome => {
+          BD_Conversao[nome].ataque = 0;
+          BD_Conversao[nome].ataqueComPonto = 0;
+        });
+        salvarDados();
+      }
+    }
+
+    window.reiniciarJogador = function(nome) {
+      if (!BD_Conversao[nome]) return;
+
+      if (confirm(`Deseja zerar a contagem de "${nome}"?`)) {
+        BD_Conversao[nome].ataque = 0;
+        BD_Conversao[nome].ataqueComPonto = 0;
+        salvarDados();
+      }
+    }
+
+    window.registrarContagemDoDia = function() {
+      if (Object.keys(BD_Conversao).length === 0) {
+        alert("Não há jogadores cadastrados para registrar.");
+        return;
+      }
+
+      if (!confirm("Deseja registrar a contagem atual, salvar no histórico e zerar todos os contadores?")) {
+        return;
+      }
+
+      const agora = new Date();
+      const dataHoraFormatada = agora.toLocaleDateString('pt-BR') + ' às ' + agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      const chaveId = 'hist_' + agora.getTime();
+
+      BD_Historico[chaveId] = {
+        dataHora: dataHoraFormatada,
+        dados: JSON.parse(JSON.stringify(BD_Conversao))
+      };
+
+      Object.keys(BD_Conversao).forEach(nome => {
+        BD_Conversao[nome].ataque = 0;
+        BD_Conversao[nome].ataqueComPonto = 0;
+      });
+
+      salvarHistorico();
+      salvarDados();
+      alert("Contagem registrada no histórico e zerada com sucesso!");
+    }
+
+    window.excluirHistorico = function(chaveId) {
+      if (confirm("Deseja remover este registro do histórico permanentemente?")) {
+        delete BD_Historico[chaveId];
+        salvarHistorico();
+      }
+    }
+
+    window.alterarContador = function(nome, campo, delta) {
+      if (!BD_Conversao[nome]) return;
+
+      let valorAtual = BD_Conversao[nome][campo] || 0;
+      let novoValor = valorAtual + delta;
+      if (novoValor < 0) novoValor = 0;
+
+      if (campo === 'ataqueComPonto' && novoValor > BD_Conversao[nome].ataque) {
+        BD_Conversao[nome].ataque = novoValor; 
+      } else if (campo === 'ataque' && novoValor < BD_Conversao[nome].ataqueComPonto) {
+        BD_Conversao[nome].ataqueComPonto = novoValor; 
+      }
+
+      BD_Conversao[nome][campo] = novoValor;
+      salvarDados();
+    }
+
+    document.getElementById('form-novo-jogador').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const input = document.getElementById('nome-novo');
+      const nome = input.value.trim();
+
+      if (!nome) return;
+
+      if (BD_Conversao.hasOwnProperty(nome)) {
+        alert("Este nome já está cadastrado!");
+        return;
+      }
+
+      BD_Conversao[nome] = {
+        ataque: 0,
+        ataqueComPonto: 0
+      };
+
+      salvarDados();
+      input.value = '';
+    });
+
+    window.excluirItem = function(nome) {
+      if (confirm(`Deseja remover "${nome}" permanentemente?`)) {
+        delete BD_Conversao[nome];
+        salvarDados();
+      }
+    }
+  </script>
+
+</body>
+</html>
