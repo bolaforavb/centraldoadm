@@ -515,7 +515,6 @@
 
   <main class="main-container">
     
-    <!-- Bloco Cadastrar Jogador -->
     <div class="bloco-card">
       <div class="titulo-secao">Cadastrar Jogador</div>
       <form id="form-novo-jogador" class="form-inline">
@@ -524,7 +523,6 @@
       </form>
     </div>
 
-    <!-- Bloco de Listagem, Contadores Atuais e Botão de Registrar -->
     <div class="bloco-card">
       <div class="header-resultado-linha">
         <div class="titulo-secao">Relação Ponto/Saque e Conversão</div>
@@ -532,11 +530,9 @@
       </div>
       <div class="lista-fidelidade" id="tabela-conversao"></div>
       
-      <!-- Botão Registrar Contagem do Dia posicionado abaixo dos nomes -->
       <button type="button" class="btn-registrar-dia" onclick="registrarContagemDoDia()">Salvar no histórico</button>
     </div>
 
-    <!-- Bloco de Histórico de Registros Diários (Minimizado por padrão) -->
     <div class="bloco-card">
       <div class="header-resultado-linha sem-margem-inferior" id="header-historico">
         <div class="titulo-secao">Histórico</div>
@@ -547,7 +543,6 @@
       </div>
     </div>
 
-    <!-- Bloco de Ranking de Evolução (Baseado nos Históricos) -->
     <div class="bloco-card">
       <div class="header-resultado-linha">
         <div class="titulo-secao">Ranking de Evolução</div>
@@ -563,7 +558,6 @@
     </a>
   </footer>
 
-  <!-- Scripts Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -619,9 +613,10 @@
       atualizarRankingEvolucao();
     });
 
-    function calcularPorcentagem(saqueComPonto, saque) {
-      if (!saque || saque <= 0) return "0%";
-      const percentual = (saqueComPonto / saque) * 100;
+    function calcularPorcentagem(saqueComPonto, erro) {
+      const total = (saqueComPonto || 0) + (erro || 0);
+      if (total <= 0) return "0%";
+      const percentual = (saqueComPonto / total) * 100;
       return percentual.toFixed(1) + "%";
     }
 
@@ -652,10 +647,10 @@
       }
 
       itensOrdenados.forEach(([nome, dados]) => {
-        const saque = dados.saque || 0;
+        const erro = dados.erro || 0;
         const saqueComPonto = dados.saqueComPonto || 0;
         const tipoAtivo = dados.tipoSaqueAtivo || '';
-        const percentualStr = calcularPorcentagem(saqueComPonto, saque);
+        const percentualStr = calcularPorcentagem(saqueComPonto, erro);
 
         const item = document.createElement('div');
         item.className = 'item-fidelidade';
@@ -663,7 +658,6 @@
         item.innerHTML = `
           <span class="nome-diarista" title="${nome}">${nome}</span>
 
-          <!-- Botões de Saque inseridos no espaço intermediário -->
           <div class="grupo-botoes-saque">
             <button class="btn-tipo-saque ${tipoAtivo === 'Por baixo' ? 'aceso' : ''}" onclick="alternarTipoSaque('${nome}', 'Por baixo')">Por baixo</button>
             <button class="btn-tipo-saque ${tipoAtivo === 'Viagem' ? 'aceso' : ''}" onclick="alternarTipoSaque('${nome}', 'Viagem')">Viagem</button>
@@ -671,19 +665,17 @@
           </div>
 
           <div class="bloco-controles-grupo">
-            <!-- Contador de Saque -->
             <div class="bloco-contador-item">
-              <span class="label-contador-topo">Saque</span>
+              <span class="label-contador-topo">Erro</span>
               <div class="bloco-controles">
                 <div class="botoes-setas">
-                  <button class="btn-seta-up" onclick="alterarContador('${nome}', 'saque', 1)">▲</button>
-                  <span class="valor-presenca">${saque}</span>
-                  <button class="btn-seta-down" onclick="alterarContador('${nome}', 'saque', -1)">▼</button>
+                  <button class="btn-seta-up" onclick="alterarContador('${nome}', 'erro', 1)">▲</button>
+                  <span class="valor-presenca">${erro}</span>
+                  <button class="btn-seta-down" onclick="alterarContador('${nome}', 'erro', -1)">▼</button>
                 </div>
               </div>
             </div>
 
-            <!-- Contador de Saque com Ponto -->
             <div class="bloco-contador-item">
               <span class="label-contador-topo">Ace</span>
               <div class="bloco-controles">
@@ -695,13 +687,11 @@
               </div>
             </div>
 
-            <!-- Porcentagem Calculada -->
             <div class="bloco-porcentagem-item">
               <span class="label-contador-topo">% Conv.</span>
               <span class="valor-porcentagem" title="Percentual de Conversão">${percentualStr}</span>
             </div>
 
-            <!-- Ações (Reiniciar e Excluir) -->
             <div class="acoes-jogador">
               <button class="btn-reiniciar-jogador" onclick="reiniciarJogador('${nome}')" title="Zerar contagem deste jogador">🔄</button>
               <button class="btn-deletar-ranking" onclick="excluirItem('${nome}')" title="Excluir jogador">✕</button>
@@ -730,7 +720,7 @@
         let itensHtml = '';
         if (registro.dados) {
           Object.entries(registro.dados).forEach(([nome, dados]) => {
-            const percGeral = calcularPorcentagem(dados.saqueComPonto, dados.saque);
+            const percGeral = calcularPorcentagem(dados.saqueComPonto, dados.erro);
             const tiposDetalhados = dados.tiposSaqueDetalhes || {};
             const tiposUsados = Object.keys(tiposDetalhados);
 
@@ -739,9 +729,8 @@
               let fragmentos = [];
               tiposUsados.forEach(tipo => {
                 const tInfo = tiposDetalhados[tipo];
-                const tPerc = calcularPorcentagem(tInfo.saqueComPonto, tInfo.saque);
-                // Exibe no formato correto: Pontos / Tentativas (ex: 0/2)
-                fragmentos.push(`<span><b>${tipo}:</b> ${tInfo.saqueComPonto}/${tInfo.saque} (${tPerc})</span>`);
+                const tPerc = calcularPorcentagem(tInfo.saqueComPonto, tInfo.erro);
+                fragmentos.push(`<span><b>${tipo}:</b> Ace: ${tInfo.saqueComPonto} / Erro: ${tInfo.erro} (${tPerc})</span>`);
               });
               detalhesHtml = `<div class="historico-subdetalhes">${fragmentos.join('')}</div>`;
             }
@@ -751,8 +740,8 @@
                 <div class="historico-linha-principal">
                   <span class="historico-item-nome">${nome}</span>
                   <div class="historico-item-dados">
-                    <span>Saque: <b>${dados.saque}</b></span>
-                    <span>C/ Ponto: <b>${dados.saqueComPonto}</b></span>
+                    <span>Erro: <b>${dados.erro || 0}</b></span>
+                    <span>Ace: <b>${dados.saqueComPonto || 0}</b></span>
                     <span>Geral: <b>${percGeral}</b></span>
                   </div>
                 </div>
@@ -782,19 +771,20 @@
       Object.values(BD_Historico).forEach(registro => {
         if (registro.dados) {
           Object.entries(registro.dados).forEach(([nome, dados]) => {
-            const saque = dados.saque || 0;
+            const erro = dados.erro || 0;
             const saqueComPonto = dados.saqueComPonto || 0;
             
             if (!estatisticasJogadores[nome]) {
-              estatisticasJogadores[nome] = { somaPorcentagens: 0, totalRegistros: 0, totalSaque: 0, totalSaquePonto: 0 };
+              estatisticasJogadores[nome] = { somaPorcentagens: 0, totalRegistros: 0, totalErro: 0, totalSaquePonto: 0 };
             }
 
-            if (saque > 0) {
-              const perc = (saqueComPonto / saque) * 100;
+            const total = saqueComPonto + erro;
+            if (total > 0) {
+              const perc = (saqueComPonto / total) * 100;
               estatisticasJogadores[nome].somaPorcentagens += perc;
               estatisticasJogadores[nome].totalRegistros += 1;
             }
-            estatisticasJogadores[nome].totalSaque += saque;
+            estatisticasJogadores[nome].totalErro += erro;
             estatisticasJogadores[nome].totalSaquePonto += saqueComPonto;
           });
         }
@@ -804,7 +794,7 @@
       Object.entries(estatisticasJogadores).forEach(([nome, stats]) => {
         if (stats.totalRegistros > 0) {
           const media = stats.somaPorcentagens / stats.totalRegistros;
-          listaRanking.push({ nome, media, totalSaque: stats.totalSaque, totalSaquePonto: stats.totalSaquePonto });
+          listaRanking.push({ nome, media, totalErro: stats.totalErro, totalSaquePonto: stats.totalSaquePonto });
         }
       });
 
@@ -824,7 +814,7 @@
             <span class="ranking-nome" title="${jogador.nome}">${jogador.nome}</span>
           </div>
           <div style="display: flex; align-items: center; flex-shrink: 0;">
-            <span class="ranking-dados-extra">Saque: ${jogador.totalSaquePonto}/${jogador.totalSaque}</span>
+            <span class="ranking-dados-extra">Ace/Erro: ${jogador.totalSaquePonto}/${jogador.totalErro}</span>
             <span class="ranking-media-valor" title="Média de Conversão nos Registros">${jogador.media.toFixed(1)}%</span>
           </div>
         `;
@@ -852,7 +842,7 @@
 
       if (confirm("Deseja realmente zerar a contagem de todos os jogadores?")) {
         Object.keys(BD_Conversao).forEach(nome => {
-          BD_Conversao[nome].saque = 0;
+          BD_Conversao[nome].erro = 0;
           BD_Conversao[nome].saqueComPonto = 0;
           BD_Conversao[nome].tipoSaqueAtivo = '';
           BD_Conversao[nome].tiposSaqueDetalhes = {};
@@ -865,7 +855,7 @@
       if (!BD_Conversao[nome]) return;
 
       if (confirm(`Deseja zerar a contagem de "${nome}"?`)) {
-        BD_Conversao[nome].saque = 0;
+        BD_Conversao[nome].erro = 0;
         BD_Conversao[nome].saqueComPonto = 0;
         BD_Conversao[nome].tipoSaqueAtivo = '';
         BD_Conversao[nome].tiposSaqueDetalhes = {};
@@ -893,7 +883,7 @@
       };
 
       Object.keys(BD_Conversao).forEach(nome => {
-        BD_Conversao[nome].saque = 0;
+        BD_Conversao[nome].erro = 0;
         BD_Conversao[nome].saqueComPonto = 0;
         BD_Conversao[nome].tipoSaqueAtivo = '';
         BD_Conversao[nome].tiposSaqueDetalhes = {};
@@ -918,26 +908,22 @@
       let novoValor = valorAtual + delta;
       if (novoValor < 0) novoValor = 0;
 
-      if (campo === 'saqueComPonto' && novoValor > BD_Conversao[nome].saque) {
-        BD_Conversao[nome].saque = novoValor; 
-      } else if (campo === 'saque' && novoValor < BD_Conversao[nome].saqueComPonto) {
-        BD_Conversao[nome].saqueComPonto = novoValor; 
-      }
-
       const diferenca = novoValor - valorAtual;
-
       BD_Conversao[nome][campo] = novoValor;
 
-      if (diferenca > 0) {
+      if (diferenca !== 0) {
         const tipoAtivo = BD_Conversao[nome].tipoSaqueAtivo;
         if (tipoAtivo) {
           if (!BD_Conversao[nome].tiposSaqueDetalhes) {
             BD_Conversao[nome].tiposSaqueDetalhes = {};
           }
           if (!BD_Conversao[nome].tiposSaqueDetalhes[tipoAtivo]) {
-            BD_Conversao[nome].tiposSaqueDetalhes[tipoAtivo] = { saque: 0, saqueComPonto: 0 };
+            BD_Conversao[nome].tiposSaqueDetalhes[tipoAtivo] = { erro: 0, saqueComPonto: 0 };
           }
           BD_Conversao[nome].tiposSaqueDetalhes[tipoAtivo][campo] += diferenca;
+          if (BD_Conversao[nome].tiposSaqueDetalhes[tipoAtivo][campo] < 0) {
+            BD_Conversao[nome].tiposSaqueDetalhes[tipoAtivo][campo] = 0;
+          }
         }
       }
 
@@ -957,7 +943,7 @@
       }
 
       BD_Conversao[nome] = {
-        saque: 0,
+        erro: 0,
         saqueComPonto: 0,
         tipoSaqueAtivo: '',
         tiposSaqueDetalhes: {}
