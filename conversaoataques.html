@@ -576,9 +576,10 @@
       atualizarRankingEvolucao();
     });
 
-    function calcularPorcentagem(ataqueComPonto, ataque) {
-      if (!ataque || ataque <= 0) return "0%";
-      const percentual = (ataqueComPonto / ataque) * 100;
+    function calcularPorcentagem(ponto, erro) {
+      const total = ponto + erro;
+      if (!total || total <= 0) return "0%";
+      const percentual = (ponto / total) * 100;
       return percentual.toFixed(1) + "%";
     }
 
@@ -609,9 +610,9 @@
       }
 
       itensOrdenados.forEach(([nome, dados]) => {
-        const ataque = dados.ataque || 0;
-        const ataqueComPonto = dados.ataqueComPonto || 0;
-        const percentualStr = calcularPorcentagem(ataqueComPonto, ataque);
+        const erro = dados.erro || 0;
+        const ponto = dados.ponto || 0;
+        const percentualStr = calcularPorcentagem(ponto, erro);
 
         const item = document.createElement('div');
         item.className = 'item-fidelidade';
@@ -619,26 +620,26 @@
         item.innerHTML = `
           <span class="nome-diarista" title="${nome}">${nome}</span>
           <div class="bloco-controles-grupo">
-            <!-- Contador de Ataque -->
+            <!-- Contador de Erro -->
             <div class="bloco-contador-item">
-              <span class="label-contador-topo">Ataque</span>
+              <span class="label-contador-topo">Erro</span>
               <div class="bloco-controles">
                 <div class="botoes-setas">
-                  <button class="btn-seta-up" onclick="alterarContador('${nome}', 'ataque', 1)">▲</button>
-                  <span class="valor-presenca">${ataque}</span>
-                  <button class="btn-seta-down" onclick="alterarContador('${nome}', 'ataque', -1)">▼</button>
+                  <button class="btn-seta-up" onclick="alterarContador('${nome}', 'erro', 1)">▲</button>
+                  <span class="valor-presenca">${erro}</span>
+                  <button class="btn-seta-down" onclick="alterarContador('${nome}', 'erro', -1)">▼</button>
                 </div>
               </div>
             </div>
 
-            <!-- Contador de Ataque com Ponto -->
+            <!-- Contador de Ponto -->
             <div class="bloco-contador-item">
-              <span class="label-contador-topo">Atq c/ Ponto</span>
+              <span class="label-contador-topo">Ponto</span>
               <div class="bloco-controles">
                 <div class="botoes-setas">
-                  <button class="btn-seta-up" onclick="alterarContador('${nome}', 'ataqueComPonto', 1)">▲</button>
-                  <span class="valor-presenca">${ataqueComPonto}</span>
-                  <button class="btn-seta-down" onclick="alterarContador('${nome}', 'ataqueComPonto', -1)">▼</button>
+                  <button class="btn-seta-up" onclick="alterarContador('${nome}', 'ponto', 1)">▲</button>
+                  <span class="valor-presenca">${ponto}</span>
+                  <button class="btn-seta-down" onclick="alterarContador('${nome}', 'ponto', -1)">▼</button>
                 </div>
               </div>
             </div>
@@ -678,13 +679,15 @@
         let itensHtml = '';
         if (registro.dados) {
           Object.entries(registro.dados).forEach(([nome, dados]) => {
-            const perc = calcularPorcentagem(dados.ataqueComPonto, dados.ataque);
+            const erroVal = dados.erro || 0;
+            const pontoVal = dados.ponto || 0;
+            const perc = calcularPorcentagem(pontoVal, erroVal);
             itensHtml += `
               <div class="historico-item-linha">
                 <span class="historico-item-nome">${nome}</span>
                 <div class="historico-item-dados">
-                  <span>Atq: <b>${dados.ataque}</b></span>
-                  <span>C/ Ponto: <b>${dados.ataqueComPonto}</b></span>
+                  <span>Erro: <b>${erroVal}</b></span>
+                  <span>Ponto: <b>${pontoVal}</b></span>
                   <span>Conv: <b>${perc}</b></span>
                 </div>
               </div>
@@ -713,20 +716,21 @@
       Object.values(BD_Historico).forEach(registro => {
         if (registro.dados) {
           Object.entries(registro.dados).forEach(([nome, dados]) => {
-            const ataque = dados.ataque || 0;
-            const ataqueComPonto = dados.ataqueComPonto || 0;
+            const erro = dados.erro || 0;
+            const ponto = dados.ponto || 0;
             
             if (!estatisticasJogadores[nome]) {
-              estatisticasJogadores[nome] = { somaPorcentagens: 0, totalRegistros: 0, totalAtq: 0, totalAtqPonto: 0 };
+              estatisticasJogadores[nome] = { somaPorcentagens: 0, totalRegistros: 0, totalErro: 0, totalPonto: 0 };
             }
 
-            if (ataque > 0) {
-              const perc = (ataqueComPonto / ataque) * 100;
+            const totalAcoes = ponto + erro;
+            if (totalAcoes > 0) {
+              const perc = (ponto / totalAcoes) * 100;
               estatisticasJogadores[nome].somaPorcentagens += perc;
               estatisticasJogadores[nome].totalRegistros += 1;
             }
-            estatisticasJogadores[nome].totalAtq += ataque;
-            estatisticasJogadores[nome].totalAtqPonto += ataqueComPonto;
+            estatisticasJogadores[nome].totalErro += erro;
+            estatisticasJogadores[nome].totalPonto += ponto;
           });
         }
       });
@@ -735,7 +739,7 @@
       Object.entries(estatisticasJogadores).forEach(([nome, stats]) => {
         if (stats.totalRegistros > 0) {
           const media = stats.somaPorcentagens / stats.totalRegistros;
-          listaRanking.push({ nome, media, totalAtq: stats.totalAtq, totalAtqPonto: stats.totalAtqPonto });
+          listaRanking.push({ nome, media, totalErro: stats.totalErro, totalPonto: stats.totalPonto });
         }
       });
 
@@ -756,7 +760,7 @@
             <span class="ranking-nome" title="${jogador.nome}">${jogador.nome}</span>
           </div>
           <div style="display: flex; align-items: center; flex-shrink: 0;">
-            <span class="ranking-dados-extra">Atq: ${jogador.totalAtqPonto}/${jogador.totalAtq}</span>
+            <span class="ranking-dados-extra">Pto/Err: ${jogador.totalPonto}/${jogador.totalErro}</span>
             <span class="ranking-media-valor" title="Média de Conversão nos Registros">${jogador.media.toFixed(1)}%</span>
           </div>
         `;
@@ -772,8 +776,8 @@
 
       if (confirm("Deseja realmente zerar a contagem de todos os jogadores?")) {
         Object.keys(BD_Conversao).forEach(nome => {
-          BD_Conversao[nome].ataque = 0;
-          BD_Conversao[nome].ataqueComPonto = 0;
+          BD_Conversao[nome].erro = 0;
+          BD_Conversao[nome].ponto = 0;
         });
         salvarDados();
       }
@@ -783,8 +787,8 @@
       if (!BD_Conversao[nome]) return;
 
       if (confirm(`Deseja zerar a contagem de "${nome}"?`)) {
-        BD_Conversao[nome].ataque = 0;
-        BD_Conversao[nome].ataqueComPonto = 0;
+        BD_Conversao[nome].erro = 0;
+        BD_Conversao[nome].ponto = 0;
         salvarDados();
       }
     }
@@ -809,8 +813,8 @@
       };
 
       Object.keys(BD_Conversao).forEach(nome => {
-        BD_Conversao[nome].ataque = 0;
-        BD_Conversao[nome].ataqueComPonto = 0;
+        BD_Conversao[nome].erro = 0;
+        BD_Conversao[nome].ponto = 0;
       });
 
       salvarHistorico();
@@ -832,12 +836,6 @@
       let novoValor = valorAtual + delta;
       if (novoValor < 0) novoValor = 0;
 
-      if (campo === 'ataqueComPonto' && novoValor > BD_Conversao[nome].ataque) {
-        BD_Conversao[nome].ataque = novoValor; 
-      } else if (campo === 'ataque' && novoValor < BD_Conversao[nome].ataqueComPonto) {
-        BD_Conversao[nome].ataqueComPonto = novoValor; 
-      }
-
       BD_Conversao[nome][campo] = novoValor;
       salvarDados();
     }
@@ -855,8 +853,8 @@
       }
 
       BD_Conversao[nome] = {
-        ataque: 0,
-        ataqueComPonto: 0
+        erro: 0,
+        ponto: 0
       };
 
       salvarDados();
