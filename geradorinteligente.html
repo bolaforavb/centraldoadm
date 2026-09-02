@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador de Times Inteligente - Central do Adm</title>
+  <link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
+  
+  <style>
+    /* Reset global idêntico ao painel */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: sans-serif;
+      background-color: #12364e; 
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center; 
+      min-height: 100vh;
+      color: #12364e;
+    }
+
+    .header-banner {
+      width: 100%; 
+      max-width: 600px;
+      background-color: #e1d8cd; 
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .header-banner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; 
+    }
+
+    .main-container {
+      width: 100%;
+      max-width: 600px;
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Estrutura de Card baseada no design original */
+    .bloco-card {
+      background-color: white; 
+      border-radius: 16px;
+      width: 100%;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .titulo-secao {
+      font-size: 13px;
+      font-weight: bold;
+      color: #12364e;
+      margin: 0 0 12px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      padding-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Cabeçalho de Jogadores em duas linhas */
+    .header-jogadores-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      padding-bottom: 10px;
+      width: 100%;
+    }
+
+    .linha-titulo-topo {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .linha-titulo-topo .titulo-secao {
+      margin: 0;
+      border: none;
+      padding: 0;
+    }
+
+    /* Bloco de Filtros no Cabeçalho */
+    .bloco-filtros {
+      display: flex;
+      gap: 4px;
+    }
+
+    .btn-filtro {
+      background-color: #f7f5f2;
+      color: #12364e;
+      border: 1px solid #12364e;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: bold;
+      padding: 4px 8px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .btn-filtro.ativo {
+      background-color: #12364e;
+      color: white;
+    }
+
+    /* Segunda linha: Selecionar Todos e Pesquisa */
+    .linha-controles-abaixo {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .btn-selecionar-todos {
+      background-color: #f7f5f2;
+      color: #12364e;
+      border: 1px solid #12364e;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 6px 10px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      white-space: nowrap;
+    }
+    .btn-selecionar-todos:hover {
+      background-color: #12364e;
+      color: white;
+    }
+
+    .input-pesquisa-jogador {
+      padding: 6px 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #12364e;
+      outline: none;
+      width: 180px;
+      height: 25px;
+    }
+
+    /* Inputs padronizados */
+    input[type="text"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #12364e;
+      outline: none;
+    }
+
+    .form-inline {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .form-inline input {
+      flex: 1;
+    }
+
+    .btn-add-tabela {
+      padding: 10px 16px;
+      background-color: #d9b246;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+    .btn-add-tabela:hover { background-color: #af8a23; }
+
+    /* Lista de Jogadores */
+    .lista-fidelidade {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      max-height: 450px;
+      overflow-y: auto;
+    }
+
+    .item-fidelidade {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background-color: #f7f5f2;
+      border-radius: 8px;
+      border-left: 3px solid #d9b246;
+      gap: 8px;
+    }
+
+    .info-jogador-esq {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .checkbox-flag {
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+      accent-color: #12364e;
+      flex-shrink: 0;
+    }
+
+    /* Botões M e D à esquerda do nome */
+    .container-md {
+      display: flex;
+      gap: 3px;
+      flex-shrink: 0;
+    }
+
+    .retangulo-md {
+      font-size: 9px;
+      font-weight: bold;
+      width: 20px;
+      height: 22px;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: center;
+      user-select: none;
+      transition: background 0.2s, color 0.2s, border 0.2s;
+      border: 1px solid #12364e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .retangulo-md.aceso {
+      background-color: #12364e;
+      color: white;
+    }
+
+    .retangulo-md.apagado {
+      background-color: #f7f5f2;
+      color: #12364e;
+      opacity: 0.5;
+    }
+
+    .nome-diarista {
+      font-size: 13px;
+      font-weight: 500;
+      color: #12364e;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+    }
+
+    .bloco-controles-grupo {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    /* Bloco centralizado e espaçado para o Nível */
+    .bloco-contador-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      width: 44px;
+      flex-shrink: 0;
+      margin-right: 6px;
+    }
+
+    .label-contador-topo {
+      font-size: 9px;
+      font-weight: bold;
+      text-transform: uppercase;
+      color: #12364e;
+      opacity: 0.7;
+      white-space: nowrap;
+      line-height: 1;
+    }
+
+    .botoes-setas { 
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      gap: 2px; 
+    }
+
+    .btn-seta-up, .btn-seta-down {
+      background: none;
+      border: none;
+      color: #d9b246;
+      font-size: 10px;
+      padding: 1px;
+      line-height: 1;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .valor-presenca {
+      font-size: 11px;
+      font-weight: bold;
+      background: #12364e;
+      color: white;
+      padding: 2px 4px;
+      border-radius: 4px;
+      min-width: 24px;
+      text-align: center;
+      display: inline-block;
+    }
+
+    /* Container para alinhar verticalmente os retângulos de habilidades */
+    .container-habilidades {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Retângulos de Habilidades */
+    .retangulo-habilidade {
+      font-size: 9px;
+      font-weight: bold;
+      padding: 5px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: center;
+      user-select: none;
+      transition: background 0.2s, color 0.2s, border 0.2s;
+      border: 1px solid #12364e;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 24px;
+    }
+
+    .retangulo-habilidade.aceso {
+      background-color: #12364e;
+      color: white;
+    }
+
+    .retangulo-habilidade.apagado {
+      background-color: #f7f5f2;
+      color: #12364e;
+      opacity: 0.5;
+    }
+
+    .acoes-jogador {
+      display: flex;
+      align-items: center;
+      margin-left: 2px;
+    }
+
+    .btn-deletar-ranking {
+      background: none;
+      border: none;
+      color: #d93025;
+      font-weight: bold;
+      font-size: 12px;
+      padding: 2px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Bloco de Times */
+    .btn-gerar-times {
+      width: 100%;
+      padding: 12px;
+      background-color: #d9b246;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .btn-gerar-times:hover { background-color: #af8a23; }
+
+    .grid-times {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 500px) {
+      .grid-times {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card-time {
+      background-color: #f7f5f2;
+      border-radius: 8px;
+      padding: 12px;
+      border-left: 4px solid #12364e;
+    }
+
+    .card-time.amarelo { border-left-color: #f1c40f; }
+    .card-time.azul { border-left-color: #3498db; }
+    .card-time.rosa { border-left-color: #e84393; }
+    .card-time.roxo { border-left-color: #9b59b6; }
+
+    .titulo-time {
+      font-size: 12px;
+      font-weight: bold;
+      color: #12364e;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      padding-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .lista-membros-time {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .membro-time-item {
+      font-size: 11px;
+      font-weight: 500;
+      color: #12364e;
+      background: white;
+      padding: 5px 8px;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .membro-detalhes-dir {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Container dos quadradinhos de fundamentos */
+    .membro-fundamentos-container {
+      display: flex;
+      gap: 2px;
+    }
+
+    .membro-fundamento-box {
+      font-size: 8px;
+      font-weight: bold;
+      color: white;
+      background: #12364e;
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .membro-nivel {
+      font-size: 9px;
+      background: #12364e;
+      color: white;
+      padding: 2px 5px;
+      border-radius: 3px;
+    }
+
+    /* Botão do WhatsApp */
+    .btn-whatsapp {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      margin-top: 14px;
+      padding: 12px;
+      background-color: #25d366;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .btn-whatsapp:hover { background-color: #1ebe5d; }
+
+    /* Rodapé com botão Voltar */
+    .footer-navegacao {
+      width: 100%;
+      max-width: 600px;
+      padding: 8px 16px 24px 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .btn-voltar-painel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px;
+      background-color: transparent;
+      color: #e1d8cd;
+      border: 2px solid #e1d8cd;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-voltar-painel:hover {
+      background-color: #e1d8cd;
+      color: #12364e;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header-banner">
+    <img src="https://i.ibb.co/twJd6BRq/Whats-App-Image-2026-06-29-at-10-42-05.jpg" alt="Banner Central do Adm">
+  </header>
+
+  <main class="main-container">
+    
+    <!-- Bloco Cadastrar Jogadores -->
+    <div class="bloco-card">
+      <div class="titulo-secao">Cadastrar Jogadores</div>
+      <form id="form-novo-jogador" class="form-inline">
+        <input type="text" id="nome-novo" placeholder="Nome do jogador" required>
+        <button type="submit" class="btn-add-tabela">Add</button>
+      </form>
+    </div>
+
+    <!-- Bloco Jogadores com Filtros, Selecionar Todos e Pesquisa -->
+    <div class="bloco-card">
+      <div class="header-jogadores-container">
+        <div class="linha-titulo-topo">
+          <div class="titulo-secao">Jogadores</div>
+          <div class="bloco-filtros">
+            <button type="button" class="btn-filtro ativo" id="filtro-todos" onclick="definirFiltro('todos')">Todos</button>
+            <button type="button" class="btn-filtro" id="filtro-mensalistas" onclick="definirFiltro('mensalistas')">Mensalistas</button>
+            <button type="button" class="btn-filtro" id="filtro-diaristas" onclick="definirFiltro('diaristas')">Diaristas</button>
+          </div>
+        </div>
+        <div class="linha-controles-abaixo">
+          <button type="button" class="btn-selecionar-todos" onclick="alternarSelecionarTodos()">Selecionar todos</button>
+          <input type="text" id="input-pesquisa" class="input-pesquisa-jogador" placeholder="Pesquisar jogador..." oninput="atualizarTabelaVisual()">
+        </div>
+      </div>
+      <div class="lista-fidelidade" id="tabela-jogadores"></div>
+    </div>
+
+    <!-- Bloco Times -->
+    <div class="bloco-card">
+      <div class="titulo-secao">Times</div>
+      <button type="button" class="btn-gerar-times" onclick="gerarTimes()">Gerar Times</button>
+      <div id="container-times" style="margin-top: 12px;"></div>
+    </div>
+
+  </main>
+
+  <footer class="footer-navegacao">
+    <a href="dashboard.html" class="btn-voltar-painel">
+      <span>↩</span> Voltar
+    </a>
+  </footer>
+
+  <!-- Scripts Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
+      authDomain: "central-adm-bolafora.firebaseapp.com",
+      databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com",
+      projectId: "central-adm-bolafora",
+      storageBucket: "central-adm-bolafora.firebasestorage.app",
+      messagingSenderId: "429477810517",
+      appId: "1:429477810517:web:3be6c842269cbdfe4b5fdc"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
+
+    // Validação e bloqueio de usuário (sessão)
+    auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
+      .then(() => {
+        auth.onAuthStateChanged((user) => {
+          if (!user) {
+            window.location.href = 'index.html'; 
+          }
+        });
+      })
+      .catch((error) => {
+        console.error("Erro ao definir persistência de sessão:", error);
+      });
+
+    let BD_GeradorTimes = {};
+    let filtroAtual = 'todos'; // 'todos', 'mensalistas', 'diaristas'
+    let ultimoTimesGerados = null; // Armazena os times gerados para o WhatsApp
+
+    function salvarDados() {
+      db.ref('gerador_times_inteligente').set(BD_GeradorTimes);
+    }
+
+    // Sincronização em tempo real com o Firebase Database
+    db.ref('gerador_times_inteligente').on('value', (snapshot) => {
+      const dadosNuvem = snapshot.val();
+      BD_GeradorTimes = dadosNuvem || {};
+      atualizarTabelaVisual();
+    });
+
+    function definirFiltro(tipo) {
+      filtroAtual = tipo;
+      document.querySelectorAll('.btn-filtro').forEach(btn => btn.classList.remove('ativo'));
+      if (tipo === 'todos') document.getElementById('filtro-todos').classList.add('ativo');
+      if (tipo === 'mensalistas') document.getElementById('filtro-mensalistas').classList.add('ativo');
+      if (tipo === 'diaristas') document.getElementById('filtro-diaristas').classList.add('ativo');
+      atualizarTabelaVisual();
+    }
+
+    function obterJogadoresFiltrados() {
+      let itensOrdenados = Object.entries(BD_GeradorTimes).sort();
+
+      if (filtroAtual === 'mensalistas') {
+        itensOrdenados = itensOrdenados.filter(([_, dados]) => dados.mensalista === true);
+      } else if (filtroAtual === 'diaristas') {
+        itensOrdenados = itensOrdenados.filter(([_, dados]) => dados.diarista === true);
+      }
+
+      const termoPesquisa = document.getElementById('input-pesquisa').value.toLowerCase().trim();
+      if (termoPesquisa) {
+        itensOrdenados = itensOrdenados.filter(([nome, _]) => nome.toLowerCase().includes(termoPesquisa));
+      }
+
+      return itensOrdenados;
+    }
+
+    function alternarSelecionarTodos() {
+      const visiveis = obterJogadoresFiltrados();
+      if (visiveis.length === 0) return;
+
+      const todosJaMarcados = visiveis.every(([_, dados]) => dados.flagado === true);
+      const novoEstado = !todosJaMarcados;
+
+      visiveis.forEach(([nome, _]) => {
+        if (BD_GeradorTimes[nome]) {
+          BD_GeradorTimes[nome].flagado = novoEstado;
+        }
+      });
+
+      salvarDados();
+    }
+
+    function atualizarTabelaVisual() {
+      const container = document.getElementById('tabela-jogadores');
+      container.innerHTML = '';
+
+      const itensOrdenados = obterJogadoresFiltrados();
+
+      if (itensOrdenados.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding: 15px; font-size:12px; opacity:0.6;">Nenhum jogador encontrado.</div>`;
+        return;
+      }
+
+      itensOrdenados.forEach(([nome, dados]) => {
+        const flagado = dados.flagado || false;
+        const mensalista = dados.mensalista !== undefined ? dados.mensalista : false;
+        const diarista = dados.diarista !== undefined ? dados.diarista : false;
+        const nivel = dados.nivel !== undefined ? dados.nivel : 1.0;
+        const movimentacao = dados.movimentacao !== undefined ? dados.movimentacao : false;
+        const ataque = dados.ataque !== undefined ? dados.ataque : false;
+        const bloqueio = dados.bloqueio !== undefined ? dados.bloqueio : false;
+        const levantamento = dados.levantamento !== undefined ? dados.levantamento : false;
+        const recepcao = dados.recepcao !== undefined ? dados.recepcao : false;
+
+        const item = document.createElement('div');
+        item.className = 'item-fidelidade';
+        
+        item.innerHTML = `
+          <div class="info-jogador-esq">
+            <input type="checkbox" class="checkbox-flag" ${flagado ? 'checked' : ''} onclick="alternarFlag('${nome}')" title="Selecionar jogador">
+            <div class="container-md">
+              <div class="retangulo-md ${diarista ? 'aceso' : 'apagado'}" onclick="alternarTipoJogador('${nome}', 'diarista')" title="Diarista">D</div>
+              <div class="retangulo-md ${mensalista ? 'aceso' : 'apagado'}" onclick="alternarTipoJogador('${nome}', 'mensalista')" title="Mensalista">M</div>
+            </div>
+            <span class="nome-diarista" title="${nome}">${nome}</span>
+          </div>
+          <div class="bloco-controles-grupo">
+            <!-- Contador de Nível (1 a 5 com passos de 0.5) -->
+            <div class="bloco-contador-item">
+              <span class="label-contador-topo">Nível</span>
+              <div class="botoes-setas">
+                <button class="btn-seta-up" onclick="alterarNivel('${nome}', 0.5)">▲</button>
+                <span class="valor-presenca">${nivel.toFixed(1)}</span>
+                <button class="btn-seta-down" onclick="alterarNivel('${nome}', -0.5)">▼</button>
+              </div>
+            </div>
+
+            <!-- Grupo de Habilidades Alinhado -->
+            <div class="container-habilidades">
+              <div class="retangulo-habilidade ${movimentacao ? 'aceso' : 'apagado'}" onclick="alternarHabilidade('${nome}', 'movimentacao')" title="Movimentação">
+                mov.
+              </div>
+              <div class="retangulo-habilidade ${ataque ? 'aceso' : 'apagado'}" onclick="alternarHabilidade('${nome}', 'ataque')" title="Ataque">
+                ataque
+              </div>
+              <div class="retangulo-habilidade ${bloqueio ? 'aceso' : 'apagado'}" onclick="alternarHabilidade('${nome}', 'bloqueio')" title="Bloqueio">
+                bloq.
+              </div>
+              <div class="retangulo-habilidade ${levantamento ? 'aceso' : 'apagado'}" onclick="alternarHabilidade('${nome}', 'levantamento')" title="Levantamento">
+                levant.
+              </div>
+              <div class="retangulo-habilidade ${recepcao ? 'aceso' : 'apagado'}" onclick="alternarHabilidade('${nome}', 'recepcao')" title="Recepção">
+                recep.
+              </div>
+            </div>
+
+            <!-- Ação Excluir -->
+            <div class="acoes-jogador">
+              <button class="btn-deletar-ranking" onclick="excluirJogador('${nome}')" title="Excluir jogador">✕</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    window.alternarFlag = function(nome) {
+      if (!BD_GeradorTimes[nome]) return;
+      BD_GeradorTimes[nome].flagado = !BD_GeradorTimes[nome].flagado;
+      salvarDados();
+    }
+
+    window.alternarTipoJogador = function(nome, tipo) {
+      if (!BD_GeradorTimes[nome]) return;
+      BD_GeradorTimes[nome][tipo] = !BD_GeradorTimes[nome][tipo];
+      salvarDados();
+    }
+
+    window.alterarNivel = function(nome, delta) {
+      if (!BD_GeradorTimes[nome]) return;
+      let nivelAtual = BD_GeradorTimes[nome].nivel !== undefined ? BD_GeradorTimes[nome].nivel : 1.0;
+      let novoNivel = nivelAtual + delta;
+      
+      if (novoNivel > 5.0) novoNivel = 5.0;
+      if (novoNivel < 1.0) novoNivel = 1.0;
+
+      BD_GeradorTimes[nome].nivel = novoNivel;
+      salvarDados();
+    }
+
+    window.alternarHabilidade = function(nome, campo) {
+      if (!BD_GeradorTimes[nome]) return;
+      let atual = BD_GeradorTimes[nome][campo] !== undefined ? BD_GeradorTimes[nome][campo] : false;
+      BD_GeradorTimes[nome][campo] = !atual;
+      salvarDados();
+    }
+
+    document.getElementById('form-novo-jogador').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const input = document.getElementById('nome-novo');
+      const nome = input.value.trim();
+
+      if (!nome) return;
+
+      if (BD_GeradorTimes.hasOwnProperty(nome)) {
+        alert("Este jogador já está cadastrado!");
+        return;
+      }
+
+      BD_GeradorTimes[nome] = {
+        flagado: false,
+        mensalista: false,
+        diarista: false,
+        nivel: 1.0,
+        movimentacao: false,
+        ataque: false,
+        bloqueio: false,
+        levantamento: false,
+        recepcao: false
+      };
+
+      salvarDados();
+      input.value = '';
+    });
+
+    window.excluirJogador = function(nome) {
+      if (confirm(`Deseja remover "${nome}" permanentemente?`)) {
+        delete BD_GeradorTimes[nome];
+        salvarDados();
+      }
+    }
+
+    // Função de geração e balanceamento dinâmico dos times
+    window.gerarTimes = function() {
+      let selecionados = [];
+      Object.entries(BD_GeradorTimes).forEach(([nome, dados]) => {
+        if (dados.flagado === true) {
+          let nivel = dados.nivel !== undefined ? dados.nivel : 1.0;
+          
+          // Coleta de array com as iniciais ativas dos fundamentos
+          let listaIniciais = [];
+          if (dados.movimentacao) listaIniciais.push('M');
+          if (dados.ataque) listaIniciais.push('A');
+          if (dados.bloqueio) listaIniciais.push('B');
+          if (dados.levantamento) listaIniciais.push('L');
+          if (dados.recepcao) listaIniciais.push('R');
+
+          let bonusFundamentos = listaIniciais.length * 0.2;
+          let scoreTotal = nivel + bonusFundamentos;
+          
+          let fatorAleatorio = (Math.random() * 0.1) - 0.05;
+
+          selecionados.push({ nome, nivel, scoreTotal: scoreTotal + fatorAleatorio, fundamentos: listaIniciais });
+        }
+      });
+
+      if (selecionados.length !== 16) {
+        alert(`É obrigatório selecionar exatamente 16 jogadores para gerar os times! Atualmente há ${selecionados.length} selecionado(s).`);
+        return;
+      }
+
+      selecionados.sort((a, b) => b.scoreTotal - a.scoreTotal);
+
+      let times = {
+        amarelo: [],
+        azul: [],
+        rosa: [],
+        roxo: []
+      };
+
+      let chavesTimes = ['amarelo', 'azul', 'rosa', 'roxo'];
+      let direcao = 1;
+      let indiceTime = 0;
+
+      selecionados.forEach((jogador) => {
+        times[chavesTimes[indiceTime]].push(jogador);
+        
+        indiceTime += direcao;
+        if (indiceTime >= 4) {
+          indiceTime = 3;
+          direcao = -1;
+        } else if (indiceTime < 0) {
+          indiceTime = 0;
+          direcao = 1;
+        }
+      });
+
+      ultimoTimesGerados = times;
+      renderizarTimes(times);
+    }
+
+    function renderizarTimes(times) {
+      const container = document.getElementById('container-times');
+      
+      const nomesMapeados = {
+        amarelo: 'Time Amarelo',
+        azul: 'Time Azul',
+        rosa: 'Time Rosa',
+        roxo: 'Time Roxo'
+      };
+
+      let html = `<div class="grid-times">`;
+
+      for (let chave in times) {
+        let membros = times[chave];
+        let somaNivel = membros.reduce((acc, m) => acc + m.nivel, 0);
+        let mediaNivel = (somaNivel / membros.length).toFixed(1);
+
+        html += `
+          <div class="card-time ${chave}">
+            <div class="titulo-time">
+              <span>${nomesMapeados[chave]}</span>
+              <span style="font-weight: normal; opacity: 0.8;">Média Nível: ${mediaNivel}</span>
+            </div>
+            <ul class="lista-membros-time">
+        `;
+
+        membros.forEach(m => {
+          // Cria um quadradinho HTML individual para cada inicial de fundamento
+          let htmlFundamentos = '';
+          if (m.fundamentos && m.fundamentos.length > 0) {
+            htmlFundamentos = `<div class="membro-fundamentos-container">`;
+            m.fundamentos.forEach(f => {
+              htmlFundamentos += `<span class="membro-fundamento-box">${f}</span>`;
+            });
+            htmlFundamentos += `</div>`;
+          }
+
+          html += `
+            <li class="membro-time-item">
+              <span>${m.nome}</span>
+              <div class="membro-detalhes-dir">
+                ${htmlFundamentos}
+                <span class="membro-nivel">Nível ${m.nivel.toFixed(1)}</span>
+              </div>
+            </li>
+          `;
+        });
+
+        html += `
+            </ul>
+          </div>
+        `;
+      }
+
+      html += `</div>`;
+
+      // Botão de Compartilhar no WhatsApp
+      html += `
+        <button type="button" class="btn-whatsapp" onclick="compartilharWhatsApp()">
+          Compartilhar no WhatsApp <span>💬</span>
+        </button>
+      `;
+
+      container.innerHTML = html;
+    }
+
+    function compartilharWhatsApp() {
+      if (!ultimoTimesGerados) return;
+
+      const nomesMapeados = {
+        amarelo: '🟡 *TIME AMARELO*',
+        azul: '🔵 *TIME AZUL*',
+        rosa: '🩷 *TIME ROSA*',
+        roxo: '🟣 *TIME ROXO*'
+      };
+
+      let textoMensagem = "🏐 *TIMES GERADOS - CENTRAL DO ADM* 🏐\n\n";
+
+      for (let chave in ultimoTimesGerados) {
+        let membros = ultimoTimesGerados[chave];
+        let somaNivel = membros.reduce((acc, m) => acc + m.nivel, 0);
+        let mediaNivel = (somaNivel / membros.length).toFixed(1);
+
+        textoMensagem += `${nomesMapeados[chave]} (Média: ${mediaNivel})\n`;
+        membros.forEach(m => {
+          let fundStr = m.fundamentos && m.fundamentos.length > 0 ? ` [${m.fundamentos.join(' ')}]` : '';
+          textoMensagem += `- ${m.nome}${fundStr} (Nível ${m.nivel.toFixed(1)})\n`;
+        });
+        textoMensagem += "\n";
+      }
+
+      const urlWhatsApp = `https://api.whatsapp.com/send?text=${encodeURIComponent(textoMensagem)}`;
+      window.open(urlWhatsApp, '_blank');
+    }
+  </script>
+
+</body>
+</html>
