@@ -371,7 +371,9 @@
         </a>
       </fieldset>
 
+      <!-- NOVOS BLOCOS DE CHECKLIST -->
       <div class="secao-checklists-container">
+        <!-- Checklist Pré-pelada -->
         <div class="checklist-bloco" id="checklist-pre">
           <div class="bloco-icon">📋</div>
           <div class="titulo">Checklist pré-pelada</div>
@@ -382,6 +384,7 @@
           <div class="checklist-items" id="items-pre"></div>
         </div>
 
+        <!-- Checklist Pós-pelada -->
         <div class="checklist-bloco" id="checklist-pos">
           <div class="bloco-icon">📋</div>
           <div class="titulo">Checklist pós-pelada</div>
@@ -398,19 +401,62 @@
 
   <button id="btn-logout" class="btn-logout">Deslogar</button>
 
-  <script>
-    // Script funcional para gerenciar os checklists (adicionar, renomear, marcar, excluir e reorganizar)
-    function setupChecklist(containerId, inputId, buttonId, storageKey) {
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
+      databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com/"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    setPersistence(auth, browserSessionPersistence)
+      .catch((error) => {
+        console.error("Erro ao configurar persistência de sessão:", error);
+      });
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "index.html"; 
+      }
+    });
+
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      signOut(auth).then(() => {
+        window.location.href = "index.html";
+      }).catch((error) => {
+        console.error("Erro ao deslogar:", error);
+        alert("Erro ao sair. Tente novamente.");
+      });
+    });
+
+    // Função para configurar cada checklist conectado ao Firebase Realtime Database
+    function setupChecklistFirebase(containerId, inputId, buttonId, dbPath) {
       const container = document.getElementById(containerId);
       const input = document.getElementById(inputId);
       const button = document.getElementById(buttonId);
       const itemsContainer = container.querySelector('.checklist-items');
 
-      let items = JSON.parse(localStorage.getItem(storageKey)) || [];
+      let items = [];
+      const dbRef = ref(db, dbPath);
 
-      function saveAndRender() {
-        localStorage.setItem(storageKey, JSON.stringify(items));
+      // Ouvir atualizações em tempo real do banco de dados
+      onValue(dbRef, (snapshot) => {
+        const data = snapshot.val();
+        items = Array.isArray(data) ? data : [];
         render();
+      });
+
+      function saveToFirebase() {
+        set(dbRef, items).catch((error) => {
+          console.error("Erro ao salvar no Firebase:", error);
+          alert("Erro ao sincronizar com o banco de dados.");
+        });
       }
 
       function render() {
@@ -433,13 +479,13 @@
           const checkbox = div.querySelector('input[type="checkbox"]');
           checkbox.addEventListener('change', () => {
             items[index].checked = checkbox.checked;
-            saveAndRender();
+            saveToFirebase();
           });
 
           // Evento de excluir
           div.querySelector('.delete-btn').addEventListener('click', () => {
             items.splice(index, 1);
-            saveAndRender();
+            saveToFirebase();
           });
 
           // Evento de renomear
@@ -447,7 +493,7 @@
             const newText = prompt('Renomear item:', items[index].text);
             if (newText !== null && newText.trim() !== '') {
               items[index].text = newText.trim();
-              saveAndRender();
+              saveToFirebase();
             }
           });
 
@@ -472,7 +518,7 @@
             if (draggedIndex !== targetIndex) {
               const draggedItem = items.splice(draggedIndex, 1)[0];
               items.splice(targetIndex, 0, draggedItem);
-              saveAndRender();
+              saveToFirebase();
             }
           });
 
@@ -485,7 +531,7 @@
         if (text) {
           items.push({ text, checked: false });
           input.value = '';
-          saveAndRender();
+          saveToFirebase();
         }
       });
 
@@ -494,8 +540,6 @@
           button.click();
         }
       });
-
-      render();
     }
 
     function escapeHtml(text) {
@@ -509,42 +553,9 @@
       return text.replace(/[&<>"']/g, m => map[m]);
     }
 
-    // Inicializar os dois checklists
-    setupChecklist('checklist-pre', 'input-pre', 'add-pre', 'checklist_pre_pelada');
-    setupChecklist('checklist-pos', 'input-pos', 'add-pos', 'checklist_pos_pelada');
-  </script>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
-      databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com/"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    setPersistence(auth, browserSessionPersistence)
-      .catch((error) => {
-        console.error("Erro ao configurar persistência de sessão:", error);
-      });
-
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        window.location.href = "index.html"; 
-      }
-    });
-
-    document.getElementById('btn-logout').addEventListener('click', () => {
-      signOut(auth).then(() => {
-        window.location.href = "index.html";
-      }).catch((error) => {
-        console.error("Erro ao deslogar:", error);
-        alert("Erro ao sair. Tente novamente.");
-      });
-    });
+    // Inicializar os checklists vinculados aos nós do Firebase
+    setupChecklistFirebase('checklist-pre', 'input-pre', 'add-pre', 'checklists/pre_pelada');
+    setupChecklistFirebase('checklist-pos', 'input-pos', 'add-pos', 'checklists/pos_pelada');
   </script>
 </body>
 </html>
