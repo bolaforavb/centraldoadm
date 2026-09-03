@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro de Destaques - Central do Adm</title>
+  <link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
+  
+  <style>
+    /* Reset global idêntico ao painel */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: sans-serif;
+      background-color: #12364e; 
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center; 
+      min-height: 100vh;
+      color: #12364e;
+    }
+
+    .header-banner {
+      width: 100%; 
+      max-width: 600px;
+      background-color: #e1d8cd; 
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .header-banner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; 
+    }
+
+    .main-container {
+      width: 100%;
+      max-width: 600px;
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Estrutura de Card baseada no design original */
+    .bloco-card {
+      background-color: white; 
+      border-radius: 16px;
+      width: 100%;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .titulo-secao {
+      font-size: 13px;
+      font-weight: bold;
+      color: #12364e;
+      margin: 0 0 12px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      padding-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .header-resultado-linha {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      padding-bottom: 6px;
+      width: 100%;
+    }
+
+    .header-resultado-linha.sem-margem-inferior {
+      margin-bottom: 0;
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .header-resultado-linha .titulo-secao {
+      margin: 0;
+      border: none;
+      padding: 0;
+      flex: 1;
+      font-size: 13px;
+    }
+
+    /* Botão Minimizar / Expandir Histórico */
+    .btn-toggle-historico {
+      background: none;
+      border: 1px solid #12364e;
+      color: #12364e;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: bold;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .btn-toggle-historico:hover {
+      background-color: #12364e;
+      color: white;
+    }
+
+    /* Conteúdo recolhível */
+    .conteudo-colapsavel {
+      display: none;
+      margin-top: 12px;
+    }
+    .conteudo-colapsavel.ativo {
+      display: block;
+    }
+
+    /* Filtro de Mês do Histórico */
+    .container-filtro-mes {
+      margin-bottom: 12px;
+      width: 100%;
+    }
+
+    .container-filtro-mes select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #12364e;
+      background-color: #f7f5f2;
+      outline: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* Formulários de Destaques */
+    .form-destaques {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .linha-inputs {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .grupo-input-label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .grupo-input-label label {
+      font-size: 10px;
+      font-weight: bold;
+      color: #12364e;
+      text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    input[type="text"], input[type="date"] {
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #12364e;
+      outline: none;
+      width: 100%;
+    }
+
+    /* Botão Registrar */
+    .btn-registrar-dia {
+      width: 100%;
+      margin-top: 4px;
+      padding: 12px;
+      background-color: #12364e;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-registrar-dia:hover {
+      background-color: #1b4f72;
+    }
+
+    /* Lista de Itens / Histórico / Contabilização */
+    .lista-fidelidade {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    /* Filtros do Bloco de Contabilização */
+    .container-filtros {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      width: 100%;
+    }
+
+    .btn-filtro {
+      background-color: #f7f5f2;
+      color: #12364e;
+      border: 1px solid #d9b246;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: bold;
+      padding: 5px 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-grow: 1;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .btn-filtro:hover, .btn-filtro.ativo {
+      background-color: #12364e;
+      color: white;
+      border-color: #12364e;
+    }
+
+    /* Estilos do Histórico */
+    .historico-bloco {
+      margin-top: 10px;
+      background: #fdfbf7;
+      border: 1px solid #e1d8cd;
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    .historico-data-titulo {
+      font-size: 12px;
+      font-weight: bold;
+      color: #d9b246;
+      margin-bottom: 6px;
+      border-bottom: 1px dashed #e1d8cd;
+      padding-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-deletar-historico {
+      background: none;
+      border: none;
+      color: #d93025;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .historico-item-linha {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.03);
+    }
+
+    .historico-item-cargo {
+      font-weight: bold;
+      color: #12364e;
+      width: 130px;
+    }
+
+    .historico-item-nome {
+      font-weight: 500;
+      flex: 1;
+      color: #333;
+      text-align: right;
+    }
+
+    /* Estilos da Contabilização de Vezes */
+    .contador-posicao-linha {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      background-color: #f7f5f2;
+      border-radius: 8px;
+      font-size: 12px;
+      border-left: 3px solid #d9b246;
+    }
+
+    .contador-nome {
+      flex: 1;
+      font-weight: 500;
+      color: #12364e;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .badges-posicoes {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .badge-pos {
+      background: #12364e;
+      color: white;
+      font-size: 10px;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: flex;
+      gap: 3px;
+    }
+
+    .badge-pos span {
+      color: #d9b246;
+    }
+
+    /* Rodapé com botão Voltar */
+    .footer-navegacao {
+      width: 100%;
+      max-width: 600px;
+      padding: 8px 16px 24px 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .btn-voltar-painel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px;
+      background-color: transparent;
+      color: #e1d8cd;
+      border: 2px solid #e1d8cd;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-voltar-painel:hover {
+      background-color: #e1d8cd;
+      color: #12364e;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header-banner">
+    <img src="https://i.ibb.co/twJd6BRq/Whats-App-Image-2026-06-29-at-10-42-05.jpg" alt="Banner Central do Adm">
+  </header>
+
+  <main class="main-container">
+    
+    <!-- Bloco Registrar Destaques do Dia -->
+    <div class="bloco-card">
+      <div class="titulo-secao">Registrar Destaques do Dia</div>
+      <form id="form-destaques-dia" class="form-destaques">
+        
+        <!-- Linha 1: 1º, 2º e 3º Lugar -->
+        <div class="linha-inputs">
+          <div class="grupo-input-label">
+            <label for="primeiro-lugar">1º Lugar</label>
+            <input type="text" id="primeiro-lugar" placeholder="1º Lugar">
+          </div>
+
+          <div class="grupo-input-label">
+            <label for="segundo-lugar">2º Lugar</label>
+            <input type="text" id="segundo-lugar" placeholder="2º Lugar">
+          </div>
+
+          <div class="grupo-input-label">
+            <label for="terceiro-lugar">3º Lugar</label>
+            <input type="text" id="terceiro-lugar" placeholder="3º Lugar">
+          </div>
+        </div>
+
+        <!-- Linha 2: Deu o nome, Diarista Destaque e Data -->
+        <div class="linha-inputs">
+          <div class="grupo-input-label">
+            <label for="deu-o-nome">Deu o nome</label>
+            <input type="text" id="deu-o-nome" placeholder="Deu o nome">
+          </div>
+
+          <div class="grupo-input-label">
+            <label for="diarista-destaque">Diarista Destaque</label>
+            <input type="text" id="diarista-destaque" placeholder="Diarista">
+          </div>
+
+          <div class="grupo-input-label">
+            <label for="data-destaques">Data</label>
+            <input type="date" id="data-destaques" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-registrar-dia">Registrar</button>
+      </form>
+    </div>
+
+    <!-- Bloco de Histórico de Destaques (Minimizado por padrão) -->
+    <div class="bloco-card">
+      <div class="header-resultado-linha sem-margem-inferior" id="header-historico">
+        <div class="titulo-secao">Histórico</div>
+        <button type="button" class="btn-toggle-historico" id="btn-toggle-hist" onclick="alternarHistorico()">+</button>
+      </div>
+      <div class="conteudo-colapsavel" id="conteudo-historico">
+        
+        <!-- Seletor de Mês -->
+        <div class="container-filtro-mes" style="margin-top: 12px;">
+          <select id="filtro-mes-historico" onchange="aoMudarFiltroMes()">
+            <option value="todos">📅 Todos os meses</option>
+          </select>
+        </div>
+
+        <div class="lista-fidelidade" id="tabela-historico"></div>
+      </div>
+    </div>
+
+    <!-- Bloco de Contabilização de Vezes por Jogador -->
+    <div class="bloco-card">
+      <div class="titulo-secao">Contabilização de Posições</div>
+      
+      <!-- Filtros de Posições -->
+      <div class="container-filtros">
+        <button type="button" class="btn-filtro ativo" onclick="filtrarContabilizacao('todos', this)">Todos</button>
+        <button type="button" class="btn-filtro" onclick="filtrarContabilizacao('1º', this)">1º Lugar</button>
+        <button type="button" class="btn-filtro" onclick="filtrarContabilizacao('2º', this)">2º Lugar</button>
+        <button type="button" class="btn-filtro" onclick="filtrarContabilizacao('3º', this)">3º Lugar</button>
+        <button type="button" class="btn-filtro" onclick="filtrarContabilizacao('Deu o nome', this)">Deu o nome</button>
+        <button type="button" class="btn-filtro" onclick="filtrarContabilizacao('Diarista', this)">Diarista destaque</button>
+      </div>
+
+      <div class="lista-fidelidade" id="tabela-contabilizacao"></div>
+    </div>
+
+  </main>
+
+  <footer class="footer-navegacao">
+    <a href="dashboard.html" class="btn-voltar-painel">
+      <span>↩</span> Voltar
+    </a>
+  </footer>
+
+  <!-- Scripts Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
+      authDomain: "central-adm-bolafora.firebaseapp.com",
+      databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com",
+      projectId: "central-adm-bolafora",
+      storageBucket: "central-adm-bolafora.firebasestorage.app",
+      messagingSenderId: "429477810517",
+      appId: "1:429477810517:web:3be6c842269cbdfe4b5fdc"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
+
+    auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
+      .then(() => {
+        auth.onAuthStateChanged((user) => {
+          if (!user) {
+            window.location.href = 'index.html'; 
+          }
+        });
+      })
+      .catch((error) => {
+        console.error("Erro ao definir persistência de sessão:", error);
+      });
+
+    let BD_HistoricoDestaques = {};
+    let filtroAtual = 'todos';
+
+    // Preenche a data de hoje automaticamente no input de data ao carregar a página
+    document.getElementById('data-destaques').valueAsDate = new Date();
+
+    function salvarHistoricoDestaques() {
+      db.ref('historico_destaques_dia').set(BD_HistoricoDestaques);
+    }
+
+    db.ref('historico_destaques_dia').on('value', (snapshot) => {
+      const dadosNuvem = snapshot.val();
+      BD_HistoricoDestaques = dadosNuvem || {};
+      popularOpcoesMeses();
+      atualizarTabelaHistorico();
+      atualizarContabilizacao();
+    });
+
+    function alternarHistorico() {
+      const conteudo = document.getElementById('conteudo-historico');
+      const botao = document.getElementById('btn-toggle-hist');
+      const header = document.getElementById('header-historico');
+
+      conteudo.classList.toggle('ativo');
+      if (conteudo.classList.contains('ativo')) {
+        botao.textContent = '-';
+        header.classList.remove('sem-margem-inferior');
+      } else {
+        botao.textContent = '+';
+        header.classList.add('sem-margem-inferior');
+      }
+    }
+
+    document.getElementById('form-destaques-dia').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const primeiro = document.getElementById('primeiro-lugar').value.trim();
+      const segundo = document.getElementById('segundo-lugar').value.trim();
+      const terceiro = document.getElementById('terceiro-lugar').value.trim();
+      const deuONome = document.getElementById('deu-o-nome').value.trim();
+      const diarista = document.getElementById('diarista-destaque').value.trim();
+      const dataInput = document.getElementById('data-destaques').value;
+
+      if (!dataInput) {
+        alert("Por favor, selecione a data.");
+        return;
+      }
+
+      const partesData = dataInput.split('-');
+      const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
+      const chaveId = 'destaque_' + Date.now();
+
+      BD_HistoricoDestaques[chaveId] = {
+        data: dataFormatada,
+        primeiro: primeiro || '-',
+        segundo: segundo || '-',
+        terceiro: terceiro || '-',
+        deuONome: deuONome || '-',
+        diarista: diarista || '-'
+      };
+
+      salvarHistoricoDestaques();
+
+      document.getElementById('primeiro-lugar').value = '';
+      document.getElementById('segundo-lugar').value = '';
+      document.getElementById('terceiro-lugar').value = '';
+      document.getElementById('deu-o-nome').value = '';
+      document.getElementById('diarista-destaque').value = '';
+      
+      alert("Destaques registrados com sucesso!");
+    });
+
+    function popularOpcoesMeses() {
+      const selectMes = document.getElementById('filtro-mes-historico');
+      const mesSelecionadoAntes = selectMes.value;
+      
+      const mesesDisponiveis = new Set();
+      
+      Object.values(BD_HistoricoDestaques).forEach(reg => {
+        if (reg.data) {
+          const partes = reg.data.split('/');
+          if (partes.length === 3) {
+            mesesDisponiveis.add(`${partes[2]}-${partes[1]}`);
+          }
+        }
+      });
+
+      const mesesOrdenados = Array.from(mesesDisponiveis).sort().reverse();
+
+      const nomesMeses = {
+        '01': 'Janeiro', '02': 'Fevereiro', '03': 'Março', '04': 'Abril',
+        '05': 'Maio', '06': 'Junho', '07': 'Julho', '08': 'Agosto',
+        '09': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro'
+      };
+
+      selectMes.innerHTML = `<option value="todos">📅 Todos os meses</option>`;
+
+      mesesOrdenados.forEach(anoMes => {
+        const [ano, mes] = anoMes.split('-');
+        const nomeMesCapitalizado = nomesMeses[mes] || mes;
+        const option = document.createElement('option');
+        option.value = anoMes;
+        option.textContent = `${nomeMesCapitalizado} de ${ano}`;
+        selectMes.appendChild(option);
+      });
+
+      if (Array.from(selectMes.options).some(opt => opt.value === mesSelecionadoAntes)) {
+        selectMes.value = mesSelecionadoAntes;
+      }
+    }
+
+    function aoMudarFiltroMes() {
+      atualizarTabelaHistorico();
+      atualizarContabilizacao();
+    }
+
+    function atualizarTabelaHistorico() {
+      const container = document.getElementById('tabela-historico');
+      const mesFiltro = document.getElementById('filtro-mes-historico').value;
+      container.innerHTML = '';
+
+      let historicoOrdenado = Object.entries(BD_HistoricoDestaques).reverse();
+
+      if (mesFiltro !== 'todos') {
+        historicoOrdenado = historicoOrdenado.filter(([_, reg]) => {
+          if (!reg.data) return false;
+          const partes = reg.data.split('/');
+          if (partes.length !== 3) return false;
+          const anoMesReg = `${partes[2]}-${partes[1]}`;
+          return anoMesReg === mesFiltro;
+        });
+      }
+
+      if (historicoOrdenado.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding: 15px; font-size:12px; opacity:0.6;">Nenhum registro de destaque encontrado para este período.</div>`;
+        return;
+      }
+
+      historicoOrdenado.forEach(([chaveId, reg]) => {
+        const bloco = document.createElement('div');
+        bloco.className = 'historico-bloco';
+
+        bloco.innerHTML = `
+          <div class="historico-data-titulo">
+            <span>📅 ${reg.data}</span>
+            <button class="btn-deletar-historico" onclick="excluirHistorico('${chaveId}')" title="Excluir Registro">Excluir</button>
+          </div>
+          <div class="historico-item-linha"><span class="historico-item-cargo">1º Lugar:</span><span class="historico-item-nome">${reg.primeiro}</span></div>
+          <div class="historico-item-linha"><span class="historico-item-cargo">2º Lugar:</span><span class="historico-item-nome">${reg.segundo}</span></div>
+          <div class="historico-item-linha"><span class="historico-item-cargo">3º Lugar:</span><span class="historico-item-nome">${reg.terceiro}</span></div>
+          <div class="historico-item-linha"><span class="historico-item-cargo">Deu o nome:</span><span class="historico-item-nome">${reg.deuONome}</span></div>
+          <div class="historico-item-linha" style="border-bottom:none;"><span class="historico-item-cargo">Diarista Destaque:</span><span class="historico-item-nome">${reg.diarista}</span></div>
+        `;
+        container.appendChild(bloco);
+      });
+    }
+
+    window.filtrarContabilizacao = function(categoria, elementoBtn) {
+      filtroAtual = categoria;
+      
+      document.querySelectorAll('.btn-filtro').forEach(btn => btn.classList.remove('ativo'));
+      elementoBtn.classList.add('ativo');
+
+      atualizarContabilizacao();
+    }
+
+    function atualizarContabilizacao() {
+      const container = document.getElementById('tabela-contabilizacao');
+      const mesFiltro = document.getElementById('filtro-mes-historico').value;
+      container.innerHTML = '';
+
+      let contagemJogadores = {};
+
+      Object.values(BD_HistoricoDestaques).forEach(reg => {
+        // Se houver um filtro de mês ativo, ignora registros de outros meses na contabilização
+        if (mesFiltro !== 'todos') {
+          if (!reg.data) return;
+          const partes = reg.data.split('/');
+          if (partes.length !== 3) return;
+          const anoMesReg = `${partes[2]}-${partes[1]}`;
+          if (anoMesReg !== mesFiltro) return;
+        }
+
+        const contabilizarNome = (nome, categoria) => {
+          if (!nome || nome === '-') return;
+          const nomeLimpo = nome.trim();
+          
+          if (!contagemJogadores[nomeLimpo]) {
+            contagemJogadores[nomeLimpo] = { '1º': 0, '2º': 0, '3º': 0, 'Deu o nome': 0, 'Diarista': 0 };
+          }
+          contagemJogadores[nomeLimpo][categoria]++;
+        };
+
+        contabilizarNome(reg.primeiro, '1º');
+        contabilizarNome(reg.segundo, '2º');
+        contabilizarNome(reg.terceiro, '3º');
+        contabilizarNome(reg.deuONome, 'Deu o nome');
+        contabilizarNome(reg.diarista, 'Diarista');
+      });
+
+      let listaContagem = Object.entries(contagemJogadores).map(([nome, dados]) => {
+        return { nome, ...dados };
+      });
+
+      if (filtroAtual !== 'todos') {
+        listaContagem = listaContagem.filter(item => item[filtroAtual] > 0);
+      }
+
+      listaContagem.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'accent' }));
+
+      if (listaContagem.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding: 15px; font-size:12px; opacity:0.6;">Nenhum registro encontrado para este filtro.</div>`;
+        return;
+      }
+
+      listaContagem.forEach(item => {
+        const linha = document.createElement('div');
+        linha.className = 'contador-posicao-linha';
+        
+        linha.innerHTML = `
+          <span class="contador-nome" title="${item.nome}">${item.nome}</span>
+          <div class="badges-posicoes">
+            ${item['1º'] > 0 ? `<div class="badge-pos" title="1º Lugar">1º: <span>${item['1º']}</span></div>` : ''}
+            ${item['2º'] > 0 ? `<div class="badge-pos" title="2º Lugar">2º: <span>${item['2º']}</span></div>` : ''}
+            ${item['3º'] > 0 ? `<div class="badge-pos" title="3º Lugar">3º: <span>${item['3º']}</span></div>` : ''}
+            ${item['Deu o nome'] > 0 ? `<div class="badge-pos" title="Deu o nome">Deu o nome: <span>${item['Deu o nome']}</span></div>` : ''}
+            ${item['Diarista'] > 0 ? `<div class="badge-pos" title="Diarista Destaque">Diarista destaque: <span>${item['Diarista']}</span></div>` : ''}
+          </div>
+        `;
+        container.appendChild(linha);
+      });
+    }
+
+    window.excluirHistorico = function(chaveId) {
+      if (confirm("Deseja remover este registro de destaques permanentemente?")) {
+        delete BD_HistoricoDestaques[chaveId];
+        salvarHistoricoDestaques();
+      }
+    }
+  </script>
+
+</body>
+</html>
