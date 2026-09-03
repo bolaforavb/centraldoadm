@@ -557,7 +557,6 @@
 
   <main class="main-container">
     
-    <!-- Bloco Cadastrar Jogadores -->
     <div class="bloco-card">
       <div class="titulo-secao">Cadastrar Jogadores</div>
       <form id="form-novo-jogador" class="form-inline">
@@ -566,7 +565,6 @@
       </form>
     </div>
 
-    <!-- Bloco Jogadores com Filtros, Selecionar Todos e Pesquisa -->
     <div class="bloco-card">
       <div class="header-jogadores-container">
         <div class="linha-titulo-topo">
@@ -579,13 +577,12 @@
         </div>
         <div class="linha-controles-abaixo">
           <button type="button" class="btn-selecionar-todos" onclick="alternarSelecionarTodos()">Selecionar todos</button>
-          <input type="text" id="input-pesquisa" class="input-pesquisa-jogador" placeholder="Pesquisar jogador..." oninput="atualizarTabelaVisual()">
+          <input type="text" id="input-pesquisa" class="input-pesquisa-jogador" placeholder="Pesquisar..." oninput="atualizarTabelaVisual()">
         </div>
       </div>
       <div class="lista-fidelidade" id="tabela-jogadores"></div>
     </div>
 
-    <!-- Bloco Times -->
     <div class="bloco-card">
       <div class="titulo-secao">Times</div>
       <button type="button" class="btn-gerar-times" onclick="gerarTimes()">Gerar Times</button>
@@ -600,7 +597,6 @@
     </a>
   </footer>
 
-  <!-- Scripts Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -711,6 +707,7 @@
         const bloqueio = dados.bloqueio !== undefined ? dados.bloqueio : false;
         const levantamento = dados.levantamento !== undefined ? dados.levantamento : false;
         const recepcao = dados.recepcao !== undefined ? dados.recepcao : false;
+        const saque = dados.saque !== undefined ? dados.saque : false; // Novo fundamento Saque
 
         const item = document.createElement('div');
         item.className = 'item-fidelidade';
@@ -725,7 +722,6 @@
             <span class="nome-diarista" title="${nome}">${nome}</span>
           </div>
           <div class="bloco-controles-grupo">
-            <!-- Contador de Nível (1 a 5 com passos de 0.5) -->
             <div class="bloco-contador-item">
               <span class="label-contador-topo">Nível</span>
               <div class="botoes-setas">
@@ -735,7 +731,6 @@
               </div>
             </div>
 
-            <!-- Grupo de Habilidades Alinhado -->
             <div class="container-habilidades">
               <div class="retangulo-habilidade ${movimentacao ? 'aceso' : 'apagado'}" onclick="alternarHabilidade('${nome}', 'movimentacao')" title="Movimentação">
                 mov.
@@ -752,9 +747,11 @@
               <div class="retangulo-habilidade ${recepcao ? 'aceso' : 'apagado'}" onclick="alternarHabilidade('${nome}', 'recepcao')" title="Recepção">
                 recep.
               </div>
+              <div class="retangulo-habilidade ${saque ? 'aceso' : 'apagado'}" onclick="alternarHabilidade('${nome}', 'saque')" title="Saque">
+                saque
+              </div>
             </div>
 
-            <!-- Ação Excluir -->
             <div class="acoes-jogador">
               <button class="btn-deletar-ranking" onclick="excluirJogador('${nome}')" title="Excluir jogador">✕</button>
             </div>
@@ -816,7 +813,8 @@
         ataque: false,
         bloqueio: false,
         levantamento: false,
-        recepcao: false
+        recepcao: false,
+        saque: false // Inicializa o saque como falso para novos cadastros
       };
 
       salvarDados();
@@ -837,13 +835,14 @@
         if (dados.flagado === true) {
           let nivel = dados.nivel !== undefined ? dados.nivel : 1.0;
           
-          // Coleta de array com as iniciais ativas dos fundamentos
+          // Coleta de array com as iniciais ativas dos fundamentos (incluindo 'S' para Saque)
           let listaIniciais = [];
           if (dados.movimentacao) listaIniciais.push('M');
           if (dados.ataque) listaIniciais.push('A');
           if (dados.bloqueio) listaIniciais.push('B');
           if (dados.levantamento) listaIniciais.push('L');
           if (dados.recepcao) listaIniciais.push('R');
+          if (dados.saque) listaIniciais.push('S');
 
           let bonusFundamentos = listaIniciais.length * 0.2;
           let scoreTotal = nivel + bonusFundamentos;
@@ -916,7 +915,6 @@
         `;
 
         membros.forEach(m => {
-          // Cria um quadradinho HTML individual para cada inicial de fundamento
           let htmlFundamentos = '';
           if (m.fundamentos && m.fundamentos.length > 0) {
             htmlFundamentos = `<div class="membro-fundamentos-container">`;
