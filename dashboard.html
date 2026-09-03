@@ -132,6 +132,123 @@
       overflow: hidden;
     }
 
+    /* ESTILIZAÇÃO DOS NOVOS BLOCOS DE CHECKLIST (LADO A LADO) */
+    .secao-checklists-container {
+      grid-column: span 3;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .checklist-bloco {
+      background-color: white;
+      border-radius: 16px;
+      padding: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .checklist-bloco .bloco-icon {
+      font-size: 22px;
+      margin-bottom: 4px;
+      color: #d9b246;
+    }
+
+    .checklist-bloco .titulo {
+      font-size: 11px;
+      margin-bottom: 8px;
+    }
+
+    .checklist-input-group {
+      display: flex;
+      width: 100%;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    .checklist-input-group input {
+      flex: 1;
+      padding: 4px 6px;
+      font-size: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      outline: none;
+    }
+
+    .checklist-input-group button {
+      background-color: #12364e;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 10px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .checklist-input-group button:active {
+      transform: scale(0.95);
+    }
+
+    .checklist-items {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-height: 180px;
+      overflow-y: auto;
+      text-align: left;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      background-color: #f9f9f9;
+      border: 1px solid #eee;
+      border-radius: 6px;
+      padding: 4px 6px;
+      font-size: 10px;
+      gap: 4px;
+    }
+
+    .checklist-item.dragging {
+      opacity: 0.4;
+    }
+
+    .checklist-item input[type="checkbox"] {
+      cursor: pointer;
+    }
+
+    .checklist-item span.item-text {
+      flex: 1;
+      word-break: break-word;
+    }
+
+    .checklist-item.checked span.item-text {
+      text-decoration: line-through;
+      color: #888;
+    }
+
+    .checklist-action-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 11px;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .drag-handle {
+      cursor: grab;
+      font-weight: bold;
+      color: #666;
+    }
+
     /* ESTILIZAÇÃO DO BOTÃO DE LOGOUT NO RODAPÉ */
     .btn-logout {
       background-color: #c53929;
@@ -254,10 +371,148 @@
         </a>
       </fieldset>
 
+      <div class="secao-checklists-container">
+        <div class="checklist-bloco" id="checklist-pre">
+          <div class="bloco-icon">📋</div>
+          <div class="titulo">Checklist pré-pelada</div>
+          <div class="checklist-input-group">
+            <input type="text" placeholder="Novo item..." id="input-pre">
+            <button id="add-pre">Add</button>
+          </div>
+          <div class="checklist-items" id="items-pre"></div>
+        </div>
+
+        <div class="checklist-bloco" id="checklist-pos">
+          <div class="bloco-icon">📋</div>
+          <div class="titulo">Checklist pós-pelada</div>
+          <div class="checklist-input-group">
+            <input type="text" placeholder="Novo item..." id="input-pos">
+            <button id="add-pos">Add</button>
+          </div>
+          <div class="checklist-items" id="items-pos"></div>
+        </div>
+      </div>
+
     </div>
   </main>
 
   <button id="btn-logout" class="btn-logout">Deslogar</button>
+
+  <script>
+    // Script funcional para gerenciar os checklists (adicionar, renomear, marcar, excluir e reorganizar)
+    function setupChecklist(containerId, inputId, buttonId, storageKey) {
+      const container = document.getElementById(containerId);
+      const input = document.getElementById(inputId);
+      const button = document.getElementById(buttonId);
+      const itemsContainer = container.querySelector('.checklist-items');
+
+      let items = JSON.parse(localStorage.getItem(storageKey)) || [];
+
+      function saveAndRender() {
+        localStorage.setItem(storageKey, JSON.stringify(items));
+        render();
+      }
+
+      function render() {
+        itemsContainer.innerHTML = '';
+        items.forEach((item, index) => {
+          const div = document.createElement('div');
+          div.className = `checklist-item ${item.checked ? 'checked' : ''}`;
+          div.setAttribute('draggable', 'true');
+          div.dataset.index = index;
+
+          div.innerHTML = `
+            <span class="drag-handle" title="Reorganizar">=</span>
+            <input type="checkbox" ${item.checked ? 'checked' : ''}>
+            <span class="item-text">${escapeHtml(item.text)}</span>
+            <button class="checklist-action-btn edit-btn" title="Renomear">✏️</button>
+            <button class="checklist-action-btn delete-btn" title="Excluir">❌</button>
+          `;
+
+          // Evento de marcar/desmarcar
+          const checkbox = div.querySelector('input[type="checkbox"]');
+          checkbox.addEventListener('change', () => {
+            items[index].checked = checkbox.checked;
+            saveAndRender();
+          });
+
+          // Evento de excluir
+          div.querySelector('.delete-btn').addEventListener('click', () => {
+            items.splice(index, 1);
+            saveAndRender();
+          });
+
+          // Evento de renomear
+          div.querySelector('.edit-btn').addEventListener('click', () => {
+            const newText = prompt('Renomear item:', items[index].text);
+            if (newText !== null && newText.trim() !== '') {
+              items[index].text = newText.trim();
+              saveAndRender();
+            }
+          });
+
+          // Eventos de Drag and Drop para reorganização
+          div.addEventListener('dragstart', (e) => {
+            div.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', index);
+          });
+
+          div.addEventListener('dragend', () => {
+            div.classList.remove('dragging');
+          });
+
+          div.addEventListener('dragover', (e) => {
+            e.preventDefault();
+          });
+
+          div.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'));
+            const targetIndex = index;
+            if (draggedIndex !== targetIndex) {
+              const draggedItem = items.splice(draggedIndex, 1)[0];
+              items.splice(targetIndex, 0, draggedItem);
+              saveAndRender();
+            }
+          });
+
+          itemsContainer.appendChild(div);
+        });
+      }
+
+      button.addEventListener('click', () => {
+        const text = input.value.trim();
+        if (text) {
+          items.push({ text, checked: false });
+          input.value = '';
+          saveAndRender();
+        }
+      });
+
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          button.click();
+        }
+      });
+
+      render();
+    }
+
+    function escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // Inicializar os dois checklists
+    setupChecklist('checklist-pre', 'input-pre', 'add-pre', 'checklist_pre_pelada');
+    setupChecklist('checklist-pos', 'input-pos', 'add-pos', 'checklist_pos_pelada');
+  </script>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
