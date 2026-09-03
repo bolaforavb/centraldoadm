@@ -191,6 +191,14 @@
       cursor: pointer;
     }
 
+    .btn-toggle-all {
+      background-color: #f1f1f1 !important;
+      color: #333 !important;
+      border: 1px solid #ccc !important;
+      font-size: 12px !important;
+      padding: 4px 6px !important;
+    }
+
     .checklist-input-group button:active {
       transform: scale(0.95);
     }
@@ -378,6 +386,7 @@
           <div class="bloco-icon">📋</div>
           <div class="titulo">Checklist pré-pelada</div>
           <div class="checklist-input-group">
+            <button class="btn-toggle-all" id="toggle-all-pre" title="Marcar/Desmarcar Todos">☑️</button>
             <input type="text" placeholder="Novo item..." id="input-pre">
             <button id="add-pre">Add</button>
           </div>
@@ -389,6 +398,7 @@
           <div class="bloco-icon">📋</div>
           <div class="titulo">Checklist pós-pelada</div>
           <div class="checklist-input-group">
+            <button class="btn-toggle-all" id="toggle-all-pos" title="Marcar/Desmarcar Todos">☑️</button>
             <input type="text" placeholder="Novo item..." id="input-pos">
             <button id="add-pos">Add</button>
           </div>
@@ -436,10 +446,11 @@
     });
 
     // Função para configurar cada checklist conectado ao Firebase Realtime Database
-    function setupChecklistFirebase(containerId, inputId, buttonId, dbPath) {
+    function setupChecklistFirebase(containerId, inputId, buttonId, toggleAllId, dbPath) {
       const container = document.getElementById(containerId);
       const input = document.getElementById(inputId);
       const button = document.getElementById(buttonId);
+      const toggleAllBtn = document.getElementById(toggleAllId);
       const itemsContainer = container.querySelector('.checklist-items');
 
       let items = [];
@@ -540,6 +551,16 @@
           button.click();
         }
       });
+
+      // Evento para Marcar/Desmarcar Todos
+      toggleAllBtn.addEventListener('click', () => {
+        if (items.length === 0) return;
+        // Se houver algum item não marcado, marca todos. Caso contrário, desmarca todos.
+        const allChecked = items.every(item => item.checked);
+        const newState = !allChecked;
+        items.forEach(item => item.checked = newState);
+        saveToFirebase();
+      });
     }
 
     function escapeHtml(text) {
@@ -554,8 +575,8 @@
     }
 
     // Inicializar os checklists vinculados aos nós do Firebase
-    setupChecklistFirebase('checklist-pre', 'input-pre', 'add-pre', 'checklists/pre_pelada');
-    setupChecklistFirebase('checklist-pos', 'input-pos', 'add-pos', 'checklists/pos_pelada');
+    setupChecklistFirebase('checklist-pre', 'input-pre', 'add-pre', 'toggle-all-pre', 'checklists/pre_pelada');
+    setupChecklistFirebase('checklist-pos', 'input-pos', 'add-pos', 'toggle-all-pos', 'checklists/pos_pelada');
   </script>
 </body>
 </html>
