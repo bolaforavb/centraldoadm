@@ -26,7 +26,7 @@
 
     .header-banner {
       width: 100%; 
-      max-width: 600px; 
+      max-width: 900px; /* Expandido levemente para Desktop, responsivo no mobile */
       background-color: #e1d8cd; 
       overflow: hidden;
       display: flex;
@@ -37,13 +37,14 @@
 
     .header-banner img {
       width: 100%;
-      height: 100%;
+      height: auto;
+      max-height: 180px;
       object-fit: cover; 
     }
 
     .main-container {
       width: 100%;
-      max-width: 600px; 
+      max-width: 900px; /* Aumentado para melhor aproveitamento em telas maiores */
       padding: 16px; 
       flex: 1;
       display: flex;
@@ -53,23 +54,23 @@
 
     .grid-container {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px; 
+      grid-template-columns: 1fr;
+      gap: 12px; 
       width: 100%;
       transition: all 0.4s ease-in-out;
     }
 
-    /* SEÇÃO DE LINKS - ADAPTADA EXCLUSIVAMENTE PARA 6 COLUNAS */
+    /* SEÇÃO DE LINKS - 6 COLUNAS PERFEITAS (2 LINHAS DE 6 = 12 ITENS) */
     .secao-links {
-      grid-column: span 3;
       border: 1px solid #d9b246; 
       border-radius: 16px;
-      padding: 16px 10px 10px 10px;
-      margin: 0 0 4px 0;
+      padding: 14px 8px 10px 8px;
+      margin: 0;
       display: grid;
-      grid-template-columns: repeat(6, 1fr); /* Força 6 colunas perfeitamente simétricas nos links */
+      grid-template-columns: repeat(6, 1fr); /* Força exatamente 6 colunas */
       gap: 6px;
       width: 100%;
+      background-color: rgba(255, 255, 255, 0.02);
     }
 
     .secao-links legend {
@@ -89,17 +90,17 @@
       display: block;
     }
 
-    /* Estilo padrão para os blocos */
+    /* Estilo padrão para os blocos do menu */
     .bloco {
       background-color: white; 
-      border-radius: 16px;
+      border-radius: 12px;
       width: 100%;
-      aspect-ratio: 1 / 1; /* Mantém a proporção original quadrada perfeita */
+      aspect-ratio: 1 / 1; /* Mantém quadrado perfeito */
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 6px; 
+      padding: 4px; 
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       text-align: center;
       transition: transform 0.1s ease, background-color 0.3s ease;
@@ -114,16 +115,16 @@
     }
 
     .bloco-icon {
-      font-size: 20px; 
-      margin-bottom: 4px;
+      font-size: clamp(16px, 2.2vw, 24px); /* Adapta o tamanho do ícone entre mobile e desktop */
+      margin-bottom: 3px;
       color: #d9b246; 
       flex-shrink: 0;
     }
 
     .titulo {
-      font-size: 9px; 
+      font-size: clamp(7px, 1.1vw, 10px); /* Fonte fluida para caber perfeitamente nas 6 colunas */
       font-weight: bold;
-      line-height: 1.15;
+      line-height: 1.1;
       width: 100%;
       word-wrap: break-word;
       display: -webkit-box;
@@ -132,20 +133,18 @@
       overflow: hidden;
     }
 
-    /* ESTILIZAÇÃO DOS NOVOS BLOCOS DE CHECKLIST (LADO A LADO) */
+    /* ESTILIZAÇÃO DOS BLOCOS DE CHECKLIST (LADO A LADO) */
     .secao-checklists-container {
-      grid-column: span 3;
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      grid-template-columns: 1fr 1fr; /* Lado a lado por padrão */
+      gap: 12px;
       width: 100%;
-      margin-top: 10px;
     }
 
     .checklist-bloco {
       background-color: white;
       border-radius: 16px;
-      padding: 12px;
+      padding: 14px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       display: flex;
       flex-direction: column;
@@ -155,26 +154,28 @@
 
     .checklist-bloco .bloco-icon {
       font-size: 22px;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
       color: #d9b246;
     }
 
     .checklist-bloco .titulo {
-      font-size: 11px;
+      font-size: 12px;
       margin-bottom: 8px;
+      color: #12364e;
+      display: block;
     }
 
     .checklist-input-group {
       display: flex;
       width: 100%;
-      gap: 4px;
+      gap: 6px;
       margin-bottom: 8px;
     }
 
     .checklist-input-group input {
       flex: 1;
-      padding: 4px 6px;
-      font-size: 10px;
+      padding: 6px 8px;
+      font-size: 11px;
       border: 1px solid #ccc;
       border-radius: 6px;
       outline: none;
@@ -185,8 +186,8 @@
       color: white;
       border: none;
       border-radius: 6px;
-      padding: 4px 8px;
-      font-size: 10px;
+      padding: 6px 10px;
+      font-size: 11px;
       font-weight: bold;
       cursor: pointer;
     }
@@ -196,7 +197,7 @@
       color: #333 !important;
       border: 1px solid #ccc !important;
       font-size: 12px !important;
-      padding: 4px 6px !important;
+      padding: 6px 8px !important;
     }
 
     .checklist-input-group button:active {
@@ -208,9 +209,10 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
-      max-height: 180px;
+      max-height: 200px;
       overflow-y: auto;
       text-align: left;
+      padding-right: 2px;
     }
 
     .checklist-item {
@@ -219,9 +221,9 @@
       background-color: #f9f9f9;
       border: 1px solid #eee;
       border-radius: 6px;
-      padding: 4px 6px;
-      font-size: 10px;
-      gap: 4px;
+      padding: 6px 8px;
+      font-size: 11px;
+      gap: 6px;
     }
 
     .checklist-item.dragging {
@@ -230,6 +232,8 @@
 
     .checklist-item input[type="checkbox"] {
       cursor: pointer;
+      width: 14px;
+      height: 14px;
     }
 
     .checklist-item span.item-text {
@@ -246,8 +250,8 @@
       background: none;
       border: none;
       cursor: pointer;
-      font-size: 11px;
-      padding: 0;
+      font-size: 12px;
+      padding: 2px;
       line-height: 1;
     }
 
@@ -255,6 +259,7 @@
       cursor: grab;
       font-weight: bold;
       color: #666;
+      padding: 0 2px;
     }
 
     /* ESTILIZAÇÃO DO BOTÃO DE LOGOUT NO RODAPÉ */
@@ -263,11 +268,11 @@
       color: white;
       border: none;
       border-radius: 8px;
-      padding: 10px 24px;
+      padding: 10px 28px;
       font-size: 14px;
       font-weight: bold;
       cursor: pointer;
-      margin: 20px 0 30px 0; 
+      margin: 24px 0 32px 0; 
       box-shadow: 0 4px 10px rgba(0,0,0,0.2);
       transition: background-color 0.2s ease, transform 0.1s ease;
       -webkit-tap-highlight-color: transparent;
@@ -279,6 +284,13 @@
 
     .btn-logout:active {
       transform: scale(0.96);
+    }
+
+    /* MEDIA QUERY PARA TELAS MUITO ESTREITAS (Ex: celulares na vertical compactos) */
+    @media (max-width: 480px) {
+      .secao-checklists-container {
+        grid-template-columns: 1fr; /* Empilha os checklists apenas se a tela for extremamente estreita para garantir usabilidade */
+      }
     }
   </style>
 </head>
@@ -379,9 +391,7 @@
         </a>
       </fieldset>
 
-      <!-- NOVOS BLOCOS DE CHECKLIST -->
       <div class="secao-checklists-container">
-        <!-- Checklist Pré-pelada -->
         <div class="checklist-bloco" id="checklist-pre">
           <div class="bloco-icon">📋</div>
           <div class="titulo">Checklist pré-pelada</div>
@@ -393,7 +403,6 @@
           <div class="checklist-items" id="items-pre"></div>
         </div>
 
-        <!-- Checklist Pós-pelada -->
         <div class="checklist-bloco" id="checklist-pos">
           <div class="bloco-icon">📋</div>
           <div class="titulo">Checklist pós-pelada</div>
@@ -445,7 +454,6 @@
       });
     });
 
-    // Função para configurar cada checklist conectado ao Firebase Realtime Database
     function setupChecklistFirebase(containerId, inputId, buttonId, toggleAllId, dbPath) {
       const container = document.getElementById(containerId);
       const input = document.getElementById(inputId);
@@ -456,7 +464,6 @@
       let items = [];
       const dbRef = ref(db, dbPath);
 
-      // Ouvir atualizações em tempo real do banco de dados
       onValue(dbRef, (snapshot) => {
         const data = snapshot.val();
         items = Array.isArray(data) ? data : [];
@@ -486,20 +493,17 @@
             <button class="checklist-action-btn delete-btn" title="Excluir">❌</button>
           `;
 
-          // Evento de marcar/desmarcar
           const checkbox = div.querySelector('input[type="checkbox"]');
           checkbox.addEventListener('change', () => {
             items[index].checked = checkbox.checked;
             saveToFirebase();
           });
 
-          // Evento de excluir
           div.querySelector('.delete-btn').addEventListener('click', () => {
             items.splice(index, 1);
             saveToFirebase();
           });
 
-          // Evento de renomear
           div.querySelector('.edit-btn').addEventListener('click', () => {
             const newText = prompt('Renomear item:', items[index].text);
             if (newText !== null && newText.trim() !== '') {
@@ -508,7 +512,6 @@
             }
           });
 
-          // Eventos de Drag and Drop para reorganização
           div.addEventListener('dragstart', (e) => {
             div.classList.add('dragging');
             e.dataTransfer.setData('text/plain', index);
@@ -552,10 +555,8 @@
         }
       });
 
-      // Evento para Marcar/Desmarcar Todos
       toggleAllBtn.addEventListener('click', () => {
         if (items.length === 0) return;
-        // Se houver algum item não marcado, marca todos. Caso contrário, desmarca todos.
         const allChecked = items.every(item => item.checked);
         const newState = !allChecked;
         items.forEach(item => item.checked = newState);
@@ -574,7 +575,6 @@
       return text.replace(/[&<>"']/g, m => map[m]);
     }
 
-    // Inicializar os checklists vinculados aos nós do Firebase
     setupChecklistFirebase('checklist-pre', 'input-pre', 'add-pre', 'toggle-all-pre', 'checklists/pre_pelada');
     setupChecklistFirebase('checklist-pos', 'input-pos', 'add-pos', 'toggle-all-pos', 'checklists/pos_pelada');
   </script>
