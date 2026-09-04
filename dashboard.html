@@ -26,7 +26,7 @@
 
     .header-banner {
       width: 100%; 
-      max-width: 480px; /* Reduzido para encaixar perfeitamente no mobile sem zoom */
+      max-width: 480px; 
       background-color: #e1d8cd; 
       overflow: hidden;
       display: flex;
@@ -44,7 +44,7 @@
 
     .main-container {
       width: 100%;
-      max-width: 480px; /* Alinhado à largura otimizada para mobile e telas verticais */
+      max-width: 480px; 
       padding: 12px; 
       flex: 1;
       display: flex;
@@ -53,24 +53,25 @@
     }
 
     .grid-container {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px; 
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px; 
       width: 100%;
-      transition: all 0.4s ease-in-out;
     }
 
     /* SEÇÃO DE LINKS - 6 COLUNAS PERFEITAS E SIMÉTRICAS */
     .secao-links {
       border: 1px solid #d9b246; 
       border-radius: 14px;
-      padding: 12px 6px 8px 6px;
+      padding: 12px 8px 10px 8px;
       margin: 0;
       display: grid;
       grid-template-columns: repeat(6, 1fr); /* Força 6 colunas */
-      gap: 4px;
+      gap: 6px;
       width: 100%;
       background-color: rgba(255, 255, 255, 0.02);
+      box-sizing: border-box;
     }
 
     .secao-links legend {
@@ -115,7 +116,7 @@
     }
 
     .bloco-icon {
-      font-size: 16px; /* Tamanho padronizado para os ícones caberem nas 6 colunas */
+      font-size: 16px; 
       margin-bottom: 2px;
       color: #d9b246; 
       flex-shrink: 0;
@@ -123,11 +124,11 @@
     }
 
     .titulo {
-      font-size: 7.5px; /* Tamanho rigorosamente padronizado para evitar variações visuais */
+      font-size: 7.5px; 
       font-weight: bold;
       line-height: 1.1;
       width: 100%;
-      height: 22px; /* Garante altura fixa para padronizar todos os botões independentemente do texto */
+      height: 22px; 
       display: flex;
       align-items: center;
       justify-content: center;
@@ -138,12 +139,13 @@
       -webkit-box-orient: vertical;
     }
 
-    /* ESTILIZAÇÃO DOS BLOCOS DE CHECKLIST (LADO A LADO) */
+    /* ESTILIZAÇÃO DOS BLOCOS DE CHECKLIST (LADO A LADO E MESMA LARGURA) */
     .secao-checklists-container {
       display: grid;
-      grid-template-columns: 1fr 1fr; /* Lado a lado */
+      grid-template-columns: repeat(2, minmax(0, 1fr)); /* Garante colunas estritamente iguais e com limite flexível */
       gap: 10px;
       width: 100%;
+      box-sizing: border-box;
     }
 
     .checklist-bloco {
@@ -155,6 +157,8 @@
       flex-direction: column;
       align-items: center;
       text-align: center;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .checklist-bloco .bloco-icon {
@@ -185,6 +189,7 @@
       border: 1px solid #ccc;
       border-radius: 6px;
       outline: none;
+      min-width: 0; /* Impede que o input force expansão desproporcional */
     }
 
     .checklist-input-group button {
@@ -395,7 +400,7 @@
         </a>
       </fieldset>
 
-      <!-- BLOCOS DE CHECKLIST (LADO A LADO) -->
+      <!-- BLOCOS DE CHECKLIST (LADO A LADO E MESMA LARGURA) -->
       <div class="secao-checklists-container">
         <!-- Checklist Pré-pelada -->
         <div class="checklist-bloco" id="checklist-pre">
