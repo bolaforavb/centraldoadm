@@ -7,7 +7,7 @@
   <link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png?v=2" type="image/png">
   
   <style>
-    /* Reset global para evitar que bordas e paddings quebrem a largura */
+    /* Reset global */
     * {
       box-sizing: border-box;
     }
@@ -26,7 +26,7 @@
 
     .header-banner {
       width: 100%; 
-      max-width: 900px; /* Expandido levemente para Desktop, responsivo no mobile */
+      max-width: 480px; /* Reduzido para encaixar perfeitamente no mobile sem zoom */
       background-color: #e1d8cd; 
       overflow: hidden;
       display: flex;
@@ -38,14 +38,14 @@
     .header-banner img {
       width: 100%;
       height: auto;
-      max-height: 180px;
+      max-height: 150px;
       object-fit: cover; 
     }
 
     .main-container {
       width: 100%;
-      max-width: 900px; /* Aumentado para melhor aproveitamento em telas maiores */
-      padding: 16px; 
+      max-width: 480px; /* Alinhado à largura otimizada para mobile e telas verticais */
+      padding: 12px; 
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -55,20 +55,20 @@
     .grid-container {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 12px; 
+      gap: 10px; 
       width: 100%;
       transition: all 0.4s ease-in-out;
     }
 
-    /* SEÇÃO DE LINKS - 6 COLUNAS PERFEITAS (2 LINHAS DE 6 = 12 ITENS) */
+    /* SEÇÃO DE LINKS - 6 COLUNAS PERFEITAS E SIMÉTRICAS */
     .secao-links {
       border: 1px solid #d9b246; 
-      border-radius: 16px;
-      padding: 14px 8px 10px 8px;
+      border-radius: 14px;
+      padding: 12px 6px 8px 6px;
       margin: 0;
       display: grid;
-      grid-template-columns: repeat(6, 1fr); /* Força exatamente 6 colunas */
-      gap: 6px;
+      grid-template-columns: repeat(6, 1fr); /* Força 6 colunas */
+      gap: 4px;
       width: 100%;
       background-color: rgba(255, 255, 255, 0.02);
     }
@@ -76,8 +76,8 @@
     .secao-links legend {
       color: #d9b246;
       font-weight: bold;
-      font-size: 13px;
-      padding: 0 10px;
+      font-size: 12px;
+      padding: 0 8px;
       text-transform: uppercase;
       letter-spacing: 1px;
       text-align: center;
@@ -90,18 +90,18 @@
       display: block;
     }
 
-    /* Estilo padrão para os blocos do menu */
+    /* BLOCOS DO MENU PADRONIZADOS */
     .bloco {
       background-color: white; 
-      border-radius: 12px;
+      border-radius: 10px;
       width: 100%;
-      aspect-ratio: 1 / 1; /* Mantém quadrado perfeito */
+      aspect-ratio: 1 / 1; /* Mantém perfeitamente quadrado */
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 4px; 
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 4px 2px; 
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
       text-align: center;
       transition: transform 0.1s ease, background-color 0.3s ease;
       overflow: hidden;
@@ -115,37 +115,42 @@
     }
 
     .bloco-icon {
-      font-size: clamp(16px, 2.2vw, 24px); /* Adapta o tamanho do ícone entre mobile e desktop */
-      margin-bottom: 3px;
+      font-size: 16px; /* Tamanho padronizado para os ícones caberem nas 6 colunas */
+      margin-bottom: 2px;
       color: #d9b246; 
       flex-shrink: 0;
+      line-height: 1;
     }
 
     .titulo {
-      font-size: clamp(7px, 1.1vw, 10px); /* Fonte fluida para caber perfeitamente nas 6 colunas */
+      font-size: 7.5px; /* Tamanho rigorosamente padronizado para evitar variações visuais */
       font-weight: bold;
       line-height: 1.1;
       width: 100%;
-      word-wrap: break-word;
+      height: 22px; /* Garante altura fixa para padronizar todos os botões independentemente do texto */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      word-break: break-word;
+      overflow: hidden;
       display: -webkit-box;
       -webkit-line-clamp: 2; 
       -webkit-box-orient: vertical;
-      overflow: hidden;
     }
 
     /* ESTILIZAÇÃO DOS BLOCOS DE CHECKLIST (LADO A LADO) */
     .secao-checklists-container {
       display: grid;
-      grid-template-columns: 1fr 1fr; /* Lado a lado por padrão */
-      gap: 12px;
+      grid-template-columns: 1fr 1fr; /* Lado a lado */
+      gap: 10px;
       width: 100%;
     }
 
     .checklist-bloco {
       background-color: white;
-      border-radius: 16px;
-      padding: 14px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      border-radius: 14px;
+      padding: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -153,29 +158,30 @@
     }
 
     .checklist-bloco .bloco-icon {
-      font-size: 22px;
+      font-size: 20px;
       margin-bottom: 2px;
       color: #d9b246;
     }
 
     .checklist-bloco .titulo {
-      font-size: 12px;
-      margin-bottom: 8px;
+      font-size: 11px;
+      margin-bottom: 6px;
       color: #12364e;
+      height: auto;
       display: block;
     }
 
     .checklist-input-group {
       display: flex;
       width: 100%;
-      gap: 6px;
-      margin-bottom: 8px;
+      gap: 4px;
+      margin-bottom: 6px;
     }
 
     .checklist-input-group input {
       flex: 1;
-      padding: 6px 8px;
-      font-size: 11px;
+      padding: 5px 6px;
+      font-size: 10px;
       border: 1px solid #ccc;
       border-radius: 6px;
       outline: none;
@@ -186,8 +192,8 @@
       color: white;
       border: none;
       border-radius: 6px;
-      padding: 6px 10px;
-      font-size: 11px;
+      padding: 5px 8px;
+      font-size: 10px;
       font-weight: bold;
       cursor: pointer;
     }
@@ -196,8 +202,8 @@
       background-color: #f1f1f1 !important;
       color: #333 !important;
       border: 1px solid #ccc !important;
-      font-size: 12px !important;
-      padding: 6px 8px !important;
+      font-size: 11px !important;
+      padding: 5px 6px !important;
     }
 
     .checklist-input-group button:active {
@@ -209,10 +215,9 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
-      max-height: 200px;
+      max-height: 160px;
       overflow-y: auto;
       text-align: left;
-      padding-right: 2px;
     }
 
     .checklist-item {
@@ -221,9 +226,9 @@
       background-color: #f9f9f9;
       border: 1px solid #eee;
       border-radius: 6px;
-      padding: 6px 8px;
-      font-size: 11px;
-      gap: 6px;
+      padding: 5px 6px;
+      font-size: 10px;
+      gap: 4px;
     }
 
     .checklist-item.dragging {
@@ -232,8 +237,8 @@
 
     .checklist-item input[type="checkbox"] {
       cursor: pointer;
-      width: 14px;
-      height: 14px;
+      width: 13px;
+      height: 13px;
     }
 
     .checklist-item span.item-text {
@@ -250,7 +255,7 @@
       background: none;
       border: none;
       cursor: pointer;
-      font-size: 12px;
+      font-size: 11px;
       padding: 2px;
       line-height: 1;
     }
@@ -259,21 +264,20 @@
       cursor: grab;
       font-weight: bold;
       color: #666;
-      padding: 0 2px;
     }
 
-    /* ESTILIZAÇÃO DO BOTÃO DE LOGOUT NO RODAPÉ */
+    /* BOTÃO DE LOGOUT NO RODAPÉ */
     .btn-logout {
       background-color: #c53929;
       color: white;
       border: none;
       border-radius: 8px;
-      padding: 10px 28px;
-      font-size: 14px;
+      padding: 8px 22px;
+      font-size: 13px;
       font-weight: bold;
       cursor: pointer;
-      margin: 24px 0 32px 0; 
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      margin: 18px 0 24px 0; 
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
       transition: background-color 0.2s ease, transform 0.1s ease;
       -webkit-tap-highlight-color: transparent;
     }
@@ -286,10 +290,10 @@
       transform: scale(0.96);
     }
 
-    /* MEDIA QUERY PARA TELAS MUITO ESTREITAS (Ex: celulares na vertical compactos) */
-    @media (max-width: 480px) {
+    /* EMPILHA OS CHECKLISTS APENAS EM TELAS EXTREMAMENTE ESTREITAS */
+    @media (max-width: 380px) {
       .secao-checklists-container {
-        grid-template-columns: 1fr; /* Empilha os checklists apenas se a tela for extremamente estreita para garantir usabilidade */
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -391,7 +395,9 @@
         </a>
       </fieldset>
 
+      <!-- BLOCOS DE CHECKLIST (LADO A LADO) -->
       <div class="secao-checklists-container">
+        <!-- Checklist Pré-pelada -->
         <div class="checklist-bloco" id="checklist-pre">
           <div class="bloco-icon">📋</div>
           <div class="titulo">Checklist pré-pelada</div>
@@ -403,6 +409,7 @@
           <div class="checklist-items" id="items-pre"></div>
         </div>
 
+        <!-- Checklist Pós-pelada -->
         <div class="checklist-bloco" id="checklist-pos">
           <div class="bloco-icon">📋</div>
           <div class="titulo">Checklist pós-pelada</div>
