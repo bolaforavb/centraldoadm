@@ -139,11 +139,11 @@
       -webkit-box-orient: vertical;
     }
 
-    /* ESTILIZAÇÃO DOS BLOCOS DE CHECKLIST (LADO A LADO E MESMA LARGURA) */
+    /* ESTILIZAÇÃO DOS BLOCOS DE CHECKLIST (SEMPRE LADO A LADO) */
     .secao-checklists-container {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr)); /* Garante colunas estritamente iguais e com limite flexível */
-      gap: 10px;
+      grid-template-columns: 1fr 1fr; /* Força rigorosamente 50% para cada um, independente da tela */
+      gap: 8px;
       width: 100%;
       box-sizing: border-box;
     }
@@ -151,7 +151,7 @@
     .checklist-bloco {
       background-color: white;
       border-radius: 14px;
-      padding: 10px;
+      padding: 8px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       display: flex;
       flex-direction: column;
@@ -159,16 +159,17 @@
       text-align: center;
       width: 100%;
       box-sizing: border-box;
+      min-width: 0; /* Essencial para elementos de grid flexíveis não estourarem */
     }
 
     .checklist-bloco .bloco-icon {
-      font-size: 20px;
+      font-size: 18px;
       margin-bottom: 2px;
       color: #d9b246;
     }
 
     .checklist-bloco .titulo {
-      font-size: 11px;
+      font-size: 9.5px;
       margin-bottom: 6px;
       color: #12364e;
       height: auto;
@@ -178,18 +179,18 @@
     .checklist-input-group {
       display: flex;
       width: 100%;
-      gap: 4px;
+      gap: 3px;
       margin-bottom: 6px;
     }
 
     .checklist-input-group input {
       flex: 1;
-      padding: 5px 6px;
-      font-size: 10px;
+      padding: 4px 4px;
+      font-size: 9px;
       border: 1px solid #ccc;
       border-radius: 6px;
       outline: none;
-      min-width: 0; /* Impede que o input force expansão desproporcional */
+      min-width: 0; /* Permite que o input encolha sem quebrar o grid */
     }
 
     .checklist-input-group button {
@@ -197,18 +198,18 @@
       color: white;
       border: none;
       border-radius: 6px;
-      padding: 5px 8px;
-      font-size: 10px;
+      padding: 4px 6px;
+      font-size: 9px;
       font-weight: bold;
       cursor: pointer;
+      flex-shrink: 0;
     }
 
     .btn-toggle-all {
       background-color: #f1f1f1 !important;
       color: #333 !important;
       border: 1px solid #ccc !important;
-      font-size: 11px !important;
-      padding: 5px 6px !important;
+      padding: 4px 5px !important;
     }
 
     .checklist-input-group button:active {
@@ -231,9 +232,10 @@
       background-color: #f9f9f9;
       border: 1px solid #eee;
       border-radius: 6px;
-      padding: 5px 6px;
-      font-size: 10px;
-      gap: 4px;
+      padding: 4px 5px;
+      font-size: 9px;
+      gap: 3px;
+      min-width: 0;
     }
 
     .checklist-item.dragging {
@@ -242,13 +244,15 @@
 
     .checklist-item input[type="checkbox"] {
       cursor: pointer;
-      width: 13px;
-      height: 13px;
+      width: 12px;
+      height: 12px;
+      flex-shrink: 0;
     }
 
     .checklist-item span.item-text {
       flex: 1;
       word-break: break-word;
+      min-width: 0;
     }
 
     .checklist-item.checked span.item-text {
@@ -260,15 +264,17 @@
       background: none;
       border: none;
       cursor: pointer;
-      font-size: 11px;
-      padding: 2px;
+      font-size: 10px;
+      padding: 1px;
       line-height: 1;
+      flex-shrink: 0;
     }
 
     .drag-handle {
       cursor: grab;
       font-weight: bold;
       color: #666;
+      flex-shrink: 0;
     }
 
     /* BOTÃO DE LOGOUT NO RODAPÉ */
@@ -293,13 +299,6 @@
 
     .btn-logout:active {
       transform: scale(0.96);
-    }
-
-    /* EMPILHA OS CHECKLISTS APENAS EM TELAS EXTREMAMENTE ESTREITAS */
-    @media (max-width: 380px) {
-      .secao-checklists-container {
-        grid-template-columns: 1fr;
-      }
     }
   </style>
 </head>
@@ -400,7 +399,7 @@
         </a>
       </fieldset>
 
-      <!-- BLOCOS DE CHECKLIST (LADO A LADO E MESMA LARGURA) -->
+      <!-- BLOCOS DE CHECKLIST (SEMPRE LADO A LADO) -->
       <div class="secao-checklists-container">
         <!-- Checklist Pré-pelada -->
         <div class="checklist-bloco" id="checklist-pre">
@@ -553,7 +552,7 @@
       }
 
       button.addEventListener('click', () => {
-        const text = input.value.trim();
+        const text = input.value.temp || input.value.trim();
         if (text) {
           items.push({ text, checked: false });
           input.value = '';
