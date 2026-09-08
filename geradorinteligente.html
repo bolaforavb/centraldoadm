@@ -508,12 +508,29 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      cursor: grab;
+      user-select: none;
+      transition: background-color 0.2s, opacity 0.2s;
+    }
+
+    .membro-time-item:active {
+      cursor: grabbing;
+    }
+
+    .membro-time-item.arrastando {
+      opacity: 0.4;
+    }
+
+    .membro-time-item.drag-over {
+      background-color: #e2e8f0;
+      border: 1px dashed #12364e;
     }
 
     .membro-detalhes-dir {
       display: flex;
       align-items: center;
       gap: 6px;
+      pointer-events: none;
     }
 
     .membro-fundamentos-container {
@@ -1119,12 +1136,12 @@
           <div class="card-time ${chave}">
             <div class="titulo-time">
               <span>${nomesMapeados[chave]}</span>
-              <span style="font-weight: normal; opacity: 0.8;">Média Nível: ${mediaNivel}</span>
+              <span id="media-time-${dia}-${chave}" style="font-weight: normal; opacity: 0.8;">Média Nível: ${mediaNivel}</span>
             </div>
             <ul class="lista-membros-time">
         `;
 
-        membros.forEach(m => {
+        membros.forEach((m, index) => {
           let htmlFundamentos = '';
           if (m.fundamentos && m.fundamentos.length > 0) {
             htmlFundamentos = `<div class="membro-fundamentos-container">`;
@@ -1137,7 +1154,14 @@
           let iconeAdm = m.isAdm ? `<span style="color: #d9b246; font-weight: bold; margin-left: 3px;" title="Administrador">•</span>` : '';
 
           html += `
-            <li class="membro-time-item">
+            <li class="membro-time-item" 
+                draggable="true" 
+                ondragstart="iniciarArrasto(event, '${dia}', '${chave}', ${index})"
+                ondragover="permitirSoltar(event)"
+                ondragenter="entrarArrasto(event)"
+                ondragleave="sairArrasto(event)"
+                ondrop="soltarJogador(event, '${dia}', '${chave}', ${index})"
+                ontouchstart="configurarToqueMobile(event, '${dia}', '${chave}', ${index})">
               <span>${m.nome}${iconeAdm}</span>
               <div class="membro-detalhes-dir">
                 ${htmlFundamentos}
@@ -1162,6 +1186,64 @@
       `;
 
       container.innerHTML = html;
+    }
+
+    // Funções de Arrastar e Soltar (Drag and Drop)
+    let dadosArrastados = null;
+
+    function iniciarArrasto(e, dia, chaveTime, indice) {
+      dadosArrastados = { dia, chaveTime, indice };
+      e.target.classList.add('arrastando');
+      e.dataTransfer.setData('text/plain', JSON.stringify(dadosArrastados));
+    }
+
+    function permitirSoltar(e) {
+      e.preventDefault();
+    }
+
+    function entrarArrasto(e) {
+      e.preventDefault();
+      const item = e.target.closest('.membro-time-item');
+      if (item) item.classList.add('drag-over');
+    }
+
+    function sairArrasto(e) {
+      const item = e.target.closest('.membro-time-item');
+      if (item) item.classList.remove('drag-over');
+    }
+
+    function soltarJogador(e, diaDestino, chaveDestino, indiceDestino) {
+      e.preventDefault();
+      const itemDestino = e.target.closest('.membro-time-item');
+      if (itemDestino) itemDestino.classList.remove('drag-over');
+
+      if (!dadosArrastados) return;
+
+      const { dia: diaOrigem, chaveTime: chaveOrigem, indice: indiceOrigem } = dadosArrastados;
+
+      // Garante que a troca aconteça no mesmo bloco de dia
+      if (diaOrigem !== diaDestino) return;
+
+      let times = estadoControle[diaDestino].ultimosTimes;
+      if (!times) return;
+
+      // Realiza a troca (swap) dos jogadores entre os times/posições
+      let jogadorOrigem = times[chaveOrigem][indiceOrigem];
+      times[chaveOrigem][indiceOrigem] = times[chaveDestino][indiceDestino];
+      times[chaveDestino][indiceDestino] = jogadorOrigem;
+
+      // Reordena cada time por nível em ordem decrescente (comportamento padrão de exibição)
+      times[chaveOrigem].sort((a, b) => b.nivel - a.nivel);
+      times[chaveDestino].sort((a, b) => b.nivel - a.nivel);
+
+      // Atualiza a renderização dos times na tela com as novas médias calculadas
+      renderizarTimes(diaDestino, times);
+      dadosArrastados = null;
+    }
+
+    // Suporte complementar para toque em dispositivos móveis caso necessário
+    function configurarToqueMobile(e, dia, chaveTime, indice) {
+      dadosArrastados = { dia, chaveTime, indice };
     }
 
     function compartilharWhatsApp(dia) {
