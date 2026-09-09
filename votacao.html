@@ -40,6 +40,7 @@
     .btn-voltar-painel { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; background-color: transparent; color: #e1d8cd; border: 2px solid #e1d8cd; border-radius: 8px; font-weight: bold; font-size: 14px; text-decoration: none; cursor: pointer; }
     .btn-voltar-painel:hover { background-color: #e1d8cd; color: #12364e; }
     .alerta-erro { color: #d93025; font-size: 12px; margin-top: 6px; text-align: center; font-weight: 500; }
+    .alerta-sucesso { color: #2e7d32; font-size: 12px; margin-top: 6px; text-align: center; font-weight: 500; }
     
     /* Modais gerais */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(18, 54, 78, 0.92); display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
@@ -59,12 +60,13 @@
   <div id="modal-codigo-dia" class="modal-overlay">
     <div class="bloco-card" style="max-width: 400px; text-align: center;">
       <div class="titulo-secao">Segurança da Votação</div>
-      <p style="font-size: 13px; color: #12364e; margin-bottom: 15px;">Digite o código do dia fornecido para liberar o acesso:</p>
+      <p style="font-size: 13px; color: #12364e; margin-bottom: 15px;">Por favor, digite o código do dia fornecido para liberar o acesso:</p>
       <div class="form-inline">
-        <input type="text" id="input-codigo-dia" placeholder="Código..." autocomplete="off">
-        <button onclick="verificarCodigoDia()" class="btn-acao">Confirmar</button>
+        <input type="text" id="input-codigo-dia" placeholder="Digite o código..." autocomplete="off">
+        <button id="btn-confirmar-codigo" onclick="verificarCodigoDia()" class="btn-acao">Confirmar Código</button>
       </div>
       <p id="codigo-erro" class="alerta-erro hidden">Código incorreto. Tente novamente.</p>
+      <p id="codigo-sucesso" class="alerta-sucesso hidden">Código correto! Redirecionando...</p>
     </div>
   </div>
 
@@ -80,7 +82,7 @@
           <select id="voter-select">
             <option value="">Carregando...</option>
           </select>
-          <button onclick="iniciarVotacao()" class="btn-acao">Acessar</button>
+          <button onclick="iniciarVotacao()" class="btn-acao">Acessar Votação</button>
         </div>
         <p id="auth-error" class="alerta-erro hidden">Selecione um nome válido ou você já votou.</p>
       </div>
@@ -97,7 +99,7 @@
           </div>
 
           <div style="margin-top: 15px;">
-            <button type="submit" id="btn-enviar" class="btn-acao" style="width: 100%; background-color: #12364e;">Finalizar</button>
+            <button type="submit" id="btn-enviar" class="btn-acao" style="width: 100%; background-color: #12364e;">Enviar Votos</button>
           </div>
         </form>
       </div>
@@ -154,37 +156,47 @@
     window.verificarCodigoDia = function() {
       const inputVal = document.getElementById('input-codigo-dia').value.trim();
       const erroEl = document.getElementById('codigo-erro');
+      const sucessoEl = document.getElementById('codigo-sucesso');
+      const btnEl = document.getElementById('btn-confirmar-codigo');
 
       if (!inputVal) {
+        sucessoEl.classList.add('hidden');
         erroEl.textContent = "Digite o código para continuar.";
         erroEl.classList.remove('hidden');
         return;
       }
 
       if (!db) {
+        sucessoEl.classList.add('hidden');
         erroEl.textContent = "Erro de conexão com o banco de dados.";
         erroEl.classList.remove('hidden');
         return;
       }
 
-      // Oculta erros anteriores
+      // Oculta alertas anteriores
       erroEl.classList.add('hidden');
+      sucessoEl.classList.add('hidden');
 
       // Pega o código cadastrado no banco (tag 'codigoDia')
       const codigoSalvo = dbData && dbData.codigoDia ? String(dbData.codigoDia).trim() : "";
 
       if (!codigoSalvo) {
         // Se ainda não existir a tag no banco, define o digitado como o código oficial do dia atual
+        btnEl.disabled = true;
         set(ref(db, 'codigoDia'), inputVal).then(() => {
-          liberarAcessoPagina();
+          sucessoEl.classList.remove('hidden');
+          setTimeout(() => liberarAcessoPagina(), 800);
         }).catch((err) => {
           console.error("Erro ao salvar código:", err);
+          btnEl.disabled = false;
           erroEl.textContent = "Erro ao validar código. Tente novamente.";
           erroEl.classList.remove('hidden');
         });
       } else {
         if (inputVal === codigoSalvo) {
-          liberarAcessoPagina();
+          btnEl.disabled = true;
+          sucessoEl.classList.remove('hidden');
+          setTimeout(() => liberarAcessoPagina(), 800);
         } else {
           erroEl.textContent = "Código incorreto. Tente novamente.";
           erroEl.classList.remove('hidden');
