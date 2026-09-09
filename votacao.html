@@ -181,7 +181,7 @@
       const codigoSalvo = dbData && dbData.codigoDia ? String(dbData.codigoDia).trim().toLowerCase() : "";
 
       if (!codigoSalvo) {
-        erroEl.textContent = "Nenhum código definido no painel de gerenciamento.";
+        erroEl.textContent = "A votação foi encerrada.";
         erroEl.classList.remove('hidden');
         return;
       }
