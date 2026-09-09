@@ -63,7 +63,7 @@
       <p style="font-size: 13px; color: #12364e; margin-bottom: 15px;">Por favor, digite o código do dia fornecido para liberar o acesso:</p>
       <div class="form-inline">
         <input type="text" id="input-codigo-dia" placeholder="Digite o código..." autocomplete="off">
-        <button id="btn-confirmar-codigo" onclick="verificarCodigoDia()" class="btn-acao">Confirmar código</button>
+        <button id="btn-confirmar-codigo" onclick="verificarCodigoDia()" class="btn-acao">Confirmar Código</button>
       </div>
       <p id="codigo-erro" class="alerta-erro hidden">Código incorreto. Tente novamente.</p>
       <p id="codigo-sucesso" class="alerta-sucesso hidden">Código correto! Redirecionando...</p>
@@ -152,7 +152,7 @@
       });
     }
 
-    // Validação do Código do Dia inserido pelo usuário no Pop-up (Case-insensitive)
+    // Validação estrita do Código do Dia cadastrado no gerenciamento (Case-insensitive)
     window.verificarCodigoDia = function() {
       const inputVal = document.getElementById('input-codigo-dia').value.trim().toLowerCase();
       const erroEl = document.getElementById('codigo-erro');
@@ -177,30 +177,22 @@
       erroEl.classList.add('hidden');
       sucessoEl.classList.add('hidden');
 
-      // Pega o código cadastrado no banco (tag 'codigoDia') em minúsculas
+      // Pega estritamente o código configurado no painel de gerenciamento
       const codigoSalvo = dbData && dbData.codigoDia ? String(dbData.codigoDia).trim().toLowerCase() : "";
 
       if (!codigoSalvo) {
-        // Se ainda não existir a tag no banco, define o digitado como o código oficial
+        erroEl.textContent = "Nenhum código definido no painel de gerenciamento.";
+        erroEl.classList.remove('hidden');
+        return;
+      }
+
+      if (inputVal === codigoSalvo) {
         btnEl.disabled = true;
-        set(ref(db, 'codigoDia'), inputVal).then(() => {
-          sucessoEl.classList.remove('hidden');
-          setTimeout(() => liberarAcessoPagina(), 800);
-        }).catch((err) => {
-          console.error("Erro ao salvar código:", err);
-          btnEl.disabled = false;
-          erroEl.textContent = "Erro ao validar código. Tente novamente.";
-          erroEl.classList.remove('hidden');
-        });
+        sucessoEl.classList.remove('hidden');
+        setTimeout(() => liberarAcessoPagina(), 800);
       } else {
-        if (inputVal === codigoSalvo) {
-          btnEl.disabled = true;
-          sucessoEl.classList.remove('hidden');
-          setTimeout(() => liberarAcessoPagina(), 800);
-        } else {
-          erroEl.textContent = "Código incorreto. Tente novamente.";
-          erroEl.classList.remove('hidden');
-        }
+        erroEl.textContent = "Código incorreto. Tente novamente.";
+        erroEl.classList.remove('hidden');
       }
     }
 
@@ -214,7 +206,6 @@
     // Bloqueio parcial de exibição de código fonte e inspeção
     document.addEventListener('contextmenu', event => event.preventDefault());
     document.addEventListener('keydown', event => {
-      // Bloqueia F12, Ctrl+U, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+S
       if (
         event.key === 'F12' ||
         (event.ctrlKey && event.key.toLowerCase() === 'u') ||
