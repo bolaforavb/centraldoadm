@@ -17,7 +17,7 @@
     .main-container { width: 100%; max-width: 600px; padding: 16px; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 16px; }
     .bloco-card { background-color: white; border-radius: 16px; width: 100%; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     .titulo-secao { font-size: 14px; font-weight: bold; color: #12364e; margin: 0 0 12px 0; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-    select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; color: #12364e; outline: none; width: 100%; background: white; }
+    select, input[type="text"] { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; color: #12364e; outline: none; width: 100%; background: white; }
     .form-inline { display: flex; flex-direction: column; gap: 10px; width: 100%; }
     .btn-acao { padding: 12px 16px; background-color: #d9b246; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; text-align: center; }
     .btn-acao:hover { background-color: #af8a23; }
@@ -40,54 +40,79 @@
     .btn-voltar-painel { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; background-color: transparent; color: #e1d8cd; border: 2px solid #e1d8cd; border-radius: 8px; font-weight: bold; font-size: 14px; text-decoration: none; cursor: pointer; }
     .btn-voltar-painel:hover { background-color: #e1d8cd; color: #12364e; }
     .alerta-erro { color: #d93025; font-size: 12px; margin-top: 6px; text-align: center; font-weight: 500; }
+    
+    /* Modais gerais */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(18, 54, 78, 0.92); display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
     .modal-foto { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(18, 54, 78, 0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
     .modal-conteudo { position: relative; max-width: 90%; max-height: 90%; display: flex; flex-direction: column; align-items: center; }
     .modal-conteudo img { max-width: 100%; max-height: 80vh; border-radius: 8px; object-fit: contain; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
     .modal-fechar { position: absolute; top: -40px; right: 0; background: none; border: none; color: white; font-size: 28px; font-weight: bold; cursor: pointer; }
     .hidden { display: none !important; }
+    
+    /* Conteúdo oculto até autenticar no pop-up */
+    #conteudo-protegido { opacity: 0; transition: opacity 0.3s ease; width: 100%; display: flex; flex-direction: column; align-items: center; }
   </style>
 </head>
-<body>
+<body onunload="">
 
-  <header class="header-banner">
-    <img src="https://i.ibb.co/twJd6BRq/Whats-App-Image-2026-06-29-at-10-42-05.jpg" alt="Banner Votação">
-  </header>
-
-  <main class="main-container">
-    <div class="bloco-card" id="auth-card">
-      <div class="titulo-secao">Identificação do Votante</div>
+  <!-- POP-UP BLOQUEADOR DE CÓDIGO DO DIA -->
+  <div id="modal-codigo-dia" class="modal-overlay">
+    <div class="bloco-card" style="max-width: 400px; text-align: center;">
+      <div class="titulo-secao">Segurança da Votação</div>
+      <p style="font-size: 13px; color: #12364e; margin-bottom: 15px;">Digite o código do dia fornecido para liberar o acesso:</p>
       <div class="form-inline">
-        <select id="voter-select">
-          <option value="">Carregando...</option>
-        </select>
-        <button onclick="iniciarVotacao()" class="btn-acao">Acessar Votação</button>
+        <input type="text" id="input-codigo-dia" placeholder="Código..." autocomplete="off">
+        <button onclick="verificarCodigoDia()" class="btn-acao">Confirmar</button>
       </div>
-      <p id="auth-error" class="alerta-erro hidden">Selecione um nome válido ou você já votou.</p>
+      <p id="codigo-erro" class="alerta-erro hidden">Código incorreto. Tente novamente.</p>
     </div>
+  </div>
 
-    <div class="bloco-card hidden" id="voting-card">
-      <div class="titulo-secao">Com base no desempenho geral, avalie como cada um se saiu hoje:</div>
-      <form id="voting-form" onsubmit="enviarVotos(event)">
-        
-        <div class="lista-candidatos" id="candidates-container"></div>
+  <div id="conteudo-protegido" class="hidden">
+    <header class="header-banner">
+      <img src="https://i.ibb.co/twJd6BRq/Whats-App-Image-2026-06-29-at-10-42-05.jpg" alt="Banner Votação">
+    </header>
 
-        <div id="bloco-destaque-wrapper" class="hidden" style="margin-top: 16px;">
-          <div class="titulo-secao" style="margin-top: 10px;">Qual diarista se destacou?</div>
-          <div class="lista-escolha-unica" id="destaque-container"></div>
+    <main class="main-container">
+      <div class="bloco-card" id="auth-card">
+        <div class="titulo-secao">Identificação do Votante</div>
+        <div class="form-inline">
+          <select id="voter-select">
+            <option value="">Carregando...</option>
+          </select>
+          <button onclick="iniciarVotacao()" class="btn-acao">Acessar</button>
         </div>
+        <p id="auth-error" class="alerta-erro hidden">Selecione um nome válido ou você já votou.</p>
+      </div>
 
-        <div style="margin-top: 15px;">
-          <button type="submit" id="btn-enviar" class="btn-acao" style="width: 100%; background-color: #12364e;">Enviar Votos</button>
-        </div>
-      </form>
-    </div>
+      <div class="bloco-card hidden" id="voting-card">
+        <div class="titulo-secao">Com base no desempenho geral, avalie como cada um se saiu hoje:</div>
+        <form id="voting-form" onsubmit="enviarVotos(event)">
+          
+          <div class="lista-candidatos" id="candidates-container"></div>
 
-    <div class="bloco-card hidden text-center" id="success-card" style="text-align: center; padding: 30px;">
-      <div style="font-size: 36px; color: #d9b246; margin-bottom: 10px;">✓</div>
-      <div class="titulo-secao" style="border: none;">Voto Computado com Sucesso!</div>
-      <p style="font-size: 13px; color: #12364e; opacity: 0.8; margin-top: 8px;">Obrigado por participar. Seu registro foi salvo com sucesso.</p>
-    </div>
-  </main>
+          <div id="bloco-destaque-wrapper" class="hidden" style="margin-top: 16px;">
+            <div class="titulo-secao" style="margin-top: 10px;">Qual diarista se destacou?</div>
+            <div class="lista-escolha-unica" id="destaque-container"></div>
+          </div>
+
+          <div style="margin-top: 15px;">
+            <button type="submit" id="btn-enviar" class="btn-acao" style="width: 100%; background-color: #12364e;">Finalizar</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="bloco-card hidden text-center" id="success-card" style="text-align: center; padding: 30px;">
+        <div style="font-size: 36px; color: #d9b246; margin-bottom: 10px;">✓</div>
+        <div class="titulo-secao" style="border: none;">Voto Computado com Sucesso!</div>
+        <p style="font-size: 13px; color: #12364e; opacity: 0.8; margin-top: 8px;">Obrigado por participar. Seu registro foi salvo com sucesso.</p>
+      </div>
+    </main>
+
+    <footer class="footer-navegacao">
+      <button onclick="window.location.reload()" class="btn-voltar-painel"><span>🔄</span> Reiniciar</button>
+    </footer>
+  </div>
 
   <div id="foto-modal" class="modal-foto hidden">
     <div class="modal-conteudo">
@@ -95,10 +120,6 @@
       <img id="modal-img" src="" alt="Foto Ampliada">
     </div>
   </div>
-
-  <footer class="footer-navegacao">
-    <button onclick="window.location.reload()" class="btn-voltar-painel"><span>🔄</span> Reiniciar</button>
-  </footer>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -129,6 +150,70 @@
       });
     }
 
+    // Validação do Código do Dia inserido pelo usuário no Pop-up
+    window.verificarCodigoDia = function() {
+      const inputVal = document.getElementById('input-codigo-dia').value.trim();
+      const erroEl = document.getElementById('codigo-erro');
+
+      if (!inputVal) {
+        erroEl.textContent = "Digite o código para continuar.";
+        erroEl.classList.remove('hidden');
+        return;
+      }
+
+      if (!db) {
+        erroEl.textContent = "Erro de conexão com o banco de dados.";
+        erroEl.classList.remove('hidden');
+        return;
+      }
+
+      // Oculta erros anteriores
+      erroEl.classList.add('hidden');
+
+      // Pega o código cadastrado no banco (tag 'codigoDia')
+      const codigoSalvo = dbData && dbData.codigoDia ? String(dbData.codigoDia).trim() : "";
+
+      if (!codigoSalvo) {
+        // Se ainda não existir a tag no banco, define o digitado como o código oficial do dia atual
+        set(ref(db, 'codigoDia'), inputVal).then(() => {
+          liberarAcessoPagina();
+        }).catch((err) => {
+          console.error("Erro ao salvar código:", err);
+          erroEl.textContent = "Erro ao validar código. Tente novamente.";
+          erroEl.classList.remove('hidden');
+        });
+      } else {
+        if (inputVal === codigoSalvo) {
+          liberarAcessoPagina();
+        } else {
+          erroEl.textContent = "Código incorreto. Tente novamente.";
+          erroEl.classList.remove('hidden');
+        }
+      }
+    }
+
+    function liberarAcessoPagina() {
+      document.getElementById('modal-codigo-dia').classList.add('hidden');
+      const protegido = document.getElementById('conteudo-protegido');
+      protegido.classList.remove('hidden');
+      protegido.style.opacity = '1';
+    }
+
+    // Bloqueio parcial de exibição de código fonte e inspeção
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    document.addEventListener('keydown', event => {
+      // Bloqueia F12, Ctrl+U, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+S
+      if (
+        event.key === 'F12' ||
+        (event.ctrlKey && event.key.toLowerCase() === 'u') ||
+        (event.ctrlKey && event.shiftKey && ['i', 'j', 'c'].includes(event.key.toLowerCase())) ||
+        (event.ctrlKey && event.key.toLowerCase() === 's')
+      ) {
+        event.preventDefault();
+        return false;
+      }
+    });
+
     function toArray(obj) {
       if (!obj) return [];
       return Array.isArray(obj) ? obj.filter(Boolean) : Object.values(obj).filter(Boolean);
@@ -140,7 +225,6 @@
       const votedUsers = toArray(dbData.votedUsers);
       const candidates = toArray(dbData.candidates);
 
-      // Ordena o array de votantes alfabeticamente
       voters.sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
 
       const hiddenNames = candidates.filter(c => c && c.hidden).map(c => String(c.name).trim().toLowerCase());
@@ -185,7 +269,6 @@
       const scaleLabels = ["Muito abaixo", "Abaixo", "Adequado", "Acima", "Excelente"];
       const candidates = toArray(dbData.candidates);
 
-      // Ordena os candidatos alfabeticamente pelo nome
       candidates.sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR', { sensitivity: 'base' }));
 
       const elegiveis = candidates.filter(c => {
@@ -225,7 +308,6 @@
       container.innerHTML = '';
       const destaqueCandidates = toArray(dbData.destaqueCandidates);
 
-      // Ordena os diaristas alfabeticamente pelo nome
       destaqueCandidates.sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR', { sensitivity: 'base' }));
 
       const elegiveis = destaqueCandidates.filter(d => d && !d.hidden);
