@@ -119,7 +119,7 @@
   </header>
 
   <main class="main-container">
-    <!-- NOVO BLOCO: Definição do Código do Dia -->
+    <!-- BLOCO: Definição do Código do Dia -->
     <div class="bloco-card">
       <div class="header-secao-wrapper" style="margin-bottom: 12px;">
         <div class="titulo-secao">Definição do Código do Dia</div>
@@ -302,7 +302,6 @@
       const data = snapshot.val() || {};
       cacheDadosGlobais = data;
       
-      // Sincroniza o código do dia no painel administrativo se ainda não foi editado ativamente
       if (data.codigoDia !== undefined) {
         const inputCodigo = document.getElementById('input-codigo-dia-admin');
         if (!codigoFoiCarregado && inputCodigo) {
@@ -317,7 +316,6 @@
       renderizarInterface(data);
     });
 
-    // Funções de Gerenciamento do Código do Dia
     window.salvarCodigoDia = function() {
       const input = document.getElementById('input-codigo-dia-admin');
       const codigo = input.value.trim();
@@ -687,7 +685,6 @@
 
       destaqueCandidates.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
 
-      // Bloco 1: Votantes Autorizados
       const filtroVotantesValor = document.getElementById('filtro-votantes').value;
       const containerVotantes = document.getElementById('tabela-votantes');
       containerVotantes.innerHTML = '';
@@ -704,7 +701,6 @@
         
         const fotoUrl = candObj ? candObj.photo : '';
 
-        // Regras de filtragem
         if (filtroVotantesValor === 'visiveis' && isHidden) return;
         if (filtroVotantesValor === 'ocultos' && !isHidden) return;
         if (filtroVotantesValor === 'terca' && !isFavorito) return;
@@ -742,10 +738,8 @@
         containerVotantes.appendChild(item);
       });
 
-      // Atualiza o texto do contador na interface
       document.getElementById('contador-votantes').textContent = `Exibindo: ${contadorFiltrados}`;
 
-      // Bloco 2: Cadastrar Diaristas
       const filtroDiaristasValor = document.getElementById('filtro-diaristas').value;
       const containerDestaqueNomes = document.getElementById('tabela-destaques-nomes');
       containerDestaqueNomes.innerHTML = '';
@@ -777,7 +771,6 @@
         containerDestaqueNomes.appendChild(item);
       });
 
-      // Bloco 3: Apuração e Votos Computados
       const containerRanking = document.getElementById('tabela-ranking');
       containerRanking.innerHTML = '';
       const somaNotas = {}, qtdVotosCandidato = {};
