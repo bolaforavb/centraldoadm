@@ -63,7 +63,7 @@
       <p style="font-size: 13px; color: #12364e; margin-bottom: 15px;">Por favor, digite o código do dia fornecido para liberar o acesso:</p>
       <div class="form-inline">
         <input type="text" id="input-codigo-dia" placeholder="Digite o código..." autocomplete="off">
-        <button id="btn-confirmar-codigo" onclick="verificarCodigoDia()" class="btn-acao">Confirmar Código</button>
+        <button id="btn-confirmar-codigo" onclick="verificarCodigoDia()" class="btn-acao">Confirmar código</button>
       </div>
       <p id="codigo-erro" class="alerta-erro hidden">Código incorreto. Tente novamente.</p>
       <p id="codigo-sucesso" class="alerta-sucesso hidden">Código correto! Redirecionando...</p>
@@ -82,7 +82,7 @@
           <select id="voter-select">
             <option value="">Carregando...</option>
           </select>
-          <button onclick="iniciarVotacao()" class="btn-acao">Acessar</button>
+          <button onclick="iniciarVotacao()" class="btn-acao">Acessar Votação</button>
         </div>
         <p id="auth-error" class="alerta-erro hidden">Selecione um nome válido ou você já votou.</p>
       </div>
@@ -99,7 +99,7 @@
           </div>
 
           <div style="margin-top: 15px;">
-            <button type="submit" id="btn-enviar" class="btn-acao" style="width: 100%; background-color: #12364e;">Enviar votos</button>
+            <button type="submit" id="btn-enviar" class="btn-acao" style="width: 100%; background-color: #12364e;">Enviar Votos</button>
           </div>
         </form>
       </div>
@@ -152,9 +152,9 @@
       });
     }
 
-    // Validação do Código do Dia inserido pelo usuário no Pop-up
+    // Validação do Código do Dia inserido pelo usuário no Pop-up (Case-insensitive)
     window.verificarCodigoDia = function() {
-      const inputVal = document.getElementById('input-codigo-dia').value.trim();
+      const inputVal = document.getElementById('input-codigo-dia').value.trim().toLowerCase();
       const erroEl = document.getElementById('codigo-erro');
       const sucessoEl = document.getElementById('codigo-sucesso');
       const btnEl = document.getElementById('btn-confirmar-codigo');
@@ -177,11 +177,11 @@
       erroEl.classList.add('hidden');
       sucessoEl.classList.add('hidden');
 
-      // Pega o código cadastrado no banco (tag 'codigoDia')
-      const codigoSalvo = dbData && dbData.codigoDia ? String(dbData.codigoDia).trim() : "";
+      // Pega o código cadastrado no banco (tag 'codigoDia') em minúsculas
+      const codigoSalvo = dbData && dbData.codigoDia ? String(dbData.codigoDia).trim().toLowerCase() : "";
 
       if (!codigoSalvo) {
-        // Se ainda não existir a tag no banco, define o digitado como o código oficial do dia atual
+        // Se ainda não existir a tag no banco, define o digitado como o código oficial
         btnEl.disabled = true;
         set(ref(db, 'codigoDia'), inputVal).then(() => {
           sucessoEl.classList.remove('hidden');
