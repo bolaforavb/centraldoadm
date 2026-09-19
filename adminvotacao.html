@@ -1,917 +1,837 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gerenciamento de Votação - Central do Adm</title>
-  <link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
-  
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: sans-serif; background-color: #12364e; margin: 0; padding: 0;
-      display: flex; flex-direction: column; align-items: center; min-height: 100vh; color: #12364e;
-    }
-    .header-banner { width: 100%; max-width: 600px; background-color: #e1d8cd; overflow: hidden; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-    .header-banner img { width: 100%; height: 100%; object-fit: cover; }
-    
-    .main-container { width: 100%; max-width: 600px; padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 16px; }
-    
-    .bloco-card { 
-      background-color: white; 
-      border-radius: 16px; 
-      width: 100%; 
-      padding: 20px; 
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .titulo-secao { font-size: 14px; font-weight: bold; color: #12364e; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
-    .header-secao-wrapper { border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-    
-    input[type="text"], input[type="file"], select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; color: #12364e; outline: none; width: 100%; background: white; }
-    input[type="file"] { padding: 7px; }
-    input:disabled { background-color: #f5f5f5; color: #7f8c8d; cursor: not-allowed; }
-    
-    .form-inline { display: flex; gap: 8px; width: 100%; }
-    .form-inline input { flex: 1; }
-    
-    .btn-add-tabela { padding: 10px 16px; background-color: #d9b246; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; white-space: nowrap; }
-    .btn-add-tabela:hover { background-color: #af8a23; }
-    .btn-add-tabela:disabled { background-color: #95a5a6; cursor: not-allowed; }
-
-    .btn-editar-acao { padding: 10px 16px; background-color: #12364e; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; white-space: nowrap; }
-    .btn-editar-acao:hover { background-color: #1b4d70; }
-
-    .btn-limpar-acao { padding: 10px 16px; background-color: #d93025; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; white-space: nowrap; }
-    .btn-limpar-acao:hover { background-color: #a5221a; }
-    .btn-limpar-acao:disabled { background-color: #95a5a6; cursor: not-allowed; }
-    
-    .lista-fidelidade { display: flex; flex-direction: column; gap: 8px; width: 100%; max-height: 220px; overflow-y: auto; padding-right: 4px; }
-    
-    .item-fidelidade { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background-color: #f7f5f2; border-radius: 8px; border-left: 3px solid #d9b246; flex-shrink: 0; }
-    .nome-diarista { font-size: 12px; font-weight: 500; color: #12364e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; transition: color 0.2s; }
-    .nome-diarista:hover { color: #d9b246; text-decoration: underline; }
-    
-    .botoes-acao { display: flex; gap: 6px; align-items: center; }
-    .btn-acao-txt { background: none; border: none; font-weight: bold; font-size: 12px; cursor: pointer; padding: 2px 4px; }
-    .btn-editar { color: #12364e; font-size: 13px; }
-    .btn-excluir { color: #d93025; }
-    .badge-status { font-size: 9px; font-weight: bold; background: #12364e; color: white; padding: 2px 6px; border-radius: 4px; }
-    
-    .btn-mensalista-terca {
-      display: inline-flex; align-items: center; gap: 3px; padding: 4px 6px; border-radius: 6px; font-size: 10px; font-weight: bold; cursor: pointer; transition: all 0.2s;
-    }
-    .btn-mensalista-terca.aceso { background-color: #d9b246; border: 1.5px solid #af8a23; color: white; box-shadow: 0 2px 6px rgba(217, 178, 70, 0.4); }
-    .btn-mensalista-terca.aceso:hover { background-color: #af8a23; }
-    .btn-mensalista-terca.apagado { background: transparent; border: 1.5px solid #ccc; color: #999; opacity: 0.7; }
-    .btn-mensalista-terca.apagado:hover { background-color: rgba(0, 0, 0, 0.03); opacity: 1; }
-
-    .btn-mensalista-sexta {
-      display: inline-flex; align-items: center; gap: 3px; padding: 4px 6px; border-radius: 6px; font-size: 10px; font-weight: bold; cursor: pointer; transition: all 0.2s;
-    }
-    .btn-mensalista-sexta.aceso { background-color: #12364e; border: 1.5px solid #0b2231; color: white; }
-    .btn-mensalista-sexta.aceso:hover { background-color: #1b4d70; }
-    .btn-mensalista-sexta.apagado { background: transparent; border: 1.5px solid #ccc; color: #999; opacity: 0.7; }
-    .btn-mensalista-sexta.apagado:hover { background-color: rgba(0, 0, 0, 0.03); opacity: 1; }
-    
-    .ranking-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background-color: #f7f5f2; border-radius: 8px; border-left: 3px solid #d9b246; font-size: 12px; flex-shrink: 0; }
-    .ranking-info { display: flex; align-items: center; gap: 8px; overflow: hidden; }
-    .ranking-nota { font-weight: bold; color: #12364e; background: #e1d8cd; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
-    
-    .voto-detalhe-card { background-color: #f7f5f2; border-radius: 8px; border-left: 3px solid #12364e; padding: 10px 12px; margin-bottom: 8px; flex-shrink: 0; }
-    .voto-detalhe-header { font-size: 13px; font-weight: bold; color: #12364e; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
-    .voto-detalhe-lista { font-size: 11px; color: #333; display: flex; flex-direction: column; gap: 3px; padding-left: 8px; border-left: 2px solid rgba(0,0,0,0.08); }
-    
-    .btn-toggle-votos { background-color: #12364e; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 12px; padding: 10px 12px; cursor: pointer; width: 100%; text-align: center; }
-    .btn-toggle-votos:hover { background-color: #1b4d70; }
-    
-    .btn-whatsapp-topo { background-color: #25d366; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 5px 10px; cursor: pointer; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
-    .btn-whatsapp-topo:hover { background-color: #1ebe5d; }
-    
-    .btn-perigo { background-color: #d93025; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 12px; padding: 8px 12px; cursor: pointer; width: 100%; }
-    .btn-perigo:hover { background-color: #a5221a; }
-    
-    .btn-fechar-votacao { background-color: #d93025; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 4px 8px; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: background-color 0.2s; }
-    .btn-fechar-votacao:hover { background-color: #a5221a; }
-
-    .avatar-circle { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1.5px solid #d9b246; cursor: pointer; background-color: #e1d8cd; flex-shrink: 0; }
-    .avatar-placeholder { width: 28px; height: 28px; border-radius: 50%; background-color: #e1d8cd; border: 1px dashed #d9b246; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 9px; color: #12364e; flex-shrink: 0; }
-
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
-    .modal-content { background: white; padding: 20px; border-radius: 16px; width: 90%; max-width: 400px; max-height: 80vh; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
-
-    .galeria-fotos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-height: 250px; overflow-y: auto; padding: 4px; }
-    .galeria-foto-item { width: 100%; aspect-ratio: 1; border-radius: 8px; object-fit: cover; cursor: pointer; border: 2px solid transparent; transition: border-color 0.2s; }
-    .galeria-foto-item:hover { border-color: #d9b246; }
-
-    .hidden { display: none !important; }
-    
-    .filtro-selecao { padding: 2px 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 9px; color: #12364e; background: white; outline: none; cursor: pointer; width: 45%; }
-    .contador-badge { font-size: 11px; font-weight: bold; color: #12364e; background: #e1d8cd; padding: 5px 6px; border-radius: 4px; }
-
-    .footer-navegacao { width: 100%; max-width: 600px; padding: 8px 16px 30px 16px; display: flex; flex-direction: column; gap: 8px; }
-    .btn-voltar-painel { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; background-color: transparent; color: #e1d8cd; border: 2px solid #e1d8cd; border-radius: 8px; font-weight: bold; font-size: 14px; text-decoration: none; text-align: center; }
-    .btn-voltar-painel:hover { background-color: #e1d8cd; color: #12364e; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerenciamento de Votação - Central do Adm</title>
+<link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
+<style>
+* { box-sizing: border-box; }
+body {
+  font-family: sans-serif; background-color: #12364e; margin: 0; padding: 0;
+  display: flex; flex-direction: column; align-items: center; min-height: 100vh; color: #12364e;
+}
+.header-banner { width: 100%; max-width: 600px; background-color: #e1d8cd; overflow: hidden; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.header-banner img { width: 100%; height: 100%; object-fit: cover; }
+.main-container { width: 100%; max-width: 600px; padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 16px; }
+.bloco-card { background-color: white; border-radius: 16px; width: 100%; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+.titulo-secao { font-size: 14px; font-weight: bold; color: #12364e; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
+.header-secao-wrapper { border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+input[type="text"], input[type="file"], select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; color: #12364e; outline: none; width: 100%; background: white; }
+input[type="file"] { padding: 7px; }
+input:disabled { background-color: #f5f5f5; color: #7f8c8d; cursor: not-allowed; }
+.form-inline { display: flex; gap: 8px; width: 100%; }
+.form-inline input { flex: 1; }
+.btn-add-tabela { padding: 10px 16px; background-color: #d9b246; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; white-space: nowrap; }
+.btn-add-tabela:hover { background-color: #af8a23; }
+.btn-add-tabela:disabled { background-color: #95a5a6; cursor: not-allowed; }
+.btn-editar-acao { padding: 10px 16px; background-color: #12364e; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; white-space: nowrap; }
+.btn-editar-acao:hover { background-color: #1b4d70; }
+.btn-limpar-acao { padding: 10px 16px; background-color: #d93025; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; white-space: nowrap; }
+.btn-limpar-acao:hover { background-color: #a5221a; }
+.btn-limpar-acao:disabled { background-color: #95a5a6; cursor: not-allowed; }
+.lista-fidelidade { display: flex; flex-direction: column; gap: 8px; width: 100%; max-height: 220px; overflow-y: auto; padding-right: 4px; }
+.item-fidelidade { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background-color: #f7f5f2; border-radius: 8px; border-left: 3px solid #d9b246; flex-shrink: 0; }
+.nome-diarista { font-size: 12px; font-weight: 500; color: #12364e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; transition: color 0.2s; }
+.nome-diarista:hover { color: #d9b246; text-decoration: underline; }
+.botoes-acao { display: flex; gap: 6px; align-items: center; }
+.btn-acao-txt { background: none; border: none; font-weight: bold; font-size: 12px; cursor: pointer; padding: 2px 4px; }
+.btn-editar { color: #12364e; font-size: 13px; }
+.btn-excluir { color: #d93025; }
+.badge-status { font-size: 9px; font-weight: bold; background: #12364e; color: white; padding: 2px 6px; border-radius: 4px; }
+.btn-mensalista-terca { display: inline-flex; align-items: center; gap: 3px; padding: 4px 6px; border-radius: 6px; font-size: 10px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+.btn-mensalista-terca.aceso { background-color: #d9b246; border: 1.5px solid #af8a23; color: white; box-shadow: 0 2px 6px rgba(217, 178, 70, 0.4); }
+.btn-mensalista-terca.aceso:hover { background-color: #af8a23; }
+.btn-mensalista-terca.apagado { background: transparent; border: 1.5px solid #ccc; color: #999; opacity: 0.7; }
+.btn-mensalista-terca.apagado:hover { background-color: rgba(0, 0, 0, 0.03); opacity: 1; }
+.btn-mensalista-sexta { display: inline-flex; align-items: center; gap: 3px; padding: 4px 6px; border-radius: 6px; font-size: 10px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+.btn-mensalista-sexta.aceso { background-color: #12364e; border: 1.5px solid #0b2231; color: white; }
+.btn-mensalista-sexta.aceso:hover { background-color: #1b4d70; }
+.btn-mensalista-sexta.apagado { background: transparent; border: 1.5px solid #ccc; color: #999; opacity: 0.7; }
+.btn-mensalista-sexta.apagado:hover { background-color: rgba(0, 0, 0, 0.03); opacity: 1; }
+.ranking-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background-color: #f7f5f2; border-radius: 8px; border-left: 3px solid #d9b246; font-size: 12px; flex-shrink: 0; }
+.ranking-info { display: flex; align-items: center; gap: 8px; overflow: hidden; }
+.ranking-nota { font-weight: bold; color: #12364e; background: #e1d8cd; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+.voto-detalhe-card { background-color: #f7f5f2; border-radius: 8px; border-left: 3px solid #12364e; padding: 10px 12px; margin-bottom: 8px; flex-shrink: 0; }
+.voto-detalhe-header { font-size: 13px; font-weight: bold; color: #12364e; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+.voto-detalhe-lista { font-size: 11px; color: #333; display: flex; flex-direction: column; gap: 3px; padding-left: 8px; border-left: 2px solid rgba(0,0,0,0.08); }
+.btn-toggle-votos { background-color: #12364e; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 12px; padding: 10px 12px; cursor: pointer; width: 100%; text-align: center; }
+.btn-toggle-votos:hover { background-color: #1b4d70; }
+.btn-whatsapp-topo { background-color: #25d366; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 5px 10px; cursor: pointer; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+.btn-whatsapp-topo:hover { background-color: #1ebe5d; }
+.btn-perigo { background-color: #d93025; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 12px; padding: 8px 12px; cursor: pointer; width: 100%; }
+.btn-perigo:hover { background-color: #a5221a; }
+.btn-fechar-votacao { background-color: #d93025; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 11px; padding: 4px 8px; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: background-color 0.2s; }
+.btn-fechar-votacao:hover { background-color: #a5221a; }
+.avatar-circle { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1.5px solid #d9b246; cursor: pointer; background-color: #e1d8cd; flex-shrink: 0; }
+.avatar-placeholder { width: 28px; height: 28px; border-radius: 50%; background-color: #e1d8cd; border: 1px dashed #d9b246; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 9px; color: #12364e; flex-shrink: 0; }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
+.modal-content { background: white; padding: 20px; border-radius: 16px; width: 90%; max-width: 400px; max-height: 80vh; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
+.galeria-fotos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-height: 250px; overflow-y: auto; padding: 4px; }
+.galeria-foto-item { width: 100%; aspect-ratio: 1; border-radius: 8px; object-fit: cover; cursor: pointer; border: 2px solid transparent; transition: border-color 0.2s; }
+.galeria-foto-item:hover { border-color: #d9b246; }
+.hidden { display: none !important; }
+.filtro-selecao { padding: 2px 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 9px; color: #12364e; background: white; outline: none; cursor: pointer; width: 45%; }
+.contador-badge { font-size: 11px; font-weight: bold; color: #12364e; background: #e1d8cd; padding: 5px 6px; border-radius: 4px; }
+.footer-navegacao { width: 100%; max-width: 600px; padding: 8px 16px 30px 16px; display: flex; flex-direction: column; gap: 8px; }
+.btn-voltar-painel { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; background-color: transparent; color: #e1d8cd; border: 2px solid #e1d8cd; border-radius: 8px; font-weight: bold; font-size: 14px; text-decoration: none; text-align: center; }
+.btn-voltar-painel:hover { background-color: #e1d8cd; color: #12364e; }
+</style>
 </head>
 <body>
-
-  <header class="header-banner">
-    <img src="https://i.ibb.co/twJd6BRq/Whats-App-Image-2026-06-29-at-10-42-05.jpg" alt="Banner Central do Adm">
-  </header>
-
-  <main class="main-container">
-    <!-- BLOCO: Definição do Código do Dia -->
-    <div class="bloco-card">
-      <div class="header-secao-wrapper" style="margin-bottom: 12px;">
-        <div class="titulo-secao">Definição do Código do Dia</div>
-      </div>
-      <div class="form-inline">
-        <input type="text" id="input-codigo-dia-admin" placeholder="Ex: codigo123" autocomplete="off">
-        <button type="button" id="btn-salvar-codigo" class="btn-add-tabela" onclick="salvarCodigoDia()">Salvar</button>
-        <button type="button" id="btn-editar-codigo" class="btn-editar-acao" onclick="habilitarEdicaoCodigo()" disabled>Editar</button>
-        <button type="button" id="btn-limpar-codigo" class="btn-limpar-acao" onclick="limparCodigoDia()">Limpar</button>
-      </div>
+<header class="header-banner">
+  <img src="https://i.ibb.co/twJd6BRq/Whats-App-Image-2026-06-29-at-10-42-05.jpg" alt="Banner Central do Adm">
+</header>
+<main class="main-container">
+  <!-- BLOCO: Definição do Código do Dia -->
+  <div class="bloco-card">
+    <div class="header-secao-wrapper" style="margin-bottom: 12px;">
+      <div class="titulo-secao">Definição do Código do Dia</div>
     </div>
-
-    <div class="bloco-card">
-      <div class="header-secao-wrapper" style="margin-bottom: 12px;">
-        <div class="titulo-secao">Lista de Votantes Autorizados</div>
-        <select id="filtro-votantes" class="filtro-selecao" onchange="atualizarFiltroVotantes()">
-          <option value="todos">Mostrar todos</option>
-          <option value="visiveis">Visíveis</option>
-          <option value="ocultos">Ocultos</option>
-          <option value="terca">Mensalistas da Terça</option>
-          <option value="sexta">Mensalistas da Sexta</option>
-          <option value="nao-mensalistas">Não-Mensalistas</option>
-          <option value="ainda-nao-votou">Ainda não votou</option>
-        </select>
-      </div>
-      <form id="form-novo-votante" class="form-inline" onsubmit="adicionarVotante(event)">
-        <input type="text" id="novo-votante-nome" placeholder="Nome do(a) mensalista" required>
-        <button type="submit" class="btn-add-tabela">Add</button>
-      </form>
-      <div style="margin-top: 12px;" class="lista-fidelidade" id="tabela-votantes"></div>
-      
-      <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
-        <div style="display: flex; align-items: center; gap: 4px; font-size: 10px; color: #7f8c8d;">
-          <span class="btn-mensalista-terca aceso" style="cursor: default; pointer-events: none;">⭐ Terça</span>
-          <span class="btn-mensalista-sexta aceso" style="cursor: default; pointer-events: none;">⭐ Sexta</span>
-          <span>Mensalistas</span>
-        </div>
-        <div style="display: flex; align-items: center; gap: 6px;">
-          <span id="contador-votantes" class="contador-badge">Exibindo: 0</span>
-          <button type="button" class="btn-fechar-votacao" onclick="ocultarTodosVotantes()">🔒 Ocultar todos/fechar votação</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="bloco-card">
-      <div class="header-secao-wrapper" style="margin-bottom: 12px;">
-        <div class="titulo-secao">Cadastrar Diaristas</div>
-        <select id="filtro-diaristas" class="filtro-selecao" onchange="atualizarFiltroDiaristas()">
-          <option value="todos">Mostrar todos</option>
-          <option value="visiveis">Visíveis</option>
-          <option value="ocultos">Ocultos</option>
-        </select>
-      </div>
-      <form id="form-novo-destaque" class="form-inline" onsubmit="adicionarDestaque(event)">
-        <input type="text" id="novo-destaque-nome" placeholder="Nome do(a) diarista" required>
-        <button type="submit" class="btn-add-tabela">Add</button>
-      </form>
-      <div style="margin-top: 12px;" class="lista-fidelidade" id="tabela-destaques-nomes"></div>
-    </div>
-
-    <div class="bloco-card">
-      <div class="header-secao-wrapper">
-        <div class="titulo-secao">Apuração e Votos Computados</div>
-        <button type="button" class="btn-whatsapp-topo" onclick="compartilharWhatsApp()">💬 Compartilhar</button>
-      </div>
-
-      <div style="font-size: 12px; font-weight: bold; color: #12364e; margin-bottom: 6px;">Ranking por média de notas:</div>
-      <div class="lista-fidelidade" id="tabela-ranking" style="margin-bottom: 15px;"></div>
-
-      <div style="font-size: 12px; font-weight: bold; color: #12364e; margin-bottom: 6px;">Destaque do dia (Voto único):</div>
-      <div class="lista-fidelidade" id="tabela-ranking-destaques" style="margin-bottom: 15px;"></div>
-
-      <div style="margin-bottom: 15px;">
-        <button type="button" class="btn-toggle-votos" id="btn-toggle-votos" onclick="alternarVotosIndividuais()">Mostrar votos individuais</button>
-      </div>
-
-      <div id="container-votos-individuais" class="hidden" style="margin-bottom: 15px;">
-        <div style="font-size: 12px; font-weight: bold; color: #12364e; margin-bottom: 6px;">Votos Individuais por Eleitor:</div>
-        <div class="lista-fidelidade" id="tabela-votos-computados"></div>
-      </div>
-
-      <div>
-        <button type="button" class="btn-perigo" onclick="resetarVotos()">Limpar todos os votos</button>
-      </div>
-    </div>
-  </main>
-
-  <div class="modal-overlay" id="modal-fotos">
-    <div class="modal-content">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px;">
-        <span class="titulo-secao" style="margin:0; border:none; padding:0;">Escolher ou Enviar Foto</span>
-        <button onclick="fecharModalFotos()" style="background:none; border:none; font-size:16px; font-weight:bold; cursor:pointer; color:#12364e;">✕</button>
-      </div>
-      
-      <div style="background-color: #f7f5f2; padding: 10px; border-radius: 8px; display: flex; flex-direction: column; gap: 6px;">
-        <label for="input-upload-nova-foto" style="font-size: 11px; font-weight: bold; color: #12364e; text-transform: uppercase;">Enviar nova foto do dispositivo</label>
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <input type="file" id="input-upload-nova-foto" accept="image/*" style="font-size: 12px; flex: 1;">
-          <button type="button" class="btn-add-tabela" onclick="fazerUploadNovaFotoNoBanco()" style="padding: 6px 12px; font-size: 12px;">Enviar</button>
-        </div>
-      </div>
-
-      <div style="font-size: 11px; font-weight: bold; color: #12364e; margin-top: 4px;">Ou selecione do banco de arquivos:</div>
-      <div id="lista-fotos-galeria" class="galeria-fotos-grid"></div>
+    <div class="form-inline">
+      <input type="text" id="input-codigo-dia-admin" placeholder="Ex: codigo123" autocomplete="off">
+      <button type="button" id="btn-salvar-codigo" class="btn-add-tabela" onclick="salvarCodigoDia()">Salvar</button>
+      <button type="button" id="btn-editar-codigo" class="btn-editar-acao" onclick="habilitarEdicaoCodigo()" disabled>Editar</button>
+      <button type="button" id="btn-limpar-codigo" class="btn-limpar-acao" onclick="limparCodigoDia()">Limpar</button>
     </div>
   </div>
 
-  <div class="modal-overlay" id="modal-ver-foto">
-    <div class="modal-content" style="align-items: center; text-align: center;">
-      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px;">
-        <span id="titulo-ver-foto" class="titulo-secao" style="margin:0; border:none; padding:0;">Foto</span>
-        <button onclick="fecharModalVerFoto()" style="background:none; border:none; font-size:16px; font-weight:bold; cursor:pointer; color:#12364e;">✕</button>
+  <div class="bloco-card">
+    <div class="header-secao-wrapper" style="margin-bottom: 12px;">
+      <div class="titulo-secao">Lista de Votantes Autorizados</div>
+      <select id="filtro-votantes" class="filtro-selecao" onchange="atualizarFiltroVotantes()">
+        <option value="todos">Mostrar todos</option>
+        <option value="visiveis">Visíveis</option>
+        <option value="ocultos">Ocultos</option>
+        <option value="terca">Mensalistas da Terça</option>
+        <option value="sexta">Mensalistas da Sexta</option>
+        <option value="nao-mensalistas">Não-Mensalistas</option>
+        <option value="ainda-nao-votou">Ainda não votou</option>
+      </select>
+    </div>
+    <form id="form-novo-votante" class="form-inline" onsubmit="adicionarVotante(event)">
+      <input type="text" id="novo-votante-nome" placeholder="Nome do(a) mensalista" required>
+      <button type="submit" class="btn-add-tabela">Add</button>
+    </form>
+    <div style="margin-top: 12px;" class="lista-fidelidade" id="tabela-votantes"></div>
+    <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+      <div style="display: flex; align-items: center; gap: 4px; font-size: 10px; color: #7f8c8d;">
+        <span class="btn-mensalista-terca aceso" style="cursor: default; pointer-events: none;">Terça</span>
+        <span class="btn-mensalista-sexta aceso" style="cursor: default; pointer-events: none;">Sexta</span>
+        <span>Mensalistas</span>
       </div>
-      <div id="conteudo-ver-foto" style="width: 100%; display: flex; justify-content: center; padding: 10px 0;"></div>
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <span id="contador-votantes" class="contador-badge">Exibindo: 0</span>
+        <button type="button" class="btn-fechar-votacao" onclick="ocultarTodosVotantes()">Ocultar todos/fechar votação</button>
+      </div>
     </div>
   </div>
 
-  <footer class="footer-navegacao">
-    <a href="votacao.html" class="btn-voltar-painel" target="_blank"><span>🔗</span> Abrir Página de Votação &nearr;</a>
-    <a href="dashboard.html" class="btn-voltar-painel"><span>↩</span> Voltar</a>
-  </footer>
+  <div class="bloco-card">
+    <div class="header-secao-wrapper" style="margin-bottom: 12px;">
+      <div class="titulo-secao">Cadastrar Diaristas</div>
+      <select id="filtro-diaristas" class="filtro-selecao" onchange="atualizarFiltroDiaristas()">
+        <option value="todos">Mostrar todos</option>
+        <option value="visiveis">Visíveis</option>
+        <option value="ocultos">Ocultos</option>
+      </select>
+    </div>
+    <form id="form-novo-destaque" class="form-inline" onsubmit="adicionarDestaque(event)">
+      <input type="text" id="novo-destaque-nome" placeholder="Nome do(a) diarista" required>
+      <button type="submit" class="btn-add-tabela">Add</button>
+    </form>
+    <div style="margin-top: 12px;" class="lista-fidelidade" id="tabela-destaques-nomes"></div>
+  </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getDatabase, ref, onValue, set, get, child, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+  <div class="bloco-card">
+    <div class="header-secao-wrapper">
+      <div class="titulo-secao">Apuração e Votos Computados</div>
+      <button type="button" class="btn-whatsapp-topo" onclick="compartilharWhatsApp()">Compartilhar</button>
+    </div>
+    <div style="font-size: 12px; font-weight: bold; color: #12364e; margin-bottom: 6px;">Ranking por média de notas:</div>
+    <div class="lista-fidelidade" id="tabela-ranking" style="margin-bottom: 15px;"></div>
+    <div style="font-size: 12px; font-weight: bold; color: #12364e; margin-bottom: 6px;">Destaque do dia (Voto único):</div>
+    <div class="lista-fidelidade" id="tabela-ranking-destaques" style="margin-bottom: 15px;"></div>
+    <div style="margin-bottom: 15px;">
+      <button type="button" class="btn-toggle-votos" id="btn-toggle-votos" onclick="alternarVotosIndividuais()">Mostrar votos individuais</button>
+    </div>
+    <div id="container-votos-individuais" class="hidden" style="margin-bottom: 15px;">
+      <div style="font-size: 12px; font-weight: bold; color: #12364e; margin-bottom: 6px;">Votos Individuais por Eleitor:</div>
+      <div class="lista-fidelidade" id="tabela-votos-computados"></div>
+    </div>
+    <div>
+      <button type="button" class="btn-perigo" onclick="resetarVotos()">Limpar todos os votos</button>
+    </div>
+  </div>
+</main>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
-      databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com/"
-    };
+<div class="modal-overlay" id="modal-fotos">
+  <div class="modal-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px;">
+      <span class="titulo-secao" style="margin:0; border:none; padding:0;">Escolher ou Enviar Foto</span>
+      <button onclick="fecharModalFotos()" style="background:none; border:none; font-size:16px; font-weight:bold; cursor:pointer; color:#12364e;">X</button>
+    </div>
+    <div style="background-color: #f7f5f2; padding: 10px; border-radius: 8px; display: flex; flex-direction: column; gap: 6px;">
+      <label for="input-upload-nova-foto" style="font-size: 11px; font-weight: bold; color: #12364e; text-transform: uppercase;">Enviar nova foto do dispositivo</label>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <input type="file" id="input-upload-nova-foto" accept="image/*" style="font-size: 12px; flex: 1;">
+        <button type="button" class="btn-add-tabela" onclick="fazerUploadNovaFotoNoBanco()" style="padding: 6px 12px; font-size: 12px;">Enviar</button>
+      </div>
+    </div>
+    <div style="font-size: 11px; font-weight: bold; color: #12364e; margin-top: 4px;">Ou selecione do banco de arquivos:</div>
+    <div id="lista-fotos-galeria" class="galeria-fotos-grid"></div>
+  </div>
+</div>
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+<div class="modal-overlay" id="modal-ver-foto">
+  <div class="modal-content" style="align-items: center; text-align: center;">
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px;">
+      <span id="titulo-ver-foto" class="titulo-secao" style="margin:0; border:none; padding:0;">Foto</span>
+      <button onclick="fecharModalVerFoto()" style="background:none; border:none; font-size:16px; font-weight:bold; cursor:pointer; color:#12364e;">X</button>
+    </div>
+    <div id="conteudo-ver-foto" style="width: 100%; display: flex; justify-content: center; padding: 10px 0;"></div>
+  </div>
+</div>
 
-    setPersistence(auth, browserSessionPersistence).catch(console.error);
+<footer class="footer-navegacao">
+  <a href="votacao.html" class="btn-voltar-painel" target="_blank"><span>↗</span> Abrir Página de Votação</a>
+  <a href="dashboard.html" class="btn-voltar-painel"><span>←</span> Voltar</a>
+</footer>
 
-    let ultimosDadosRanking = [];
-    let ultimosDadosDestaques = [];
-    let BD_FotosDisponiveis = [];
-    let itemSelecionadoParaFoto = null;
-    let tipoItemSelecionado = null; 
-    let cacheDadosGlobais = null;
-    let codigoFoiCarregado = false;
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getDatabase, ref, onValue, set, get, child, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        window.location.href = "index.html"; 
-      }
-    });
+const firebaseConfig = {
+  apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
+  databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com/"
+};
 
-    onValue(ref(db, 'arquivos_enviados'), (snapshot) => {
-      const val = snapshot.val();
-      BD_FotosDisponiveis = [];
-      if (val) {
-        const listaArquivos = Array.isArray(val) ? val : Object.values(val);
-        listaArquivos.forEach(item => {
-          if (!item) return;
-          const urlOuBase64 = item.dadosBase64 || item.url || item.base64 || item.arquivo || (typeof item === 'string' ? item : null);
-          if (urlOuBase64) {
-            const ehUrlOuBase64 = typeof urlOuBase64 === 'string' && (
-              urlOuBase64.startsWith('data:image/') || 
-              urlOuBase64.startsWith('http://') || 
-              urlOuBase64.startsWith('https://') ||
-              /\.(jpg|jpeg|png|gif|webp)$/i.test(urlOuBase64)
-            );
-            const ehTipoImagem = item.tipoMime && typeof item.tipoMime === 'string' && item.tipoMime.startsWith('image/');
-            if (ehUrlOuBase64 || ehTipoImagem) {
-              BD_FotosDisponiveis.push(urlOuBase64);
-            }
-          }
-        });
-      }
-      if (document.getElementById('modal-fotos').style.display === 'flex') {
-        renderizarGaleriaFotosModal();
-      }
-    });
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+setPersistence(auth, browserSessionPersistence).catch(console.error);
 
-    onValue(ref(db, '/'), (snapshot) => {
-      const data = snapshot.val() || {};
-      cacheDadosGlobais = data;
-      
-      if (data.codigoDia !== undefined) {
-        const inputCodigo = document.getElementById('input-codigo-dia-admin');
-        if (!codigoFoiCarregado && inputCodigo) {
-          inputCodigo.value = data.codigoDia;
-          inputCodigo.disabled = true;
-          document.getElementById('btn-salvar-codigo').disabled = true;
-          document.getElementById('btn-editar-codigo').disabled = false;
-          codigoFoiCarregado = true;
+let ultimosDadosRanking = [];
+let ultimosDadosDestaques = [];
+let BD_FotosDisponiveis = [];
+let itemSelecionadoParaFoto = null;
+let tipoItemSelecionado = null;
+let cacheDadosGlobais = null;
+let codigoFoiCarregado = false;
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "index.html";
+  }
+});
+
+onValue(ref(db, 'arquivos_enviados'), (snapshot) => {
+  const val = snapshot.val();
+  BD_FotosDisponiveis = [];
+  if (val) {
+    const listaArquivos = Array.isArray(val) ? val : Object.values(val);
+    listaArquivos.forEach(item => {
+      if (!item) return;
+      const urlOuBase64 = item.dadosBase64 || item.url || item.base64 || item.arquivo || (typeof item === 'string' ? item : null);
+      if (urlOuBase64) {
+        const ehUrlOuBase64 = typeof urlOuBase64 === 'string' && (
+          urlOuBase64.startsWith('data:image/') ||
+          urlOuBase64.startsWith('http://') ||
+          urlOuBase64.startsWith('https://') ||
+          /\.(jpg|jpeg|png|gif|webp)$/i.test(urlOuBase64)
+        );
+        const ehTipoImagem = item.tipoMime && typeof item.tipoMime === 'string' && item.tipoMime.startsWith('image/');
+        if (ehUrlOuBase64 || ehTipoImagem) {
+          BD_FotosDisponiveis.push(urlOuBase64);
         }
       }
-
-      renderizarInterface(data);
     });
+  }
+  if (document.getElementById('modal-fotos').style.display === 'flex') {
+    renderizarGaleriaFotosModal();
+  }
+});
 
-    window.salvarCodigoDia = function() {
-      const input = document.getElementById('input-codigo-dia-admin');
-      const codigo = input.value.trim();
-
-      if (!codigo) {
-        alert("Digite um código válido.");
-        return;
-      }
-
-      set(ref(db, 'codigoDia'), codigo).then(() => {
-        input.disabled = true;
-        document.getElementById('btn-salvar-codigo').disabled = true;
-        document.getElementById('btn-editar-codigo').disabled = false;
-        alert("Código do dia salvo com sucesso!");
-      }).catch((err) => {
-        console.error("Erro ao salvar código:", err);
-        alert("Erro ao salvar o código no banco.");
-      });
+onValue(ref(db, '/'), (snapshot) => {
+  const data = snapshot.val() || {};
+  cacheDadosGlobais = data;
+  if (data.codigoDia !== undefined) {
+    const inputCodigo = document.getElementById('input-codigo-dia-admin');
+    if (!codigoFoiCarregado && inputCodigo) {
+      inputCodigo.value = data.codigoDia;
+      inputCodigo.disabled = true;
+      document.getElementById('btn-salvar-codigo').disabled = true;
+      document.getElementById('btn-editar-codigo').disabled = false;
     }
+  }
+  codigoFoiCarregado = true;
+  renderizarInterface(data);
+});
 
-    window.habilitarEdicaoCodigo = function() {
+window.salvarCodigoDia = function() {
+  const input = document.getElementById('input-codigo-dia-admin');
+  const codigo = input.value.trim();
+  if (!codigo) {
+    alert("Digite um código válido.");
+    return;
+  }
+  set(ref(db, 'codigoDia'), codigo).then(() => {
+    input.disabled = true;
+    document.getElementById('btn-salvar-codigo').disabled = true;
+    document.getElementById('btn-editar-codigo').disabled = false;
+    alert("Código do dia salvo com sucesso!");
+  }).catch((err) => {
+    console.error("Erro ao salvar código:", err);
+    alert("Erro ao salvar o código no banco.");
+  });
+}
+
+window.habilitarEdicaoCodigo = function() {
+  const input = document.getElementById('input-codigo-dia-admin');
+  input.disabled = false;
+  input.focus();
+  document.getElementById('btn-salvar-codigo').disabled = false;
+  document.getElementById('btn-editar-codigo').disabled = true;
+}
+
+window.limparCodigoDia = function() {
+  if (confirm("Tem certeza que deseja limpar o código atual e deixar em branco?")) {
+    set(ref(db, 'codigoDia'), "").then(() => {
       const input = document.getElementById('input-codigo-dia-admin');
+      input.value = "";
       input.disabled = false;
       input.focus();
       document.getElementById('btn-salvar-codigo').disabled = false;
       document.getElementById('btn-editar-codigo').disabled = true;
-    }
+      alert("Código do dia limpo com sucesso!");
+    }).catch((err) => {
+      console.error("Erro ao limpar código:", err);
+      alert("Erro ao limpar o código no banco.");
+    });
+  }
+}
 
-    window.limparCodigoDia = function() {
-      if (confirm("Tem certeza que deseja limpar o código atual e deixar em branco?")) {
-        set(ref(db, 'codigoDia'), "").then(() => {
-          const input = document.getElementById('input-codigo-dia-admin');
-          input.value = "";
-          input.disabled = false;
-          input.focus();
-          document.getElementById('btn-salvar-codigo').disabled = false;
-          document.getElementById('btn-editar-codigo').disabled = true;
-          alert("Código do dia limpo com sucesso!");
-        }).catch((err) => {
-          console.error("Erro ao limpar código:", err);
-          alert("Erro ao limpar o código no banco.");
-        });
-      }
-    }
+window.atualizarFiltroVotantes = function() {
+  if (cacheDadosGlobais) renderizarInterface(cacheDadosGlobais);
+}
 
-    window.atualizarFiltroVotantes = function() {
-      if (cacheDadosGlobais) renderizarInterface(cacheDadosGlobais);
-    }
+window.atualizarFiltroDiaristas = function() {
+  if (cacheDadosGlobais) renderizarInterface(cacheDadosGlobais);
+}
 
-    window.atualizarFiltroDiaristas = function() {
-      if (cacheDadosGlobais) renderizarInterface(cacheDadosGlobais);
-    }
-
-    window.adicionarVotante = function(e) {
-      e.preventDefault();
-      const input = document.getElementById('novo-votante-nome');
-      const nome = input.value.trim();
-      if (!nome) return;
-
-      get(child(ref(db), 'voters')).then((snapshot) => {
-        let voters = snapshot.val() || [];
-        if (!voters.some(v => v.localeCompare(nome, 'pt-BR', { sensitivity: 'base' }) === 0)) {
-          voters.push(nome);
-          voters.sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
-          set(ref(db, 'voters'), voters);
-          
-          get(child(ref(db), 'candidates')).then((candSnapshot) => {
-            let candidates = candSnapshot.val() || [];
-            if (!candidates.some(c => c.name.localeCompare(nome, 'pt-BR', { sensitivity: 'base' }) === 0)) {
-              const safeId = Math.floor(Date.now() + Math.random() * 1000);
-              candidates.push({ id: safeId, name: nome, photo: "https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png", hidden: false, favorito: false, favoritoSexta: false });
-              set(ref(db, 'candidates'), candidates);
-            }
-          });
-        }
-        input.value = '';
-      });
-    }
-
-    window.removerVotante = function(voterName) {
-      get(child(ref(db), 'voters')).then((snapshot) => {
-        let voters = snapshot.val() || [];
-        voters = voters.filter(v => v !== voterName);
-        set(ref(db, 'voters'), voters);
-      });
-    }
-
-    window.renomearMensalista = function(nomeAntigo) {
-      const novoNome = prompt("Digite o novo nome para o(a) mensalista:", nomeAntigo);
-      if (!novoNome || novoNome.trim() === "") return;
-      const nomeFormatado = novoNome.trim();
-      if (nomeFormatado === nomeAntigo) return;
-
-      get(child(ref(db), 'voters')).then((snapshot) => {
-        let voters = snapshot.val() || [];
-        if (voters.some(v => v.localeCompare(nomeFormatado, 'pt-BR', { sensitivity: 'base' }) === 0)) {
-          alert("Já existe um(a) mensalista com este nome!");
-          return;
-        }
-        
-        voters = voters.map(v => v === nomeAntigo ? nomeFormatado : v);
-        voters.sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
-        set(ref(db, 'voters'), voters);
-
-        get(child(ref(db), 'candidates')).then((candSnapshot) => {
-          let candidates = candSnapshot.val() || [];
-          candidates = candidates.map(c => c.name === nomeAntigo ? { ...c, name: nomeFormatado } : c);
-          set(ref(db, 'candidates'), candidates);
-        });
-      });
-    }
-
-    window.alternarVisibilidadeCandidato = function(id) {
-      get(child(ref(db), 'candidates')).then((snapshot) => {
-        let candidates = snapshot.val() || [];
-        candidates = candidates.map(c => String(c.id) === String(id) ? { ...c, hidden: !c.hidden } : c);
-        set(ref(db, 'candidates'), candidates);
-      });
-    }
-
-    window.ocultarTodosVotantes = function() {
-      if (confirm("Deseja ocultar todos os candidatos/votantes, fechando assim a votação na tela pública?")) {
-        get(child(ref(db), 'candidates')).then((snapshot) => {
-          let candidates = snapshot.val() || [];
-          candidates = candidates.map(c => ({ ...c, hidden: true }));
-          set(ref(db, 'candidates'), candidates);
-        });
-      }
-    }
-
-    window.alternarFavoritoCandidato = function(id) {
-      get(child(ref(db), 'candidates')).then((snapshot) => {
-        let candidates = snapshot.val() || [];
-        candidates = candidates.map(c => {
-          if (String(c.id) === String(id)) {
-            const atual = c.favorito === true || c.favorito === "true";
-            return { ...c, favorito: !atual };
-          }
-          return c;
-        });
-        set(ref(db, 'candidates'), candidates);
-      });
-    }
-
-    window.alternarFavoritoSexta = function(id) {
-      get(child(ref(db), 'candidates')).then((snapshot) => {
-        let candidates = snapshot.val() || [];
-        candidates = candidates.map(c => {
-          if (String(c.id) === String(id)) {
-            const atual = c.favoritoSexta === true || c.favoritoSexta === "true";
-            return { ...c, favoritoSexta: !atual };
-          }
-          return c;
-        });
-        set(ref(db, 'candidates'), candidates);
-      });
-    }
-
-    window.abrirModalFotos = function(identificador, tipo) {
-      itemSelecionadoParaFoto = identificador;
-      tipoItemSelecionado = tipo;
-      document.getElementById('input-upload-nova-foto').value = '';
-      renderizarGaleriaFotosModal();
-      document.getElementById('modal-fotos').style.display = 'flex';
-    }
-
-    window.fecharModalFotos = function() {
-      document.getElementById('modal-fotos').style.display = 'none';
-      itemSelecionadoParaFoto = null;
-      tipoItemSelecionado = null;
-    }
-
-    function renderizarGaleriaFotosModal() {
-      const galeriaContainer = document.getElementById('lista-fotos-galeria');
-      galeriaContainer.innerHTML = '';
-
-      if (BD_FotosDisponiveis.length === 0) {
-        galeriaContainer.innerHTML = `<div style="grid-column: span 3; text-align: center; padding: 20px; font-size: 12px; opacity: 0.6;">Nenhuma foto encontrada no banco.</div>`;
-      } else {
-        BD_FotosDisponiveis.forEach(fotoUrl => {
-          const img = document.createElement('img');
-          img.src = fotoUrl;
-          img.className = 'galeria-foto-item';
-          img.onclick = () => selecionarFotoParaItem(fotoUrl);
-          galeriaContainer.appendChild(img);
-        });
-      }
-    }
-
-    window.fazerUploadNovaFotoNoBanco = function() {
-      const fileInput = document.getElementById('input-upload-nova-foto');
-      const file = fileInput.files[0];
-      if (!file) {
-        alert("Selecione um arquivo de imagem primeiro!");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const base64Data = e.target.result;
-        const novoArquivoRef = push(ref(db, 'arquivos_enviados'));
-        set(novoArquivoRef, {
-          nome: file.name,
-          tipoMime: file.type,
-          dadosBase64: base64Data,
-          dataEnvio: new Date().toISOString()
-        }).then(() => {
-          selecionarFotoParaItem(base64Data);
-        }).catch((err) => {
-          console.error("Erro ao enviar foto:", err);
-          alert("Erro ao enviar a foto para o banco.");
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function selecionarFotoParaItem(url) {
-      if (!itemSelecionadoParaFoto || !tipoItemSelecionado) return;
-
-      if (tipoItemSelecionado === 'mensalista') {
-        get(child(ref(db), 'candidates')).then((snapshot) => {
-          let candidates = snapshot.val() || [];
-          const existe = candidates.some(c => c.name.localeCompare(itemSelecionadoParaFoto, 'pt-BR', { sensitivity: 'base' }) === 0);
-          if (existe) {
-            candidates = candidates.map(c => c.name.localeCompare(itemSelecionadoParaFoto, 'pt-BR', { sensitivity: 'base' }) === 0 ? { ...c, photo: url } : c);
-          } else {
-            const safeId = Math.floor(Date.now() + Math.random() * 1000);
-            candidates.push({ id: safeId, name: itemSelecionadoParaFoto, photo: url, hidden: false, favorito: false, favoritoSexta: false });
-          }
-          set(ref(db, 'candidates'), candidates);
-          fecharModalFotos();
-        });
-      } else if (tipoItemSelecionado === 'diarista') {
-        get(child(ref(db), 'destaqueCandidates')).then((snapshot) => {
-          let destaques = snapshot.val() || [];
-          destaques = destaques.map(d => String(d.id) === String(itemSelecionadoParaFoto) ? { ...d, photo: url } : d);
-          set(ref(db, 'destaqueCandidates'), destaques);
-          fecharModalFotos();
-        });
-      }
-    }
-
-    window.abrirModalVerFoto = function(nome, tipo) {
-      document.getElementById('titulo-ver-foto').innerText = `Foto de ${nome}`;
-      const containerFoto = document.getElementById('conteudo-ver-foto');
-      containerFoto.innerHTML = '';
-
-      const caminhoDb = tipo === 'mensalista' ? 'candidates' : 'destaqueCandidates';
-      get(child(ref(db), caminhoDb)).then((snapshot) => {
-        const itens = snapshot.val() || [];
-        const item = itens.find(i => tipo === 'mensalista' ? i.name.localeCompare(nome, 'pt-BR', { sensitivity: 'base' }) === 0 : String(i.id) === String(nome));
-        const fotoUrl = (item && item.photo) ? item.photo : '';
-
-        if (fotoUrl && fotoUrl !== "https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png") {
-          const img = document.createElement('img');
-          img.src = fotoUrl;
-          img.style.maxWidth = '100%';
-          img.style.maxHeight = '65vh';
-          img.style.borderRadius = '12px';
-          img.style.objectFit = 'contain';
-          containerFoto.appendChild(img);
-        } else {
-          containerFoto.innerHTML = `<div style="padding: 30px; font-size: 13px; opacity: 0.6;">Nenhuma foto cadastrada. Clique na bolinha de foto ao lado para adicionar.</div>`;
-        }
-        document.getElementById('modal-ver-foto').style.display = 'flex';
-      });
-    }
-
-    window.fecharModalVerFoto = function() {
-      document.getElementById('modal-ver-foto').style.display = 'none';
-    }
-
-    window.adicionarDestaque = function(e) {
-      e.preventDefault();
-      const input = document.getElementById('novo-destaque-nome');
-      const nome = input.value.trim();
-      if (!nome) return;
-
-      get(child(ref(db), 'destaqueCandidates')).then((snapshot) => {
-        let destaques = snapshot.val() || [];
-        if (!destaques.some(d => d.name.localeCompare(nome, 'pt-BR', { sensitivity: 'base' }) === 0)) {
-          const safeId = Math.floor(Date.now() + Math.random() * 1000);
-          destaques.push({ id: safeId, name: nome, photo: "https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png", hidden: false });
-          destaques.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
-          set(ref(db, 'destaqueCandidates'), destaques);
-        }
-        input.value = '';
-      });
-    }
-
-    window.removerDestaque = function(id) {
-      get(child(ref(db), 'destaqueCandidates')).then((snapshot) => {
-        let destaques = snapshot.val() || [];
-        destaques = destaques.filter(d => String(d.id) !== String(id));
-        set(ref(db, 'destaqueCandidates'), destaques);
-      });
-    }
-
-    window.renomearDestaque = function(idAntigo, nomeAntigo) {
-      const novoNome = prompt("Digite o novo nome para o(a) diarista:", nomeAntigo);
-      if (!novoNome || novoNome.trim() === "") return;
-      const nomeFormatado = novoNome.trim();
-      if (nomeFormatado === nomeAntigo) return;
-
-      get(child(ref(db), 'destaqueCandidates')).then((snapshot) => {
-        let destaques = snapshot.val() || [];
-        if (destaques.some(d => d.name.localeCompare(nomeFormatado, 'pt-BR', { sensitivity: 'base' }) === 0)) {
-          alert("Já existe um(a) diarista com este nome!");
-          return;
-        }
-        
-        destaques = destaques.map(d => String(d.id) === String(idAntigo) ? { ...d, name: nomeFormatado } : d);
-        destaques.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
-        set(ref(db, 'destaqueCandidates'), destaques);
-      });
-    }
-
-    window.alternarVisibilidadeDestaque = function(id) {
-      get(child(ref(db), 'destaqueCandidates')).then((snapshot) => {
-        let destaques = snapshot.val() || [];
-        destaques = destaques.map(d => String(d.id) === String(id) ? { ...d, hidden: !d.hidden } : d);
-        set(ref(db, 'destaqueCandidates'), destaques);
-      });
-    }
-
-    window.resetarVotos = function() {
-      if (confirm("Tem certeza que deseja apagar todos os votos computados e liberar novamente os eleitores?")) {
-        set(ref(db, 'votedUsers'), null);
-        set(ref(db, 'votes'), null);
-        alert("Todos os votos foram apagados com sucesso.");
-      }
-    }
-
-    window.alternarVotosIndividuais = function() {
-      const container = document.getElementById('container-votos-individuais');
-      const btn = document.getElementById('btn-toggle-votos');
-      container.classList.toggle('hidden');
-      btn.textContent = container.classList.contains('hidden') ? 'Mostrar votos individuais' : 'Ocultar votos individuais';
-    }
-
-    window.compartilharWhatsApp = function() {
-      let texto = "*📊 APURAÇÃO E VOTOS - RESULTADOS* 🏐\n\n";
-
-      texto += "*🏆 Ranking por média de notas:*\n";
-      if (ultimosDadosRanking.length === 0) {
-        texto += "Nenhum voto computado.\n";
-      } else {
-        ultimosDadosRanking.forEach((item, idx) => {
-          texto += `${idx + 1}º *${item.name}* - Média: ${item.media.toFixed(2)} (${item.qtd} votos)\n`;
-        });
-      }
-
-      texto += "\n*⭐ Destaque do dia (Voto único):*\n";
-      if (ultimosDadosDestaques.length === 0) {
-        texto += "Nenhum voto computado.\n";
-      } else {
-        ultimosDadosDestaques.forEach((item, idx) => {
-          texto += `${idx + 1}º *${item.name}* - ${item.totalVotos} voto(s)\n`;
-        });
-      }
-
-      const urlWhatsApp = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
-      window.open(urlWhatsApp, '_blank');
-    }
-
-    function renderizarInterface(data) {
-      let voters = data.voters || [];
-      let candidates = data.candidates || [];
-      let destaqueCandidates = data.destaqueCandidates || [];
-      let votedUsers = data.votedUsers || [];
-      let votes = data.votes || {};
-
+window.adicionarVotante = function(e) {
+  e.preventDefault();
+  const input = document.getElementById('novo-votante-nome');
+  const nome = input.value.trim();
+  if (!nome) return;
+  get(child(ref(db), 'voters')).then((snapshot) => {
+    let voters = snapshot.val() || [];
+    if (!voters.some(v => v.localeCompare(nome, 'pt-BR', { sensitivity: 'base' }) === 0)) {
+      voters.push(nome);
       voters.sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
-
-      candidates.sort((a, b) => {
-        const aTem = (a.favorito === true || a.favorito === "true" || a.favoritoSexta === true || a.favoritoSexta === "true") ? 1 : 0;
-        const bTem = (b.favorito === true || b.favorito === "true" || b.favoritoSexta === true || b.favoritoSexta === "true") ? 1 : 0;
-
-        if (aTem !== bTem) {
-          return bTem - aTem; 
-        }
-        return a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
-      });
-
-      destaqueCandidates.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
-
-      const filtroVotantesValor = document.getElementById('filtro-votantes').value;
-      const containerVotantes = document.getElementById('tabela-votantes');
-      containerVotantes.innerHTML = '';
-      
-      let contadorFiltrados = 0;
-
-      voters.forEach((voter) => {
-        const jaVotou = votedUsers.includes(voter);
-        const candObj = candidates.find(c => c.name.localeCompare(voter, 'pt-BR', { sensitivity: 'base' }) === 0);
-        const isHidden = candObj ? candObj.hidden : false;
-        
-        const isFavorito = candObj ? (candObj.favorito === true || candObj.favorito === "true") : false;
-        const isFavoritoSexta = candObj ? (candObj.favoritoSexta === true || candObj.favoritoSexta === "true") : false;
-        
-        const fotoUrl = candObj ? candObj.photo : '';
-
-        if (filtroVotantesValor === 'visiveis' && isHidden) return;
-        if (filtroVotantesValor === 'ocultos' && !isHidden) return;
-        if (filtroVotantesValor === 'terca' && !isFavorito) return;
-        if (filtroVotantesValor === 'sexta' && !isFavoritoSexta) return;
-        if (filtroVotantesValor === 'nao-mensalistas' && (isFavorito || isFavoritoSexta)) return;
-        if (filtroVotantesValor === 'ainda-nao-votou' && (jaVotou || (!isFavorito && !isFavoritoSexta) || isHidden)) return;
-
-        contadorFiltrados++;
-
-        let elementoFoto = (fotoUrl && fotoUrl !== "https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png")
-          ? `<img src="${fotoUrl}" class="avatar-circle" onclick="abrirModalFotos('${voter}', 'mensalista')" title="Alterar foto">` 
-          : `<div class="avatar-placeholder" onclick="abrirModalFotos('${voter}', 'mensalista')" title="Adicionar foto">+Foto</div>`;
-        
-        const item = document.createElement('div');
-        item.className = 'item-fidelidade';
-        if (isHidden) item.style.opacity = '0.6';
-
-        const classeEstadoTerca = isFavorito ? 'aceso' : 'apagado';
-        const classeEstadoSexta = isFavoritoSexta ? 'aceso' : 'apagado';
-
-        item.innerHTML = `
-          <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;">
-            ${elementoFoto}
-            <span class="nome-diarista" onclick="abrirModalVerFoto('${voter}', 'mensalista')" title="Ver foto de ${voter}">${voter} ${isHidden ? '(Oculto)' : ''}</span>
-            <button class="btn-acao-txt btn-editar" onclick="renomearMensalista('${voter}')" title="Editar nome">✏️</button>
-            ${jaVotou ? '<span class="badge-status">Já votou</span>' : ''}
-          </div>
-          <div class="botoes-acao">
-            ${candObj ? `<button class="btn-mensalista-terca ${classeEstadoTerca}" onclick="alternarFavoritoCandidato('${candObj.id}')" title="Alternar status Terça-feira">⭐ Terça</button>` : ''}
-            ${candObj ? `<button class="btn-mensalista-sexta ${classeEstadoSexta}" onclick="alternarFavoritoSexta('${candObj.id}')" title="Alternar status Sexta-feira">⭐ Sexta</button>` : ''}
-            ${candObj ? `<button class="btn-acao-txt" style="font-size: 15px;" onclick="alternarVisibilidadeCandidato('${candObj.id}')">${isHidden ? '👁️‍🗨️' : '👁️'}</button>` : ''}
-            <button class="btn-acao-txt btn-excluir" onclick="removerVotante('${voter}')">✕</button>
-          </div>
-        `;
-        containerVotantes.appendChild(item);
-      });
-
-      document.getElementById('contador-votantes').textContent = `Exibindo: ${contadorFiltrados}`;
-
-      const filtroDiaristasValor = document.getElementById('filtro-diaristas').value;
-      const containerDestaqueNomes = document.getElementById('tabela-destaques-nomes');
-      containerDestaqueNomes.innerHTML = '';
-      
-      destaqueCandidates.forEach((dest) => {
-        const fotoUrl = dest.photo;
-
-        if (filtroDiaristasValor === 'visiveis' && dest.hidden) return;
-        if (filtroDiaristasValor === 'ocultos' && !dest.hidden) return;
-
-        let elementoFoto = (fotoUrl && fotoUrl !== "https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png")
-          ? `<img src="${fotoUrl}" class="avatar-circle" onclick="abrirModalFotos('${dest.id}', 'diarista')" title="Alterar foto">` 
-          : `<div class="avatar-placeholder" onclick="abrirModalFotos('${dest.id}', 'diarista')" title="Adicionar foto">+Foto</div>`;
-
-        const item = document.createElement('div');
-        item.className = 'item-fidelidade';
-        if (dest.hidden) item.style.opacity = '0.6';
-        item.innerHTML = `
-          <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;">
-            ${elementoFoto}
-            <span class="nome-diarista" onclick="abrirModalVerFoto('${dest.id}', 'diarista')" title="Ver foto de ${dest.name}">${dest.name} ${dest.hidden ? '(Oculto)' : ''}</span>
-            <button class="btn-acao-txt btn-editar" onclick="renomearDestaque('${dest.id}', '${dest.name}')" title="Editar nome">✏️</button>
-          </div>
-          <div class="botoes-acao">
-            <button class="btn-acao-txt" style="font-size: 15px;" onclick="alternarVisibilidadeDestaque('${dest.id}')">${dest.hidden ? '👁️‍🗨️' : '👁️'}</button>
-            <button class="btn-acao-txt btn-excluir" onclick="removerDestaque('${dest.id}')">✕</button>
-          </div>
-        `;
-        containerDestaqueNomes.appendChild(item);
-      });
-
-      const containerRanking = document.getElementById('tabela-ranking');
-      containerRanking.innerHTML = '';
-      const somaNotas = {}, qtdVotosCandidato = {};
-      const somaDestaques = {};
-      
-      Object.values(votes).forEach(escolhasDoEleitor => {
-        if (escolhasDoEleitor.notas) {
-          for (const [candId, nota] of Object.entries(escolhasDoEleitor.notas)) {
-            const valorNota = Number(nota);
-            if (!isNaN(valorNota)) {
-              somaNotas[candId] = (somaNotas[candId] || 0) + valorNota;
-              qtdVotosCandidato[candId] = (qtdVotosCandidato[candId] || 0) + 1;
-            }
-          }
-        }
-        if (escolhasDoEleitor.destaque) {
-          const destId = escolhasDoEleitor.destaque;
-          somaDestaques[destId] = (somaDestaques[destId] || 0) + 1;
+      set(ref(db, 'voters'), voters);
+      get(child(ref(db), 'candidates')).then((candSnapshot) => {
+        let candidates = candSnapshot.val() || [];
+        if (!candidates.some(c => c.name.localeCompare(nome, 'pt-BR', { sensitivity: 'base' }) === 0)) {
+          const safeld = Math.floor(Date.now() + Math.random() * 1000);
+          candidates.push({ id: safeld, name: nome, photo: "https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png", hidden: false, favorito: false, favoritoSexta: false });
+          set(ref(db, 'candidates'), candidates);
         }
       });
+    }
+  });
+  input.value = "";
+}
 
-      const rankingData = candidates.map(cand => {
-        const idStr = String(cand.id).replace(/[.#$[\]/]/g, '_');
-        const total = somaNotas[idStr] || 0;
-        const qtd = qtdVotosCandidato[idStr] || 0;
-        const media = qtd > 0 ? (total / qtd).toFixed(2) : '0.00';
-        return { name: cand.name, photo: cand.photo, media: Number(media), qtd, hidden: cand.hidden };
-      }).sort((a, b) => b.media - a.media);
+window.removerVotante = function(voterName) {
+  get(child(ref(db), 'voters')).then((snapshot) => {
+    let voters = snapshot.val() || [];
+    voters = voters.filter(v => v !== voterName);
+    set(ref(db, 'voters'), voters);
+  });
+}
 
-      ultimosDadosRanking = rankingData;
+window.renomearMensalista = function(nomeAntigo) {
+  const novoNome = prompt("Digite o novo nome para o(a) mensalista:", nomeAntigo);
+  if (!novoNome || novoNome.trim() === "") return;
+  const nomeFormatado = novoNome.trim();
+  if (nomeFormatado === nomeAntigo) return;
+  get(child(ref(db), 'voters')).then((snapshot) => {
+    let voters = snapshot.val() || [];
+    if (voters.some(v => v.localeCompare(nomeFormatado, 'pt-BR', { sensitivity: 'base' }) === 0)) {
+      alert("Já existe um(a) mensalista com este nome!");
+      return;
+    }
+    voters = voters.map(v => v === nomeAntigo ? nomeFormatado : v);
+    voters.sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
+    set(ref(db, 'voters'), voters);
+    get(child(ref(db), 'candidates')).then((candSnapshot) => {
+      let candidates = candSnapshot.val() || [];
+      candidates = candidates.map(c => c.name === nomeAntigo ? { ...c, name: nomeFormatado } : c);
+      set(ref(db, 'candidates'), candidates);
+    });
+  });
+}
 
-      if (Object.keys(votes).length === 0) {
-        containerRanking.innerHTML = '<p style="font-size: 12px; color: #7f8c8d; text-align: center; margin: 5px 0;">Nenhum voto computado.</p>';
-      } else {
-        rankingData.forEach((itemRank, idx) => {
-          const rankDiv = document.createElement('div');
-          rankDiv.className = 'ranking-item';
-          rankDiv.innerHTML = `
-            <div class="ranking-info">
-              <span class="posicao-votante">${idx + 1}º</span>
-              <img src="${itemRank.photo}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
-              <span class="nome-diarista">${itemRank.name} ${itemRank.hidden ? '(Oculto)' : ''}</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-              <span style="font-size: 10px; color: #7f8c8d;">(${itemRank.qtd} votos)</span>
-              <span class="ranking-nota">Média: ${itemRank.media.toFixed(2)}</span>
-            </div>
-          `;
-          containerRanking.appendChild(rankDiv);
-        });
+window.alternarVisibilidadeCandidato = function(id) {
+  get(child(ref(db), 'candidates')).then((snapshot) => {
+    let candidates = snapshot.val() || [];
+    candidates = candidates.map(c => String(c.id) === String(id) ? { ...c, hidden: !c.hidden } : c);
+    set(ref(db, 'candidates'), candidates);
+  });
+}
+
+window.ocultarTodosVotantes = function() {
+  if (confirm("Deseja ocultar todos os candidatos/votantes, fechando assim a votação na tela pública?")) {
+    get(child(ref(db), 'candidates')).then((snapshot) => {
+      let candidates = snapshot.val() || [];
+      candidates = candidates.map(c => ({ ...c, hidden: true }));
+      set(ref(db, 'candidates'), candidates);
+    });
+  }
+}
+
+window.alternarFavoritoCandidato = function(id) {
+  get(child(ref(db), 'candidates')).then((snapshot) => {
+    let candidates = snapshot.val() || [];
+    candidates = candidates.map(c => {
+      if (String(c.id) === String(id)) {
+        const atual = c.favorito === true || c.favorito === "true";
+        return { ...c, favorito: !atual };
       }
+      return c;
+    });
+    set(ref(db, 'candidates'), candidates);
+  });
+}
 
-      const containerRankingDestaques = document.getElementById('tabela-ranking-destaques');
-      containerRankingDestaques.innerHTML = '';
-      const rankingDestaquesData = destaqueCandidates.map(dest => {
-        const idStr = String(dest.id).replace(/[.#$[\]/]/g, '_');
-        const totalVotos = somaDestaques[idStr] || 0;
-        return { name: dest.name, photo: dest.photo, totalVotos, hidden: dest.hidden };
-      }).sort((a, b) => b.totalVotos - a.totalVotos);
-
-      ultimosDadosDestaques = rankingDestaquesData;
-
-      if (Object.keys(votes).length === 0) {
-        containerRankingDestaques.innerHTML = '<p style="font-size: 12px; color: #7f8c8d; text-align: center; margin: 5px 0;">Nenhum voto computado.</p>';
-      } else {
-        rankingDestaquesData.forEach((itemDestaque, idx) => {
-          const rankDiv = document.createElement('div');
-          rankDiv.className = 'ranking-item';
-          rankDiv.innerHTML = `
-            <div class="ranking-info">
-              <span class="posicao-votante">${idx + 1}º</span>
-              <img src="${itemDestaque.photo}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
-              <span class="nome-diarista">${itemDestaque.name} ${itemDestaque.hidden ? '(Oculto)' : ''}</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-              <span class="ranking-nota">${itemDestaque.totalVotos} voto(s)</span>
-            </div>
-          `;
-          containerRankingDestaques.appendChild(rankDiv);
-        });
+window.alternarFavoritoSexta = function(id) {
+  get(child(ref(db), 'candidates')).then((snapshot) => {
+    let candidates = snapshot.val() || [];
+    candidates = candidates.map(c => {
+      if (String(c.id) === String(id)) {
+        const atual = c.favoritoSexta === true || c.favoritoSexta === "true";
+        return { ...c, favoritoSexta: !atual };
       }
+      return c;
+    });
+    set(ref(db, 'candidates'), candidates);
+  });
+}
 
-      const containerVotos = document.getElementById('tabela-votos-computados');
-      containerVotos.innerHTML = '';
-      const scaleLabels = ["Muito abaixo", "Abaixo", "Adequado", "Acima", "Excelente"];
-      const votantesQueVotaram = Object.keys(votes);
+window.abrirModalFotos = function(identificador, tipo) {
+  itemSelecionadoParaFoto = identificador;
+  tipoItemSelecionado = tipo;
+  document.getElementById('input-upload-nova-foto').value = "";
+  renderizarGaleriaFotosModal();
+  document.getElementById('modal-fotos').style.display = 'flex';
+}
 
-      if (votantesQueVotaram.length === 0) {
-        containerVotos.innerHTML = '<p style="font-size: 12px; color: #7f8c8d; text-align: center; margin: 10px 0;">Nenhum voto computado até o momento.</p>';
+window.fecharModalFotos = function() {
+  document.getElementById('modal-fotos').style.display = 'none';
+  itemSelecionadoParaFoto = null;
+  tipoItemSelecionado = null;
+}
+
+function renderizarGaleriaFotosModal() {
+  const galeriaContainer = document.getElementById('lista-fotos-galeria');
+  galeriaContainer.innerHTML = "";
+  if (BD_FotosDisponiveis.length === 0) {
+    galeriaContainer.innerHTML = '<div style="grid-column: span 3; text-align: center; padding: 20px; font-size: 12px; opacity: 0.6;">Nenhuma foto encontrada no banco.</div>';
+  } else {
+    BD_FotosDisponiveis.forEach(fotoUrl => {
+      const img = document.createElement('img');
+      img.src = fotoUrl;
+      img.className = 'galeria-foto-item';
+      img.onclick = () => selecionarFotoParaItem(fotoUrl);
+      galeriaContainer.appendChild(img);
+    });
+  }
+}
+
+window.fazerUploadNovaFotoNoBanco = function() {
+  const fileInput = document.getElementById('input-upload-nova-foto');
+  const file = fileInput.files[0];
+  if (!file) {
+    alert("Selecione um arquivo de imagem primeiro!");
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const base64Data = e.target.result;
+    const novoArquivoRef = push(ref(db, 'arquivos_enviados'));
+    set(novoArquivoRef, {
+      nome: file.name,
+      tipoMime: file.type,
+      dadosBase64: base64Data,
+      dataEnvio: new Date().toISOString()
+    }).then(() => {
+      selecionarFotoParaItem(base64Data);
+    }).catch((err) => {
+      console.error("Erro ao enviar foto:", err);
+      alert("Erro ao enviar a foto para o banco.");
+    });
+  };
+  reader.readAsDataURL(file);
+}
+
+function selecionarFotoParaItem(url) {
+  if (!itemSelecionadoParaFoto || !tipoItemSelecionado) return;
+  if (tipoItemSelecionado === 'mensalista') {
+    get(child(ref(db), 'candidates')).then((snapshot) => {
+      let candidates = snapshot.val() || [];
+      const existe = candidates.some(c => c.name.localeCompare(itemSelecionadoParaFoto, 'pt-BR', { sensitivity: 'base' }) === 0);
+      if (existe) {
+        candidates = candidates.map(c => c.name.localeCompare(itemSelecionadoParaFoto, 'pt-BR', { sensitivity: 'base' }) === 0 ? { ...c, photo: url } : c);
       } else {
-        votantesQueVotaram.forEach(eleitor => {
-          const dadosEleitor = votes[eleitor];
-          let detalhesHTML = '';
-          
-          if (dadosEleitor.notas) {
-            for (const [candId, nota] of Object.entries(dadosEleitor.notas)) {
-              const candidatoObj = candidates.find(c => String(c.id).replace(/[.#$[\]/]/g, '_') === candId);
-              const nomeCandidato = candidatoObj ? candidatoObj.name : `Candidato`;
-              const descricaoNota = scaleLabels[nota - 1] || `Nota ${nota}`;
-              detalhesHTML += `<div>• <b>${nomeCandidato}</b>: ${descricaoNota} (Nota ${nota})</div>`;
-            }
-          }
+        const safeld = Math.floor(Date.now() + Math.random() * 1000);
+        candidates.push({ id: safeld, name: itemSelecionadoParaFoto, photo: url, hidden: false, favorito: false, favoritoSexta: false });
+      }
+      set(ref(db, 'candidates'), candidates);
+      fecharModalFotos();
+    });
+  } else if (tipoItemSelecionado === 'diarista') {
+    get(child(ref(db), 'destaqueCandidates')).then((snapshot) => {
+      let destaques = snapshot.val() || [];
+      destaques = destaques.map(d => String(d.id) === String(itemSelecionadoParaFoto) ? { ...d, photo: url } : d);
+      set(ref(db, 'destaqueCandidates'), destaques);
+      fecharModalFotos();
+    });
+  }
+}
 
-          if (dadosEleitor.destaque) {
-            const destObj = destaqueCandidates.find(d => String(d.id).replace(/[.#$[\]/]/g, '_') === dadosEleitor.destaque);
-            const nomeDestaque = destObj ? destObj.name : 'Destaque';
-            detalhesHTML += `<div style="margin-top: 4px;">⭐ <b>Destaque do dia</b>: ${nomeDestaque}</div>`;
-          }
+window.abrirModalVerFoto = function(nome, tipo) {
+  document.getElementById('titulo-ver-foto').innerText = `Foto de ${nome}`;
+  const containerFoto = document.getElementById('conteudo-ver-foto');
+  containerFoto.innerHTML = "";
+  const caminhoDb = tipo === 'mensalista' ? 'candidates' : 'destaqueCandidates';
+  get(child(ref(db), caminhoDb)).then((snapshot) => {
+    const itens = snapshot.val() || [];
+    const item = itens.find(i => tipo === 'mensalista' ? i.name.localeCompare(nome, 'pt-BR', { sensitivity: 'base' }) === 0 : String(i.id) === String(nome));
+    const fotoUrl = (item && item.photo) ? item.photo : "";
+    if (fotoUrl && fotoUrl !== "https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png") {
+      const img = document.createElement('img');
+      img.src = fotoUrl;
+      img.style.maxWidth = '100%';
+      img.style.maxHeight = '65vh';
+      img.style.borderRadius = '12px';
+      img.style.objectFit = 'contain';
+      containerFoto.appendChild(img);
+    } else {
+      containerFoto.innerHTML = '<div style="padding: 30px; font-size: 13px; opacity: 0.6;">Nenhuma foto cadastrada. Clique na bolinha de foto ao lado para adicionar.</div>';
+    }
+    document.getElementById('modal-ver-foto').style.display = 'flex';
+  });
+}
 
-          const cardVoto = document.createElement('div');
-          cardVoto.className = 'voto-detalhe-card';
-          cardVoto.innerHTML = `
-            <div class="voto-detalhe-header"><span>Eleitor(a): ${eleitor}</span><span style="font-size: 10px; color: #7f8c8d;">Voto computado</span></div>
-            <div class="voto-detalhe-lista">${detalhesHTML}</div>
-          `;
-          containerVotos.appendChild(cardVoto);
-        });
+window.fecharModalVerFoto = function() {
+  document.getElementById('modal-ver-foto').style.display = 'none';
+}
+
+window.adicionarDestaque = function(e) {
+  e.preventDefault();
+  const input = document.getElementById('novo-destaque-nome');
+  const nome = input.value.trim();
+  if (!nome) return;
+  get(child(ref(db), 'destaqueCandidates')).then((snapshot) => {
+    let destaques = snapshot.val() || [];
+    if (!destaques.some(d => d.name.localeCompare(nome, 'pt-BR', { sensitivity: 'base' }) === 0)) {
+      const safeld = Math.floor(Date.now() + Math.random() * 1000);
+      destaques.push({ id: safeld, name: nome, photo: "https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png", hidden: false });
+      destaques.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
+      set(ref(db, 'destaqueCandidates'), destaques);
+    }
+    input.value = "";
+  });
+}
+
+window.removerDestaque = function(id) {
+  get(child(ref(db), 'destaqueCandidates')).then((snapshot) => {
+    let destaques = snapshot.val() || [];
+    destaques = destaques.filter(d => String(d.id) !== String(id));
+    set(ref(db, 'destaqueCandidates'), destaques);
+  });
+}
+
+window.renomearDestaque = function(idAntigo, nomeAntigo) {
+  const novoNome = prompt("Digite o novo nome para o(a) diarista:", nomeAntigo);
+  if (!novoNome || novoNome.trim() === "") return;
+  const nomeFormatado = novoNome.trim();
+  if (nomeFormatado === nomeAntigo) return;
+  get(child(ref(db), 'destaqueCandidates')).then((snapshot) => {
+    let destaques = snapshot.val() || [];
+    if (destaques.some(d => d.name.localeCompare(nomeFormatado, 'pt-BR', { sensitivity: 'base' }) === 0)) {
+      alert("Já existe um(a) diarista com este nome!");
+      return;
+    }
+    destaques = destaques.map(d => String(d.id) === String(idAntigo) ? { ...d, name: nomeFormatado } : d);
+    destaques.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
+    set(ref(db, 'destaqueCandidates'), destaques);
+  });
+}
+
+window.alternarVisibilidadeDestaque = function(id) {
+  get(child(ref(db), 'destaqueCandidates')).then((snapshot) => {
+    let destaques = snapshot.val() || [];
+    destaques = destaques.map(d => String(d.id) === String(id) ? { ...d, hidden: !d.hidden } : d);
+    set(ref(db, 'destaqueCandidates'), destaques);
+  });
+}
+
+window.resetarVotos = function() {
+  if (confirm("Tem certeza que deseja apagar todos os votos computados e liberar novamente os eleitores?")) {
+    set(ref(db, 'votedUsers'), null);
+    set(ref(db, 'votes'), null);
+    alert("Todos os votos foram apagados com sucesso.");
+  }
+}
+
+window.alternarVotosIndividuais = function() {
+  const container = document.getElementById('container-votos-individuais');
+  const btn = document.getElementById('btn-toggle-votos');
+  container.classList.toggle('hidden');
+  btn.textContent = container.classList.contains('hidden') ? 'Mostrar votos individuais' : 'Ocultar votos individuais';
+}
+
+window.compartilharWhatsApp = function() {
+  let texto = "*APURAÇÃO E VOTOS - RESULTADOS*\n\n";
+  texto += "*Ranking por média de notas:*\n";
+  if (ultimosDadosRanking.length === 0) {
+    texto += "Nenhum voto computado.\n";
+  } else {
+    ultimosDadosRanking.forEach((item, idx) => {
+      texto += `${idx + 1}. *${item.name}* - Média: ${item.media.toFixed(2)} (${item.qtd} votos)\n`;
+    });
+  }
+  texto += "\n*Destaque do dia (Voto único):*\n";
+  if (ultimosDadosDestaques.length === 0) {
+    texto += "Nenhum voto computado.\n";
+  } else {
+    ultimosDadosDestaques.forEach((item, idx) => {
+      texto += `${idx + 1}. *${item.name}* - ${item.totalVotos} voto(s)\n`;
+    });
+  }
+  const urlWhatsApp = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+  window.open(urlWhatsApp, '_blank');
+}
+
+function renderizarInterface(data) {
+  let voters = data.voters || [];
+  let candidates = data.candidates || [];
+  let destaqueCandidates = data.destaqueCandidates || [];
+  let votedUsers = data.votedUsers || [];
+  let votes = data.votes || {};
+
+  voters.sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
+  candidates.sort((a, b) => {
+    const aTem = (a.favorito === true || a.favorito === "true" || a.favoritoSexta === true || a.favoritoSexta === "true") ? 1 : 0;
+    const bTem = (b.favorito === true || b.favorito === "true" || b.favoritoSexta === true || b.favoritoSexta === "true") ? 1 : 0;
+    if (aTem !== bTem) {
+      return bTem - aTem;
+    }
+    return a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
+  });
+  destaqueCandidates.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
+
+  const filtroVotantesValor = document.getElementById('filtro-votantes').value;
+  const containerVotantes = document.getElementById('tabela-votantes');
+  containerVotantes.innerHTML = "";
+  let contadorFiltrados = 0;
+
+  voters.forEach((voter) => {
+    const jaVotou = votedUsers.includes(voter);
+    const candObj = candidates.find(c => c.name.localeCompare(voter, 'pt-BR', { sensitivity: 'base' }) === 0);
+    const isHidden = candObj ? candObj.hidden : false;
+    const isFavorito = candObj ? (candObj.favorito === true || candObj.favorito === "true") : false;
+    const isFavoritoSexta = candObj ? (candObj.favoritoSexta === true || candObj.favoritoSexta === "true") : false;
+    const fotoUrl = candObj ? candObj.photo : "";
+
+    if (filtroVotantesValor === 'visiveis' && isHidden) return;
+    if (filtroVotantesValor === 'ocultos' && !isHidden) return;
+    if (filtroVotantesValor === 'terca' && !isFavorito) return;
+    if (filtroVotantesValor === 'sexta' && !isFavoritoSexta) return;
+    if (filtroVotantesValor === 'nao-mensalistas' && (isFavorito || isFavoritoSexta)) return;
+    if (filtroVotantesValor === 'ainda-nao-votou' && (jaVotou || (!isFavorito && !isFavoritoSexta) || isHidden)) return;
+
+    contadorFiltrados++;
+    let elementoFoto = (fotoUrl && fotoUrl !== "https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png")
+      ? `<img src="${fotoUrl}" class="avatar-circle" onclick="abrirModalFotos('${voter}', 'mensalista')" title="Alterar foto">`
+      : `<div class="avatar-placeholder" onclick="abrirModalFotos('${voter}', 'mensalista')" title="Adicionar foto">+Foto</div>`;
+
+    const item = document.createElement('div');
+    item.className = 'item-fidelidade';
+    if (isHidden) item.style.opacity = '0.6';
+
+    const classeEstadoTerca = isFavorito ? 'aceso' : 'apagado';
+    const classeEstadoSexta = isFavoritoSexta ? 'aceso' : 'apagado';
+
+    item.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;">
+        ${elementoFoto}
+        <span class="nome-diarista" onclick="abrirModalVerFoto('${voter}', 'mensalista')" title="Ver foto de ${voter}">${voter} ${isHidden ? '(Oculto)' : ''}</span>
+        <button class="btn-acao-txt btn-editar" onclick="renomearMensalista('${voter}')" title="Editar nome">✎</button>
+        ${jaVotou ? '<span class="badge-status">Já votou</span>' : ''}
+      </div>
+      <div class="botoes-acao">
+        ${candObj ? `<button class="btn-mensalista-terca ${classeEstadoTerca}" onclick="alternarFavoritoCandidato('${candObj.id}')" title="Alternar status Terça-feira">Terça</button>` : ''}
+        ${candObj ? `<button class="btn-mensalista-sexta ${classeEstadoSexta}" onclick="alternarFavoritoSexta('${candObj.id}')" title="Alternar status Sexta-feira">Sexta</button>` : ''}
+        ${candObj ? `<button class="btn-acao-txt" style="font-size: 15px;" onclick="alternarVisibilidadeCandidato('${candObj.id}')">${isHidden ? '👁' : '🚫'}</button>` : ''}
+        <button class="btn-acao-txt btn-excluir" onclick="removerVotante('${voter}')">X</button>
+      </div>
+    `;
+    containerVotantes.appendChild(item);
+  });
+  document.getElementById('contador-votantes').textContent = `Exibindo: ${contadorFiltrados}`;
+
+  const filtroDiaristasValor = document.getElementById('filtro-diaristas').value;
+  const containerDestaqueNomes = document.getElementById('tabela-destaques-nomes');
+  containerDestaqueNomes.innerHTML = "";
+
+  destaqueCandidates.forEach((dest) => {
+    const fotoUrl = dest.photo;
+    if (filtroDiaristasValor === 'visiveis' && dest.hidden) return;
+    if (filtroDiaristasValor === 'ocultos' && !dest.hidden) return;
+
+    let elementoFoto = (fotoUrl && fotoUrl !== "https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png")
+      ? `<img src="${fotoUrl}" class="avatar-circle" onclick="abrirModalFotos('${dest.id}', 'diarista')" title="Alterar foto">`
+      : `<div class="avatar-placeholder" onclick="abrirModalFotos('${dest.id}', 'diarista')" title="Adicionar foto">+Foto</div>`;
+
+    const item = document.createElement('div');
+    item.className = 'item-fidelidade';
+    if (dest.hidden) item.style.opacity = '0.6';
+
+    item.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;">
+        ${elementoFoto}
+        <span class="nome-diarista" onclick="abrirModalVerFoto('${dest.id}', 'diarista')" title="Ver foto de ${dest.name}">${dest.name} ${dest.hidden ? '(Oculto)' : ''}</span>
+        <button class="btn-acao-txt btn-editar" onclick="renomearDestaque('${dest.id}', '${dest.name}')" title="Editar nome">✎</button>
+      </div>
+      <div class="botoes-acao">
+        <button class="btn-acao-txt" style="font-size: 15px;" onclick="alternarVisibilidadeDestaque('${dest.id}')">${dest.hidden ? '👁' : '🚫'}</button>
+        <button class="btn-acao-txt btn-excluir" onclick="removerDestaque('${dest.id}')">X</button>
+      </div>
+    `;
+    containerDestaqueNomes.appendChild(item);
+  });
+
+  const containerRanking = document.getElementById('tabela-ranking');
+  containerRanking.innerHTML = "";
+  const somaNotas = {}, qtdVotosCandidato = {};
+  const somaDestaques = {};
+
+  Object.values(votes).forEach(escolhasDoEleitor => {
+    if (escolhasDoEleitor.notas) {
+      for (const [candId, nota] of Object.entries(escolhasDoEleitor.notas)) {
+        const valorNota = Number(nota);
+        if (!isNaN(valorNota)) {
+          somaNotas[candId] = (somaNotas[candId] || 0) + valorNota;
+          qtdVotosCandidato[candId] = (qtdVotosCandidato[candId] || 0) + 1;
+        }
       }
     }
-  </script>
+    if (escolhasDoEleitor.destaque) {
+      const destId = escolhasDoEleitor.destaque;
+      somaDestaques[destId] = (somaDestaques[destId] || 0) + 1;
+    }
+  });
+
+  const rankingData = candidates.map(cand => {
+    const idStr = String(cand.id).replace(/[.#$[\]/]/g, '_');
+    const total = somaNotas[idStr] || 0;
+    const qtd = qtdVotosCandidato[idStr] || 0;
+    const media = qtd > 0 ? (total / qtd).toFixed(2) : '0.00';
+    return { name: cand.name, photo: cand.photo, media: Number(media), qtd, hidden: cand.hidden };
+  }).sort((a, b) => b.media - a.media);
+
+  ultimosDadosRanking = rankingData;
+
+  if (Object.keys(votes).length === 0) {
+    containerRanking.innerHTML = '<p style="font-size: 12px; color: #7f8c8d; text-align: center; margin: 5px 0;">Nenhum voto computado.</p>';
+  } else {
+    rankingData.forEach((itemRank, idx) => {
+      const rankDiv = document.createElement('div');
+      rankDiv.className = 'ranking-item';
+      rankDiv.innerHTML = `
+        <div class="ranking-info">
+          <span class="posicao-votante">${idx + 1}</span>
+          <img src="${itemRank.photo}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
+          <span class="nome-diarista">${itemRank.name} ${itemRank.hidden ? '(Oculto)' : ''}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+          <span style="font-size: 10px; color: #7f8c8d;">(${itemRank.qtd} votos)</span>
+          <span class="ranking-nota">Média: ${itemRank.media.toFixed(2)}</span>
+        </div>
+      `;
+      containerRanking.appendChild(rankDiv);
+    });
+  }
+
+  const containerRankingDestaques = document.getElementById('tabela-ranking-destaques');
+  containerRankingDestaques.innerHTML = "";
+  const rankingDestaquesData = destaqueCandidates.map(dest => {
+    const idStr = String(dest.id).replace(/[.#$[\]/]/g, '_');
+    const totalVotos = somaDestaques[idStr] || 0;
+    return { name: dest.name, photo: dest.photo, totalVotos, hidden: dest.hidden };
+  }).sort((a, b) => b.totalVotos - a.totalVotos);
+
+  ultimosDadosDestaques = rankingDestaquesData;
+
+  if (Object.keys(votes).length === 0) {
+    containerRankingDestaques.innerHTML = '<p style="font-size: 12px; color: #7f8c8d; text-align: center; margin: 5px 0;">Nenhum voto computado.</p>';
+  } else {
+    rankingDestaquesData.forEach((itemDestaque, idx) => {
+      const rankDiv = document.createElement('div');
+      rankDiv.className = 'ranking-item';
+      rankDiv.innerHTML = `
+        <div class="ranking-info">
+          <span class="posicao-votante">${idx + 1}</span>
+          <img src="${itemDestaque.photo}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
+          <span class="nome-diarista">${itemDestaque.name} ${itemDestaque.hidden ? '(Oculto)' : ''}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+          <span class="ranking-nota">${itemDestaque.totalVotos} voto(s)</span>
+        </div>
+      `;
+      containerRankingDestaques.appendChild(rankDiv);
+    });
+  }
+
+  const containerVotos = document.getElementById('tabela-votos-computados');
+  containerVotos.innerHTML = "";
+  const scaleLabels = ["Muito abaixo", "Abaixo", "Adequado", "Acima", "Excelente"];
+  const votantesQueVotaram = Object.keys(votes);
+
+  if (votantesQueVotaram.length === 0) {
+    containerVotos.innerHTML = '<p style="font-size: 12px; color: #7f8c8d; text-align: center; margin: 10px 0;">Nenhum voto computado até o momento.</p>';
+  } else {
+    votantesQueVotaram.forEach(eleitor => {
+      const dadosEleitor = votes[eleitor];
+      let detalhesHTML = "";
+      if (dadosEleitor.notas) {
+        for (const [candId, nota] of Object.entries(dadosEleitor.notas)) {
+          const candidatoObj = candidates.find(c => String(c.id).replace(/[.#$[\]/]/g, '_') === candId);
+          const nomeCandidato = candidatoObj ? candidatoObj.name : 'Candidato';
+          const descricaoNota = scaleLabels[nota - 1] || `Nota ${nota}`;
+          detalhesHTML += `<div><b>${nomeCandidato}</b>: ${descricaoNota} (Nota ${nota})</div>`;
+        }
+      }
+      if (dadosEleitor.destaque) {
+        const destObj = destaqueCandidates.find(d => String(d.id).replace(/[.#$[\]/]/g, '_') === dadosEleitor.destaque);
+        const nomeDestaque = destObj ? destObj.name : 'Destaque';
+        detalhesHTML += `<div style="margin-top: 4px;"><b>Destaque do dia</b>: ${nomeDestaque}</div>`;
+      }
+      const cardVoto = document.createElement('div');
+      cardVoto.className = 'voto-detalhe-card';
+      cardVoto.innerHTML = `
+        <div class="voto-detalhe-header"><span>Eleitor(a): ${eleitor}</span><span style="font-size: 10px; color: #7f8c8d;">Voto computado</span></div>
+        <div class="voto-detalhe-lista">${detalhesHTML}</div>
+      `;
+      containerVotos.appendChild(cardVoto);
+    });
+  }
+}
+</script>
 </body>
 </html>
