@@ -286,8 +286,9 @@
       transition: background-color 0.1s;
     }
     
+    /* Efeito de clique atualizado para o dourado #d9b246 com leve transparência */
     .area-ponto:active {
-      background-color: rgba(217, 178, 70, 0.1);
+      background-color: rgba(217, 178, 70, 0.25);
     }
 
     .seletor-cor-time {
@@ -620,9 +621,8 @@
         const ganho = audioContext.createGain();
 
         oscilador.type = 'sine';
-        oscilador.frequency.setValueAtTime(800, audioContext.currentTime); // Frequência do bip (Hz)
+        oscilador.frequency.setValueAtTime(800, audioContext.currentTime);
 
-        // Volume e fade-out rápido para evitar estalos
         ganho.gain.setValueAtTime(0.15, audioContext.currentTime);
         ganho.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.08);
 
