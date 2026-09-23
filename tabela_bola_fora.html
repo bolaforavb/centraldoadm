@@ -120,6 +120,13 @@ h2 {
     border-radius: 4px;
     overflow: hidden;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, border-width 0.2s ease;
+}
+
+/* Classe aplicada quando o jogo está pinado (Borda de 2px amarela com destaque suave) */
+.jogo-card.pinado {
+    border: 2px solid var(--amarelo-oficial);
+    box-shadow: 0 4px 12px rgba(217, 178, 70, 0.4);
 }
 
 .jogo-grid {
@@ -143,8 +150,34 @@ h2 {
 }
 
 .header-cell.vazia {
-    border-bottom: none;
-    background-color: var(--bege-oficial);
+    border-bottom: 2px solid var(--azul-oficial);
+    background-color: var(--azul-oficial);
+    padding: 0;
+    justify-content: center;
+}
+
+/* Botão de Pin dentro do espaço vazio com fundo azul */
+.btn-pin {
+    background: var(--azul-oficial);
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: transform 0.1s, background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.btn-pin:hover {
+    background-color: #1a496b;
+}
+
+.btn-pin:active {
+    transform: scale(0.85);
 }
 
 .header-cell.vencedor-header {
@@ -199,7 +232,6 @@ h2 {
    ========================================== */
 .acoes-soltas {
     display: grid;
-    /* 3 colunas iguais dividindo todo o espaço */
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
     margin-top: 8px;
@@ -554,6 +586,7 @@ td { font-size: 1.1rem; font-weight: bold; }
     let finais = [];
     let elenco = [];
     let idEmEdicao = null;
+    let jogoPinadoId = null;
 
     function normalizarArrayFirebase(dado) {
         if (!dado) return [];
@@ -605,6 +638,17 @@ td { font-size: 1.1rem; font-weight: bold; }
     }
 
     escutarBancoDeDados();
+
+    function alternarPin(idJogo) {
+        if (jogoPinadoId === String(idJogo)) {
+            jogoPinadoId = null;
+        } else {
+            jogoPinadoId = String(idJogo);
+        }
+        
+        renderizarJogos();
+        renderizarMataMata();
+    }
 
     function puxarPlacarParaJogo(idJogo, isMataMata = false) {
         database.ref('placar_digital').once('value').then((snapshot) => {
@@ -688,15 +732,18 @@ td { font-size: 1.1rem; font-weight: bold; }
 
             let ptsA = jogo.pontosA ?? '';
             let ptsB = jogo.pontosB ?? '';
+            let isPinado = jogoPinadoId === String(jogo.id);
 
             const divJogo = document.createElement('div');
             divJogo.className = 'jogo-wrapper';
             
             divJogo.innerHTML = `
-                <div class="jogo-card">
+                <div class="jogo-card ${isPinado ? 'pinado' : ''}">
                     <div class="jogo-grid">
                         <div class="header-cell">${jogo.timeA || 'Time'}</div>
-                        <div class="header-cell vazia"></div>
+                        <div class="header-cell vazia">
+                            <button type="button" class="btn-pin" onclick="alternarPin('${jogo.id}')" title="Fixar Jogo">📌</button>
+                        </div>
                         <div class="header-cell">${jogo.timeB || 'Time'}</div>
                         <div class="header-cell vencedor-header">VENCEDOR</div>
 
@@ -749,13 +796,16 @@ td { font-size: 1.1rem; font-weight: bold; }
 
             let ptsA = jogo.pontosA ?? '';
             let ptsB = jogo.pontosB ?? '';
+            let isPinado = jogoPinadoId === String(jogo.id);
 
             divMataMata.innerHTML += `
                 <div class="jogo-wrapper">
-                    <div class="jogo-card">
+                    <div class="jogo-card ${isPinado ? 'pinado' : ''}">
                         <div class="jogo-grid">
                             <div class="header-cell">${jogo.timeA}</div>
-                            <div class="header-cell vazia"></div>
+                            <div class="header-cell vazia">
+                                <button type="button" class="btn-pin" onclick="alternarPin('${jogo.id}')" title="Fixar Jogo">📌</button>
+                            </div>
                             <div class="header-cell">${jogo.timeB}</div>
                             <div class="header-cell vencedor-header">VENCEDOR</div>
 
@@ -798,14 +848,17 @@ td { font-size: 1.1rem; font-weight: bold; }
                 let tituloJogo = jogo.tipo === '3lugar' ? 'DISPUTA 3º LUGAR' : 'GRANDE FINAL';
                 let ptsA = jogo.pontosA ?? '';
                 let ptsB = jogo.pontosB ?? '';
+                let isPinado = jogoPinadoId === String(jogo.id);
 
                 divMataMata.innerHTML += `
                     <p style="font-size: 0.9rem; color: var(--azul-oficial); margin-top: 10px; margin-bottom: 5px; text-align:center; font-weight:bold;">${tituloJogo}</p>
                     <div class="jogo-wrapper">
-                        <div class="jogo-card">
+                        <div class="jogo-card ${isPinado ? 'pinado' : ''}">
                             <div class="jogo-grid">
                                 <div class="header-cell">${jogo.timeA}</div>
-                                <div class="header-cell vazia"></div>
+                                <div class="header-cell vazia">
+                                    <button type="button" class="btn-pin" onclick="alternarPin('${jogo.id}')" title="Fixar Jogo">📌</button>
+                                </div>
                                 <div class="header-cell">${jogo.timeB}</div>
                                 <div class="header-cell vencedor-header">VENCEDOR</div>
 
@@ -1058,6 +1111,7 @@ td { font-size: 1.1rem; font-weight: bold; }
             partidas = [];
             semiFinais = [];
             finais = [];
+            jogoPinadoId = null;
             
             mudarAba('elenco');
             mostrarAviso("Novo torneio iniciado! Os cadastros foram mantidos.", "sucesso");
@@ -1317,9 +1371,6 @@ td { font-size: 1.1rem; font-weight: bold; }
         });
         htmlConteudo += `</div>`;
 
-        // ========================================================
-        // INÍCIO DA SEGUNDA PÁGINA (PLACARES DAS PARTIDAS)
-        // ========================================================
         htmlConteudo += `
             <div class="html2pdf__page-break"></div>
 
@@ -1360,9 +1411,6 @@ td { font-size: 1.1rem; font-weight: bold; }
         }
         
         htmlConteudo += `</tbody></table>`;
-        // ========================================================
-        // FIM DA SEGUNDA PÁGINA
-        // ========================================================
 
         relatorio.innerHTML = htmlConteudo;
 
