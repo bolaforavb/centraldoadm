@@ -41,6 +41,7 @@
     .btn-voltar-painel:hover { background-color: #e1d8cd; color: #12364e; }
     .alerta-erro { color: #d93025; font-size: 12px; margin-top: 6px; text-align: center; font-weight: 500; }
     .alerta-sucesso { color: #2e7d32; font-size: 12px; margin-top: 6px; text-align: center; font-weight: 500; }
+    .alerta-info { color: #12364e; font-size: 12px; margin-top: 6px; text-align: center; font-weight: 500; }
     
     /* Modais gerais */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(18, 54, 78, 0.92); display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
@@ -66,6 +67,7 @@
         <button id="btn-confirmar-codigo" onclick="verificarCodigoDia()" class="btn-acao">Confirmar código</button>
       </div>
       <p id="codigo-erro" class="alerta-erro hidden">Código incorreto. Tente novamente.</p>
+      <p id="codigo-info" class="alerta-info hidden">Verificando código com o banco de dados...</p>
       <p id="codigo-sucesso" class="alerta-sucesso hidden">Código correto! Redirecionando...</p>
     </div>
   </div>
@@ -125,7 +127,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
@@ -152,15 +154,17 @@
       });
     }
 
-    // Validação estrita do Código do Dia cadastrado no gerenciamento (Case-insensitive)
-    window.verificarCodigoDia = function() {
+    // Validação estrita forçando leitura atualizada direto do Firebase
+    window.verificarCodigoDia = async function() {
       const inputVal = document.getElementById('input-codigo-dia').value.trim().toLowerCase();
       const erroEl = document.getElementById('codigo-erro');
+      const infoEl = document.getElementById('codigo-info');
       const sucessoEl = document.getElementById('codigo-sucesso');
       const btnEl = document.getElementById('btn-confirmar-codigo');
 
       if (!inputVal) {
         sucessoEl.classList.add('hidden');
+        infoEl.classList.add('hidden');
         erroEl.textContent = "Digite o código para continuar.";
         erroEl.classList.remove('hidden');
         return;
@@ -168,31 +172,54 @@
 
       if (!db) {
         sucessoEl.classList.add('hidden');
+        infoEl.classList.add('hidden');
         erroEl.textContent = "Erro de conexão com o banco de dados.";
         erroEl.classList.remove('hidden');
         return;
       }
 
-      // Oculta alertas anteriores
+      // Oculta alertas anteriores e mostra feedback visual de carregamento
       erroEl.classList.add('hidden');
       sucessoEl.classList.add('hidden');
+      infoEl.textContent = "🔄 Verificando código atualizado no banco de dados...";
+      infoEl.classList.remove('hidden');
+      btnEl.disabled = true;
+      btnEl.textContent = "Verificando...";
 
-      // Pega estritamente o código configurado no painel de gerenciamento
-      const codigoSalvo = dbData && dbData.codigoDia ? String(dbData.codigoDia).trim().toLowerCase() : "";
+      try {
+        // Força a leitura imediata do banco (evita delay de cache/sync)
+        const snapshot = await get(ref(db));
+        const freshData = snapshot.val() || {};
+        dbData = freshData; // Atualiza os dados globais
 
-      if (!codigoSalvo) {
-        erroEl.textContent = "A votação foi encerrada.";
+        const codigoSalvo = freshData && freshData.codigoDia ? String(freshData.codigoDia).trim().toLowerCase() : "";
+
+        infoEl.classList.add('hidden');
+
+        if (!codigoSalvo) {
+          erroEl.textContent = "Votação encerrada.";
+          erroEl.classList.remove('hidden');
+          btnEl.disabled = false;
+          btnEl.textContent = "Confirmar código";
+          return;
+        }
+
+        if (inputVal === codigoSalvo) {
+          sucessoEl.classList.remove('hidden');
+          setTimeout(() => liberarAcessoPagina(), 800);
+        } else {
+          erroEl.textContent = "Código incorreto. Tente novamente.";
+          erroEl.classList.remove('hidden');
+          btnEl.disabled = false;
+          btnEl.textContent = "Confirmar código";
+        }
+      } catch (err) {
+        console.error("Erro ao buscar dados do Firebase:", err);
+        infoEl.classList.add('hidden');
+        erroEl.textContent = "Erro ao verificar. Tente novamente.";
         erroEl.classList.remove('hidden');
-        return;
-      }
-
-      if (inputVal === codigoSalvo) {
-        btnEl.disabled = true;
-        sucessoEl.classList.remove('hidden');
-        setTimeout(() => liberarAcessoPagina(), 800);
-      } else {
-        erroEl.textContent = "Código incorreto. Tente novamente.";
-        erroEl.classList.remove('hidden');
+        btnEl.disabled = false;
+        btnEl.textContent = "Confirmar código";
       }
     }
 
