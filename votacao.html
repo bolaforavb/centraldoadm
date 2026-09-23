@@ -67,7 +67,7 @@
         <button id="btn-confirmar-codigo" onclick="verificarCodigoDia()" class="btn-acao">Confirmar código</button>
       </div>
       <p id="codigo-erro" class="alerta-erro hidden">Código incorreto. Tente novamente.</p>
-      <p id="codigo-info" class="alerta-info hidden">Verificando código com o banco de dados...</p>
+      <p id="codigo-info" class="alerta-info hidden">Verificando código...</p>
       <p id="codigo-sucesso" class="alerta-sucesso hidden">Código correto! Redirecionando...</p>
     </div>
   </div>
@@ -181,7 +181,7 @@
       // Oculta alertas anteriores e mostra feedback visual de carregamento
       erroEl.classList.add('hidden');
       sucessoEl.classList.add('hidden');
-      infoEl.textContent = "🔄 Verificando código atualizado no banco de dados...";
+      infoEl.textContent = "⟳ Verificando código...";
       infoEl.classList.remove('hidden');
       btnEl.disabled = true;
       btnEl.textContent = "Verificando...";
