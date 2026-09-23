@@ -606,6 +606,36 @@
       }
     }
 
+    // Função para tocar um bip curto ao marcar ponto
+    function tocarBipPonto() {
+      try {
+        if (!audioContext) {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioContext.state === 'suspended') {
+          audioContext.resume();
+        }
+
+        const oscilador = audioContext.createOscillator();
+        const ganho = audioContext.createGain();
+
+        oscilador.type = 'sine';
+        oscilador.frequency.setValueAtTime(800, audioContext.currentTime); // Frequência do bip (Hz)
+
+        // Volume e fade-out rápido para evitar estalos
+        ganho.gain.setValueAtTime(0.15, audioContext.currentTime);
+        ganho.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.08);
+
+        oscilador.connect(ganho);
+        ganho.connect(audioContext.destination);
+
+        oscilador.start();
+        oscilador.stop(audioContext.currentTime + 0.08);
+      } catch (e) {
+        console.error("Erro ao reproduzir bip:", e);
+      }
+    }
+
     // --- SINCRO DA HORA OFICIAL DE BRASÍLIA COM SEGUNDOS ---
     let diferencaTempoServidor = 0;
 
@@ -744,6 +774,15 @@
 
     function adicionarPonto(lado, event) {
       if (event && event.target.tagName === 'SELECT') return;
+      
+      // Feedback tátil (vibração de 50ms)
+      if ("vibrate" in navigator) {
+        navigator.vibrate(50);
+      }
+
+      // Feedback auditivo (bip curto)
+      tocarBipPonto();
+
       placarLocal[lado] = (placarLocal[lado] || 0) + 1;
       placarRef.set(placarLocal);
     }
