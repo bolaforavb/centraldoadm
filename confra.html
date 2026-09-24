@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confra BFVB - Lista de Confirmação</title>
+<link class="icon" href="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" type="image/png">
+<style>
+* { box-sizing: border-box; }
+body {
+  font-family: sans-serif; background-color: #12364e; margin: 0; padding: 0;
+  display: flex; flex-direction: column; align-items: center; min-height: 100vh; color: #12364e;
+}
+.header-banner { width: 100%; max-width: 600px; background-color: #e1d8cd; overflow: hidden; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.header-banner img { width: 100%; height: 100%; object-fit: cover; }
+.main-container { width: 100%; max-width: 600px; padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 16px; }
+.bloco-card { background-color: white; border-radius: 16px; width: 100%; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+.titulo-secao { font-size: 14px; font-weight: bold; color: #12364e; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
+.header-secao-wrapper { border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+input[type="text"], input[type="file"] { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; color: #12364e; outline: none; width: 100%; background: white; }
+input[type="file"] { padding: 7px; }
+.form-inline { display: flex; gap: 8px; width: 100%; }
+.form-inline input { flex: 1; }
+.btn-add-tabela { padding: 10px 16px; background-color: #d9b246; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; white-space: nowrap; }
+.btn-add-tabela:hover { background-color: #af8a23; }
+.lista-fidelidade { display: flex; flex-direction: column; gap: 10px; width: 100%; max-height: 400px; overflow-y: auto; padding-right: 4px; }
+.item-fidelidade { display: flex; flex-direction: column; gap: 8px; padding: 12px; background-color: #f7f5f2; border-radius: 8px; border-left: 3px solid #d9b246; flex-shrink: 0; }
+.linha-principal-item { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 8px; }
+.bloco-nome-info { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+.nome-participante { font-size: 13px; font-weight: bold; color: #12364e; word-break: break-all; }
+.botoes-acao { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.btn-acao-custom { padding: 6px 10px; background-color: #12364e; color: white; border: none; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.btn-acao-custom:hover { background-color: #1b4d70; }
+.btn-acao-custom.desativado { background-color: #b0b0b0 !important; cursor: not-allowed; opacity: 0.6; pointer-events: none; }
+.btn-comprovante-enviado { background-color: #25d366 !important; }
+.btn-comprovante-enviado:hover { background-color: #1ebe5d !important; }
+.btn-icone-acao { background: none; border: none; cursor: pointer; font-size: 13px; padding: 2px; display: inline-flex; align-items: center; justify-content: center; }
+.btn-icone-acao:hover { transform: scale(1.15); }
+.secao-convidado { display: flex; gap: 6px; margin-top: 4px; padding-top: 8px; border-top: 1px dashed rgba(0,0,0,0.1); width: 100%; }
+.lista-convidados { font-size: 11px; color: #555; padding-left: 4px; display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+.item-convidado-linha { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 6px 8px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.06); }
+.contador-badge { font-size: 11px; font-weight: bold; color: #12364e; background: #e1d8cd; padding: 5px 8px; border-radius: 6px; }
+.bloco-rodape-arrecadacao { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.08); display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: bold; color: #12364e; }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
+.modal-content { background: white; padding: 20px; border-radius: 16px; width: 90%; max-width: 400px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); align-items: center; text-align: center; }
+.footer-navegacao { width: 100%; max-width: 600px; padding: 8px 16px 30px 16px; display: flex; flex-direction: column; gap: 8px; }
+.btn-voltar-painel { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; background-color: transparent; color: #e1d8cd; border: 2px solid #e1d8cd; border-radius: 8px; font-weight: bold; font-size: 14px; text-decoration: none; text-align: center; }
+.btn-voltar-painel:hover { background-color: #e1d8cd; color: #12364e; }
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header class="header-banner">
+  <img src="https://i.ibb.co/twJd6BRq/Whats-App-Image-2026-06-29-at-10-42-05.jpg" alt="Banner Confra BFVB">
+</header>
+
+<main class="main-container">
+  <!-- BLOCO: NOME -->
+  <div class="bloco-card">
+    <div class="header-secao-wrapper" style="margin-bottom: 12px;">
+      <div class="titulo-secao">Nome</div>
+    </div>
+    <form id="form-novo-participante" class="form-inline" onsubmit="adicionarParticipante(event)">
+      <input type="text" id="input-nome-participante" placeholder="Digite seu nome completo" autocomplete="off" required>
+      <button type="submit" class="btn-add-tabela">Add</button>
+    </form>
+  </div>
+
+  <!-- BLOCO: CONFIRMADOS -->
+  <div class="bloco-card">
+    <div class="header-secao-wrapper" style="margin-bottom: 12px;">
+      <div class="titulo-secao">Confirmados</div>
+      <span id="contador-confirmados" class="contador-badge">Total: 0</span>
+    </div>
+    <div class="lista-fidelidade" id="tabela-confirmados">
+      <p style="font-size: 12px; color: #7f8c8d; text-align: center; margin: 10px 0;">Nenhum participante confirmado ainda.</p>
+    </div>
+    
+    <!-- RODAPÉ DE ARRECADAÇÃO -->
+    <div class="bloco-rodape-arrecadacao">
+      <span>Total arrecadado até o momento:</span>
+      <span id="valor-arrecadado" style="color: #d9b246; font-size: 14px;">R$ 0,00</span>
+    </div>
+  </div>
+</main>
+
+<!-- MODAL PARA ANEXAR COMPROVANTE -->
+<input type="file" id="input-arquivo-oculto" accept="image/*" class="hidden" onchange="processarArquivoComprovante(event)">
+
+<!-- MODAL PARA VISUALIZAR COMPROVANTE -->
+<div class="modal-overlay" id="modal-ver-comprovante">
+  <div class="modal-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px;">
+      <span class="titulo-secao" style="margin:0; border:none; padding:0;">Comprovante Anexado</span>
+      <button onclick="fecharModalComprovante()" style="background:none; border:none; font-size:16px; font-weight:bold; cursor:pointer; color:#12364e;">X</button>
+    </div>
+    <div id="conteudo-ver-comprovante" style="width: 100%; display: flex; justify-content: center; padding: 10px 0;"></div>
+  </div>
+</div>
+
+<footer class="footer-navegacao">
+  <a href="adminvotacao.html" class="btn-voltar-painel"><span>←</span> Voltar para a Central do Adm</a>
+</footer>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getDatabase, ref, onValue, set, get, child, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
+  databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com/"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+setPersistence(auth, browserSessionPersistence).catch(console.error);
+
+// VALIDAÇÃO DE UTILIZADOR
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "index.html";
+  }
+});
+
+let participanteSelecionadoParaArquivo = null;
+
+onValue(ref(db, 'confra_participantes'), (snapshot) => {
+  const data = snapshot.val() || {};
+  renderizarConfirmados(data);
+});
+
+window.adicionarParticipante = function(e) {
+  e.preventDefault();
+  const input = document.getElementById('input-nome-participante');
+  const nome = input.value.trim();
+  if (!nome) return;
+
+  const novaRef = push(ref(db, 'confra_participantes'));
+  set(novaRef, {
+    id: novaRef.key,
+    nome: nome,
+    comprovante: "",
+    convidado: {}
+  }).then(() => {
+    input.value = "";
+  }).catch((err) => {
+    console.error("Erro ao adicionar:", err);
+    alert("Erro ao salvar no banco de dados.");
+  });
+}
+
+window.editarParticipante = function(id, nomeAtual) {
+  const novoNome = prompt("Editar nome do participante:", nomeAtual);
+  if (novoNome !== null && novoNome.trim() !== "") {
+    set(ref(db, `confra_participantes/${id}/nome`), novoNome.trim());
+  }
+}
+
+window.removerParticipante = function(id) {
+  if (confirm("Tem certeza que deseja remover este participante?")) {
+    set(ref(db, `confra_participantes/${id}`), null);
+  }
+}
+
+window.acionarSeletorComprovante = function(id) {
+  participanteSelecionadoParaArquivo = id;
+  document.getElementById('input-arquivo-oculto').value = "";
+  document.getElementById('input-arquivo-oculto').click();
+}
+
+window.processarArquivoComprovante = function(e) {
+  const file = e.target.files[0];
+  if (!file || !participanteSelecionadoParaArquivo) return;
+
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    const base64Data = event.target.result;
+    set(ref(db, `confra_participantes/${participanteSelecionadoParaArquivo}/comprovante`), base64Data)
+      .then(() => {
+        alert("Comprovante anexado com sucesso!");
+        participanteSelecionadoParaArquivo = null;
+      })
+      .catch((err) => {
+        console.error("Erro ao salvar comprovante:", err);
+        alert("Erro ao enviar o comprovante.");
+      });
+  };
+  reader.readAsDataURL(file);
+}
+
+window.verComprovante = function(url) {
+  const container = document.getElementById('conteudo-ver-comprovante');
+  container.innerHTML = `<img src="${url}" style="max-width: 100%; max-height: 65vh; border-radius: 8px; object-fit: contain;">`;
+  document.getElementById('modal-ver-comprovante').style.display = 'flex';
+}
+
+window.fecharModalComprovante = function() {
+  document.getElementById('modal-ver-comprovante').style.display = 'none';
+}
+
+window.toggleInputConvidado = function(id) {
+  const divInput = document.getElementById(`input-convidado-box-${id}`);
+  divInput.classList.toggle('hidden');
+  if (!divInput.classList.contains('hidden')) {
+    document.getElementById(`nome-convidado-${id}`).focus();
+  }
+}
+
+window.adicionarConvidado = function(participanteId) {
+  const input = document.getElementById(`nome-convidado-${participanteId}`);
+  const nomeConvidado = input.value.trim();
+  if (!nomeConvidado) return;
+
+  // Como é limite de 1 convidado, substituímos ou criamos diretamente
+  set(ref(db, `confra_participantes/${participanteId}/convidado`), { [Date.now()]: nomeConvidado })
+    .then(() => {
+      input.value = "";
+      document.getElementById(`input-convidado-box-${participanteId}`).classList.add('hidden');
+    })
+    .catch((err) => {
+      console.error("Erro ao adicionar convidado:", err);
+      alert("Erro ao salvar o convidado.");
+    });
+}
+
+window.editarConvidado = function(participanteId, convidadoKey, nomeAtual) {
+  const novoNome = prompt("Editar nome do convidado(a):", nomeAtual);
+  if (novoNome !== null && novoNome.trim() !== "") {
+    set(ref(db, `confra_participantes/${participanteId}/convidado/${convidadoKey}`), novoNome.trim());
+  }
+}
+
+window.removerConvidado = function(participanteId, convidadoKey) {
+  if (confirm("Tem certeza que deseja remover este convidado(a)?")) {
+    set(ref(db, `confra_participantes/${participanteId}/convidado/${convidadoKey}`), null);
+  }
+}
+
+function renderizarConfirmados(dadosObj) {
+  const container = document.getElementById('tabela-confirmados');
+  container.innerHTML = "";
+  
+  const chaves = Object.keys(dadosObj);
+  document.getElementById('contador-confirmados').textContent = `Total: ${chaves.length}`;
+
+  if (chaves.length === 0) {
+    container.innerHTML = '<p style="font-size: 12px; color: #7f8c8d; text-align: center; margin: 10px 0;">Nenhum participante confirmado ainda.</p>';
+    document.getElementById('valor-arrecadado').textContent = 'R$ 0,00';
+    return;
+  }
+
+  let totalPessoasCalculo = 0;
+
+  chaves.forEach(id => {
+    const item = dadosObj[id];
+    if (!item) return;
+
+    totalPessoasCalculo++; // Titular
+
+    const temComprovante = item.comprovante && item.comprovante.length > 0;
+    
+    let listaConvidadosHTML = "";
+    let temConvidadoCadastrado = false;
+
+    if (item.convidado) {
+      const convidadosEntries = Object.entries(item.convidado);
+      if (convidadosEntries.length > 0) {
+        temConvidadoCadastrado = true;
+        convidadosEntries.forEach(([convKey, convNome]) => {
+          totalPessoasCalculo++; // Convidado
+          listaConvidadosHTML += `
+            <div class="item-convidado-linha">
+              <span>• Convidado(a): <b>${convNome}</b></span>
+              <div style="display: flex; gap: 4px;">
+                <button class="btn-icone-acao" title="Editar Convidado" onclick="editarConvidado('${id}', '${convKey}', '${convNome}')">✏️</button>
+                <button class="btn-icone-acao" title="Excluir Convidado" onclick="removerConvidado('${id}', '${convKey}')">❌</button>
+              </div>
+            </div>
+          `;
+        });
+      }
+    }
+
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'item-fidelidade';
+    itemDiv.innerHTML = `
+      <div class="linha-principal-item">
+        <div class="bloco-nome-info">
+          <span class="nome-participante">${item.nome}</span>
+          <button class="btn-icone-acao" title="Editar Participante" onclick="editarParticipante('${id}', '${item.nome}')">✏️</button>
+          <button class="btn-icone-acao" title="Excluir Participante" onclick="removerParticipante('${id}')">❌</button>
+        </div>
+        <div class="botoes-acao">
+          ${temComprovante 
+            ? `<button class="btn-acao-custom btn-comprovante-enviado" onclick="verComprovante('${item.comprovante}')">✓ Ver Comprovante</button>`
+            : `<button class="btn-acao-custom" onclick="acionarSeletorComprovante('${id}')">Anexar comprovante</button>`
+          }
+          <button class="btn-acao-custom ${temConvidadoCadastrado ? 'desativado' : ''}" ${temConvidadoCadastrado ? 'disabled' : ''} onclick="toggleInputConvidado('${id}')">+ Convidado</button>
+        </div>
+      </div>
+      
+      <div id="input-convidado-box-${id}" class="hidden secao-convidado">
+        <input type="text" id="nome-convidado-${id}" placeholder="Nome do convidado(a)" style="font-size: 12px; padding: 6px;">
+        <button type="button" class="btn-add-tabela" onclick="adicionarConvidado('${id}')" style="padding: 6px 12px; font-size: 12px;">Salvar</button>
+      </div>
+
+      ${listaConvidadosHTML ? `<div class="lista-convidados">${listaConvidadosHTML}</div>` : ''}
+    `;
+    container.appendChild(itemDiv);
+  });
+
+  const valorTotalArrecadado = totalPessoasCalculo * 30;
+  document.getElementById('valor-arrecadado').textContent = valorTotalArrecadado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+</script>
+
+</body>
+</html>
