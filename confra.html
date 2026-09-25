@@ -37,8 +37,8 @@ input[type="file"] { padding: 7px; }
 .btn-icone-acao { background: none; border: none; cursor: pointer; font-size: 13px; padding: 2px; display: inline-flex; align-items: center; justify-content: center; }
 .btn-icone-acao:hover { transform: scale(1.15); }
 .secao-convidado { display: flex; gap: 6px; margin-top: 4px; padding-top: 8px; border-top: 1px dashed rgba(0,0,0,0.1); width: 100%; }
-.lista-convidados { font-size: 11px; color: #555; padding-left: 4px; display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
-.item-convidado-linha { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 6px 8px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.06); }
+.lista-convidados { font-size: 11px; color: #555; padding-left: 4px; display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.item-convidado-linha { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 8px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.06); gap: 8px; }
 .contador-badge { font-size: 11px; font-weight: bold; color: #12364e; background: #e1d8cd; padding: 5px 8px; border-radius: 6px; }
 .bloco-rodape-arrecadacao { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.08); display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: bold; color: #12364e; }
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
@@ -62,7 +62,7 @@ input[type="file"] { padding: 7px; }
       <div class="titulo-secao">Adicionar participante</div>
     </div>
     <form id="form-novo-participante" class="form-inline" onsubmit="adicionarParticipante(event)">
-      <input type="text" id="input-nome-participante" placeholder="Nome..." autocomplete="off" required>
+      <input type="text" id="input-nome-participante" placeholder="Digite o nome do participante" autocomplete="off" required>
       <button type="submit" class="btn-add-tabela">Add</button>
     </form>
   </div>
@@ -85,7 +85,7 @@ input[type="file"] { padding: 7px; }
   </div>
 </main>
 
-<!-- MODAL PARA ANEXAR COMPROVANTE -->
+<!-- MODAL PARA ANEXAR COMPROVANTE (PARTICIPANTE OU CONVIDADO) -->
 <input type="file" id="input-arquivo-oculto" accept="image/*" class="hidden" onchange="processarArquivoComprovante(event)">
 
 <!-- MODAL PARA VISUALIZAR COMPROVANTE -->
@@ -125,7 +125,7 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-let participanteSelecionadoParaArquivo = null;
+let alvoSelecionadoParaArquivo = null; // Pode ser ID do participante ou "participanteId/convidado/convKey"
 
 onValue(ref(db, 'confra_participantes'), (snapshot) => {
   const data = snapshot.val() || {};
@@ -165,23 +165,23 @@ window.removerParticipante = function(id) {
   }
 }
 
-window.acionarSeletorComprovante = function(id) {
-  participanteSelecionadoParaArquivo = id;
+window.acionarSeletorComprovante = function(caminhoDb) {
+  alvoSelecionadoParaArquivo = caminhoDb;
   document.getElementById('input-arquivo-oculto').value = "";
   document.getElementById('input-arquivo-oculto').click();
 }
 
 window.processarArquivoComprovante = function(e) {
   const file = e.target.files[0];
-  if (!file || !participanteSelecionadoParaArquivo) return;
+  if (!file || !alvoSelecionadoParaArquivo) return;
 
   const reader = new FileReader();
   reader.onload = function(event) {
     const base64Data = event.target.result;
-    set(ref(db, `confra_participantes/${participanteSelecionadoParaArquivo}/comprovante`), base64Data)
+    set(ref(db, `confra_participantes/${alvoSelecionadoParaArquivo}/comprovante`), base64Data)
       .then(() => {
         alert("Comprovante anexado com sucesso!");
-        participanteSelecionadoParaArquivo = null;
+        alvoSelecionadoParaArquivo = null;
       })
       .catch((err) => {
         console.error("Erro ao salvar comprovante:", err);
@@ -214,22 +214,23 @@ window.adicionarConvidado = function(participanteId) {
   const nomeConvidado = input.value.trim();
   if (!nomeConvidado) return;
 
-  // Como é limite de 1 convidado, substituímos ou criamos diretamente
-  set(ref(db, `confra_participantes/${participanteId}/convidado`), { [Date.now()]: nomeConvidado })
-    .then(() => {
-      input.value = "";
-      document.getElementById(`input-convidado-box-${participanteId}`).classList.add('hidden');
-    })
-    .catch((err) => {
-      console.error("Erro ao adicionar convidado:", err);
-      alert("Erro ao salvar o convidado.");
-    });
+  const novoConvidadoRef = push(ref(db, `confra_participantes/${participanteId}/convidado`));
+  set(novoConvidadoRef, {
+    nome: nomeConvidado,
+    comprovante: ""
+  }).then(() => {
+    input.value = "";
+    document.getElementById(`input-convidado-box-${participanteId}`).classList.add('hidden');
+  }).catch((err) => {
+    console.error("Erro ao adicionar convidado:", err);
+    alert("Erro ao salvar o convidado.");
+  });
 }
 
 window.editarConvidado = function(participanteId, convidadoKey, nomeAtual) {
   const novoNome = prompt("Editar nome do convidado(a):", nomeAtual);
   if (novoNome !== null && novoNome.trim() !== "") {
-    set(ref(db, `confra_participantes/${participanteId}/convidado/${convidadoKey}`), novoNome.trim());
+    set(ref(db, `confra_participantes/${participanteId}/convidado/${convidadoKey}/nome`), novoNome.trim());
   }
 }
 
@@ -244,9 +245,8 @@ function renderizarConfirmados(dadosObj) {
   container.innerHTML = "";
   
   const chaves = Object.keys(dadosObj);
-  document.getElementById('contador-confirmados').textContent = `Total: ${chaves.length}`;
-
   if (chaves.length === 0) {
+    document.getElementById('contador-confirmados').textContent = 'Total: 0';
     container.innerHTML = '<p style="font-size: 12px; color: #7f8c8d; text-align: center; margin: 10px 0;">Nenhum participante confirmado ainda.</p>';
     document.getElementById('valor-arrecadado').textContent = 'R$ 0,00';
     return;
@@ -259,8 +259,7 @@ function renderizarConfirmados(dadosObj) {
     if (!item) return;
 
     totalPessoasCalculo++; // Titular
-
-    const temComprovante = item.comprovante && item.comprovante.length > 0;
+    const temComprovanteTitular = item.comprovante && item.comprovante.length > 0;
     
     let listaConvidadosHTML = "";
     let temConvidadoCadastrado = false;
@@ -269,13 +268,24 @@ function renderizarConfirmados(dadosObj) {
       const convidadosEntries = Object.entries(item.convidado);
       if (convidadosEntries.length > 0) {
         temConvidadoCadastrado = true;
-        convidadosEntries.forEach(([convKey, convNome]) => {
+        convidadosEntries.forEach(([convKey, convData]) => {
           totalPessoasCalculo++; // Convidado
+          
+          // Compatibilidade caso o convidado salvo anteriormente fosse apenas string
+          const nomeConv = typeof convData === 'object' && convData !== null ? convData.nome : convData;
+          const compConv = typeof convData === 'object' && convData !== null ? convData.comprovante : "";
+          const temComprovanteConvidado = compConv && compConv.length > 0;
+          const caminhoConvidadoDb = `${id}/convidado/${convKey}`;
+
           listaConvidadosHTML += `
             <div class="item-convidado-linha">
-              <span>• Convidado(a): <b>${convNome}</b></span>
-              <div style="display: flex; gap: 4px;">
-                <button class="btn-icone-acao" title="Editar Convidado" onclick="editarConvidado('${id}', '${convKey}', '${convNome}')">✏️</button>
+              <span style="flex: 1; word-break: break-all;">• Convidado(a): <b>${nomeConv}</b></span>
+              <div class="botoes-acao">
+                ${temComprovanteConvidado 
+                  ? `<button class="btn-acao-custom btn-comprovante-enviado" onclick="verComprovante('${compConv}')">✓ Ver Comprovante</button>`
+                  : `<button class="btn-acao-custom" onclick="acionarSeletorComprovante('${caminhoConvidadoDb}')">Anexar comprovante</button>`
+                }
+                <button class="btn-icone-acao" title="Editar Convidado" onclick="editarConvidado('${id}', '${convKey}', '${nomeConv}')">✏️</button>
                 <button class="btn-icone-acao" title="Excluir Convidado" onclick="removerConvidado('${id}', '${convKey}')">❌</button>
               </div>
             </div>
@@ -294,7 +304,7 @@ function renderizarConfirmados(dadosObj) {
           <button class="btn-icone-acao" title="Excluir Participante" onclick="removerParticipante('${id}')">❌</button>
         </div>
         <div class="botoes-acao">
-          ${temComprovante 
+          ${temComprovanteTitular 
             ? `<button class="btn-acao-custom btn-comprovante-enviado" onclick="verComprovante('${item.comprovante}')">✓ Ver Comprovante</button>`
             : `<button class="btn-acao-custom" onclick="acionarSeletorComprovante('${id}')">Anexar comprovante</button>`
           }
@@ -312,6 +322,7 @@ function renderizarConfirmados(dadosObj) {
     container.appendChild(itemDiv);
   });
 
+  document.getElementById('contador-confirmados').textContent = `Total: ${totalPessoasCalculo}`;
   const valorTotalArrecadado = totalPessoasCalculo * 30;
   document.getElementById('valor-arrecadado').textContent = valorTotalArrecadado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
