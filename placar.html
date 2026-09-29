@@ -255,24 +255,27 @@
       position: relative;
     }
 
-    .borda-lateral-esquerda,
-    .borda-lateral-direita {
+    /* Bloco da base inferior que assume a cor do time com cantos internos retos */
+    .faixa-base-time {
       position: absolute;
-      top: 0;
       bottom: 0;
-      width: 64px; /* Largura dobrada (de 32px para 64px) */
+      left: 0;
+      right: 0;
+      height: 70px;
       background-color: transparent;
       transition: background-color 0.3s;
-      z-index: 4;
+      z-index: 2;
       pointer-events: none;
     }
 
-    .borda-lateral-esquerda {
-      left: 0;
+    .lado-placar:first-child .faixa-base-time {
+      border-bottom-left-radius: 20px;
+      border-bottom-right-radius: 0px;
     }
 
-    .borda-lateral-direita {
-      right: 0;
+    .lado-placar:last-child .faixa-base-time {
+      border-bottom-left-radius: 0px;
+      border-bottom-right-radius: 20px;
     }
 
     .area-ponto {
@@ -286,7 +289,6 @@
       transition: background-color 0.1s;
     }
     
-    /* Efeito de clique com a cor dourada crua #d9b246 (sem transparência) */
     .area-ponto:active {
       background-color: #d9b246;
     }
@@ -477,7 +479,7 @@
       </div>
       
       <div class="lado-placar">
-        <div class="borda-lateral-esquerda" id="borda-esquerda"></div>
+        <div class="faixa-base-time" id="faixa-esquerda"></div>
         <div class="area-ponto" onclick="adicionarPonto('esquerda', event)">
           <select class="seletor-cor-time" id="cor-esquerda" onclick="event.stopPropagation()" onchange="mudarCor('esquerda')">
             <option value="" class="op-padrao">Cor</option>
@@ -494,7 +496,7 @@
       </div>
 
       <div class="lado-placar">
-        <div class="borda-lateral-direita" id="borda-direita"></div>
+        <div class="faixa-base-time" id="faixa-direita"></div>
         <div class="area-ponto" onclick="adicionarPonto('direita', event)">
           <select class="seletor-cor-time" id="cor-direita" onclick="event.stopPropagation()" onchange="mudarCor('direita')">
             <option value="" class="op-padrao">Cor</option>
@@ -607,7 +609,6 @@
       }
     }
 
-    // Função para tocar um bip curto ao marcar ponto
     function tocarBipPonto() {
       try {
         if (!audioContext) {
@@ -711,14 +712,14 @@
           btnMenos.style.borderColor = cor ? estilo.bg : "#12364e";
         }
 
-        const bordaEsq = document.getElementById('borda-esquerda');
-        const bordaDir = document.getElementById('borda-direita');
+        const faixaEsq = document.getElementById('faixa-esquerda');
+        const faixaDir = document.getElementById('faixa-direita');
 
-        if (bordaEsq && lado === 'esquerda') {
-          bordaEsq.style.backgroundColor = cor ? estilo.bg : "transparent";
+        if (faixaEsq && lado === 'esquerda') {
+          faixaEsq.style.backgroundColor = cor ? estilo.bg : "transparent";
         }
-        if (bordaDir && lado === 'direita') {
-          bordaDir.style.backgroundColor = cor ? estilo.bg : "transparent";
+        if (faixaDir && lado === 'direita') {
+          faixaDir.style.backgroundColor = cor ? estilo.bg : "transparent";
         }
       }
     }
@@ -747,7 +748,6 @@
       }
     }
 
-    // --- CORREÇÃO DO FIREBASE (INICIALIZAÇÃO SEGURA) ---
     placarRef.on('value', (snapshot) => {
       const dadosNuvem = snapshot.val();
       if (dadosNuvem) {
@@ -775,12 +775,10 @@
     function adicionarPonto(lado, event) {
       if (event && event.target.tagName === 'SELECT') return;
       
-      // Feedback tátil (vibração de 50ms)
       if ("vibrate" in navigator) {
         navigator.vibrate(50);
       }
 
-      // Feedback auditivo (bip curto)
       tocarBipPonto();
 
       placarLocal[lado] = (placarLocal[lado] || 0) + 1;
