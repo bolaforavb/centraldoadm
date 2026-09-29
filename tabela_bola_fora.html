@@ -123,7 +123,6 @@ h2 {
     transition: border-color 0.2s ease, box-shadow 0.2s ease, border-width 0.2s ease;
 }
 
-/* Classe aplicada quando o jogo está pinado (Borda de 2px amarela com destaque suave) */
 .jogo-card.pinado {
     border: 2px solid var(--amarelo-oficial);
     box-shadow: 0 4px 12px rgba(217, 178, 70, 0.4);
@@ -156,7 +155,6 @@ h2 {
     justify-content: center;
 }
 
-/* Botão de Pin dentro do espaço vazio com fundo azul */
 .btn-pin {
     background: var(--azul-oficial);
     border: none;
@@ -504,9 +502,9 @@ td { font-size: 1.1rem; font-weight: bold; }
                     
                     <select id="escolha-time">
                         <option value="Amarelo">Time Amarelo</option>
-                        <option value="Rosa">Time Rosa</option>
-                        <option value="Azul">Time Azul</option>
                         <option value="Roxo">Time Roxo</option>
+                        <option value="Azul">Time Azul</option>
+                        <option value="Rosa">Time Rosa</option>
                     </select>
                     <button class="btn-salvar" onclick="escalarJogador()">Escalar Jogador</button>
                 </div>
@@ -587,6 +585,37 @@ td { font-size: 1.1rem; font-weight: bold; }
     let elenco = [];
     let idEmEdicao = null;
     let jogoPinadoId = null;
+
+    // Configurar atalhos para a tecla Enter
+    document.addEventListener('DOMContentLoaded', () => {
+        const inputNovoNome = document.getElementById('novo-nome');
+        const selectNovoTipo = document.getElementById('novo-tipo');
+        
+        [inputNovoNome, selectNovoTipo].forEach(elemento => {
+            if (elemento) {
+                elemento.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        adicionarJogador();
+                    }
+                });
+            }
+        });
+
+        const inputBuscaJogador = document.getElementById('busca-jogador-input');
+        const selectEscolhaTime = document.getElementById('escolha-time');
+        
+        [inputBuscaJogador, selectEscolhaTime].forEach(elemento => {
+            if (elemento) {
+                elemento.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        escalarJogador();
+                    }
+                });
+            }
+        });
+    });
 
     function normalizarArrayFirebase(dado) {
         if (!dado) return [];
