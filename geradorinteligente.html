@@ -899,7 +899,6 @@
       if (!container) return;
       container.innerHTML = '';
 
-      // Atualiza o contador de selecionados em tempo real com o estilo padrão dos botões
       let dadosDia = BD_GeradorTimes[dia] || {};
       let totalSelecionados = Object.values(dadosDia).filter(d => d.flagado === true).length;
       const spanContador = document.getElementById(`contador-selecionados-${dia}`);
@@ -1069,7 +1068,7 @@
           if (dados.saque) listaIniciais.push('S');
 
           let bonusFundamentos = listaIniciais.length * 0.2;
-          let scoreTotal = nivel + bonusFundamentos;
+          let scoreTotal = nivel + bonusFundamentos + (Math.random() * 0.05); // Adiciona leve aleatoriedade para variar novas distribuições ao clicar
 
           selecionados.push({ nome, nivel, isAdm, scoreTotal, fundamentos: listaIniciais });
         }
@@ -1087,22 +1086,38 @@
         { chave: 'roxo', membros: [], somaScore: 0 }
       ];
 
+      // Separa ADMs e não-ADMs e ordena por pontuação descendente
       let adms = selecionados.filter(j => j.isAdm);
       let naoAdms = selecionados.filter(j => !j.isAdm);
 
       adms.sort((a, b) => b.scoreTotal - a.scoreTotal);
       naoAdms.sort((a, b) => b.scoreTotal - a.scoreTotal);
 
-      adms.forEach(adm => {
-        listaTimes.sort((a, b) => a.somaScore - b.somaScore);
-        listaTimes[0].membros.push(adm);
-        listaTimes[0].somaScore += adm.scoreTotal;
+      // Distribui ADMs primeiro em times diferentes (garantindo o limite estrito de 4 times)
+      // Embaralha levemente a ordem inicial dos times para cada clique gerar variações novas
+      listaTimes.sort(() => Math.random() - 0.5);
+
+      adms.forEach((adm, index) => {
+        let timeAlvo = listaTimes[index % 4];
+        timeAlvo.membros.push(adm);
+        timeAlvo.somaScore += adm.scoreTotal;
       });
 
+      // Distribui os demais jogadores utilizando o método serpentina/equilíbrio por menor pontuação atual
       naoAdms.forEach(jogador => {
-        listaTimes.sort((a, b) => a.somaScore - b.somaScore);
-        listaTimes[0].membros.push(jogador);
-        listaTimes[0].somaScore += jogador.scoreTotal;
+        // Ordena os times para sempre alocar o jogador no time com menor soma atual, respeitando o teto de 4 membros
+        listaTimes.sort((a, b) => {
+          if (a.membros.length >= 4) return 1;
+          if (b.membros.length >= 4) return -1;
+          return a.somaScore - b.somaScore;
+        });
+
+        // Encontra o primeiro time com menos de 4 membros
+        let timeDisponivel = listaTimes.find(t => t.membros.length < 4);
+        if (timeDisponivel) {
+          timeDisponivel.membros.push(jogador);
+          timeDisponivel.somaScore += jogador.scoreTotal;
+        }
       });
 
       let times = {};
@@ -1188,7 +1203,6 @@
       container.innerHTML = html;
     }
 
-    // Funções de Arrastar e Soltar (Drag and Drop)
     let dadosArrastados = null;
 
     function iniciarArrasto(e, dia, chaveTime, indice) {
@@ -1221,27 +1235,22 @@
 
       const { dia: diaOrigem, chaveTime: chaveOrigem, indice: indiceOrigem } = dadosArrastados;
 
-      // Garante que a troca aconteça no mesmo bloco de dia
       if (diaOrigem !== diaDestino) return;
 
       let times = estadoControle[diaDestino].ultimosTimes;
       if (!times) return;
 
-      // Realiza a troca (swap) dos jogadores entre os times/posições
       let jogadorOrigem = times[chaveOrigem][indiceOrigem];
       times[chaveOrigem][indiceOrigem] = times[chaveDestino][indiceDestino];
       times[chaveDestino][indiceDestino] = jogadorOrigem;
 
-      // Reordena cada time por nível em ordem decrescente (comportamento padrão de exibição)
       times[chaveOrigem].sort((a, b) => b.nivel - a.nivel);
       times[chaveDestino].sort((a, b) => b.nivel - a.nivel);
 
-      // Atualiza a renderização dos times na tela com as novas médias calculadas
       renderizarTimes(diaDestino, times);
       dadosArrastados = null;
     }
 
-    // Suporte complementar para toque em dispositivos móveis caso necessário
     function configurarToqueMobile(e, dia, chaveTime, indice) {
       dadosArrastados = { dia, chaveTime, indice };
     }
@@ -1278,7 +1287,6 @@
       window.open(urlWhatsApp, '_blank');
     }
 
-    // Inicializa o estado visual correto dos botões de ordenação no carregamento
     atualizarBotoesOrdenacaoVisual('terca');
     atualizarBotoesOrdenacaoVisual('sexta');
   </script>
