@@ -60,10 +60,13 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
-    .header-card-toggle {
+    .header-card-toggle, .header-card-com-acao {
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+
+    .header-card-toggle {
       cursor: pointer;
       user-select: none;
     }
@@ -85,6 +88,67 @@
       cursor: pointer;
       padding: 0 4px;
       line-height: 1;
+    }
+
+    .btn-zerar-pontos {
+      background-color: rgba(217, 48, 37, 0.1);
+      color: #d93025;
+      border: 1px solid rgba(217, 48, 37, 0.3);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-zerar-pontos:hover {
+      background-color: #d93025;
+      color: white;
+    }
+
+    /* Tag PLUS para atribuições de 'todos' */
+    .tag-plus {
+      font-size: 10px;
+      font-weight: bold;
+      color: #12364e;
+      border: 1px solid #12364e;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background-color: rgba(18, 54, 78, 0.05);
+      flex-shrink: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Lista de Histórico de Alterações */
+    .lista-historico {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .item-historico {
+      background-color: #f7f5f2;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      color: #12364e;
+      border-left: 3px solid #12364e;
+      line-height: 1.3;
+    }
+
+    .item-historico .usuario-acao {
+      font-weight: bold;
+    }
+
+    .item-historico .data-acao {
+      display: block;
+      font-size: 10px;
+      color: #666;
+      margin-top: 2px;
     }
 
     /* Utilitário para ocultar conteúdo quando minimizado */
@@ -125,6 +189,60 @@
       transition: background 0.2s;
     }
     .btn-add-tabela:hover { background-color: #af8a23; }
+
+    /* Estilos do Bloco Ranking */
+    .lista-ranking {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .item-ranking {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #f7f5f2;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border-left: 4px solid #12364e;
+    }
+
+    .item-ranking:nth-child(1) { border-left-color: #d9b246; } /* 1º lugar Ouro/Amarelo */
+    .item-ranking:nth-child(2) { border-left-color: #a0a0a0; } /* 2º lugar Prata */
+    .item-ranking:nth-child(3) { border-left-color: #cd7f32; } /* 3º lugar Bronze */
+
+    .info-posicao-adm {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge-posicao {
+      font-size: 12px;
+      font-weight: bold;
+      color: white;
+      background-color: #12364e;
+      padding: 4px 8px;
+      border-radius: 6px;
+      min-width: 32px;
+      text-align: center;
+    }
+
+    .nome-adm-ranking {
+      font-size: 14px;
+      font-weight: bold;
+      color: #12364e;
+    }
+
+    .pontos-adm-ranking {
+      font-size: 14px;
+      font-weight: bold;
+      color: #12364e;
+      background-color: rgba(18, 54, 78, 0.1);
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
 
     /* Bloco Atribuições e Pontuações */
     .card-adm {
@@ -353,13 +471,34 @@
       </form>
     </div>
 
-    <!-- 2. Atribuições e Pontuações -->
+    <!-- 2. Ranking -->
     <div class="bloco-card">
-      <div class="titulo-secao">Atribuições e pontuações</div>
+      <div class="titulo-secao">Ranking</div>
+      <div id="container-ranking" class="lista-ranking"></div>
+    </div>
+
+    <!-- 3. Atribuições e Pontuações -->
+    <div class="bloco-card">
+      <div class="header-card-com-acao">
+        <div class="titulo-secao">Atribuições e pontuações</div>
+        <button type="button" class="btn-zerar-pontos" onclick="zerarTodosOsPontos()">ZERAR</button>
+      </div>
       <div id="container-pontuacoes" style="margin-top: 12px;"></div>
     </div>
 
-    <!-- 3. Cadastro de Atribuições (Minimizado por padrão) -->
+    <!-- 4. Bloco Colapsável: Histórico de Alterações -->
+    <div class="bloco-card">
+      <div class="header-card-toggle" onclick="alternarMinimizadoHistorico()">
+        <div class="titulo-secao">Histórico de Alterações</div>
+        <button type="button" id="btn-toggle-hist" class="btn-toggle-bloco" aria-label="Expandir ou minimizar">▼</button>
+      </div>
+
+      <div id="conteudo-historico-alteracoes" class="conteudo-minimizado">
+        <div id="lista-historico-container" class="lista-historico"></div>
+      </div>
+    </div>
+
+    <!-- 5. Cadastro de Atribuições (Minimizado por padrão) -->
     <div class="bloco-card">
       <div class="header-card-toggle" onclick="alternarMinimizadoCadastroAtr()">
         <div class="titulo-secao">Cadastro de atribuições</div>
@@ -403,11 +542,16 @@
     const db = firebase.database();
     const auth = firebase.auth();
 
+    let usuarioAtualNome = "";
+
     auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
       .then(() => {
         auth.onAuthStateChanged((user) => {
           if (!user) {
             window.location.href = 'index.html'; 
+          } else {
+            let emailOuId = user.email || user.uid || "Desconhecido";
+            usuarioAtualNome = emailOuId.split('@')[0];
           }
         });
       })
@@ -417,7 +561,8 @@
 
     let BD_Acompanhamento = {
       adms: {},          
-      atribuicoes: {}    
+      atribuicoes: {},
+      historico: [] 
     };
 
     function alternarMinimizadoCadastroAtr() {
@@ -428,7 +573,39 @@
       btn.textContent = estaMinimizado ? '▼' : '▲';
     }
 
-    function salvarDados() {
+    function alternarMinimizadoHistorico() {
+      const conteudo = document.getElementById('conteudo-historico-alteracoes');
+      const btn = document.getElementById('btn-toggle-hist');
+      
+      const estaMinimizado = conteudo.classList.toggle('conteudo-minimizado');
+      btn.textContent = estaMinimizado ? '▼' : '▲';
+    }
+
+    function salvarDados(descricaoAcao) {
+      let nomeUsuario = usuarioAtualNome;
+      if (!nomeUsuario && auth.currentUser) {
+        let bruto = auth.currentUser.email || auth.currentUser.uid || "Desconhecido";
+        nomeUsuario = bruto.split('@')[0];
+      }
+      if (!nomeUsuario) nomeUsuario = "Desconhecido";
+
+      const dataFormatada = new Date().toLocaleString('pt-BR');
+
+      const novaAlteracao = {
+        usuario: nomeUsuario,
+        acao: descricaoAcao || "realizou uma alteração geral",
+        data: dataFormatada
+      };
+
+      let historicoAtual = BD_Acompanhamento.historico || [];
+      historicoAtual.unshift(novaAlteracao);
+
+      if (historicoAtual.length > 5) {
+        historicoAtual = historicoAtual.slice(0, 5);
+      }
+
+      BD_Acompanhamento.historico = historicoAtual;
+
       db.ref('acompanhamento_adms').set(BD_Acompanhamento);
     }
 
@@ -437,10 +614,11 @@
       if (dados) {
         BD_Acompanhamento = {
           adms: dados.adms || {},
-          atribuicoes: dados.atribuicoes || {}
+          atribuicoes: dados.atribuicoes || {},
+          historico: dados.historico || []
         };
       } else {
-        BD_Acompanhamento = { adms: {}, atribuicoes: {} };
+        BD_Acompanhamento = { adms: {}, atribuicoes: {}, historico: [] };
       }
       renderizarTudo();
     });
@@ -455,7 +633,7 @@
       if (!BD_Acompanhamento.adms) BD_Acompanhamento.adms = {};
       
       BD_Acompanhamento.adms[novoId] = { nome: nome };
-      salvarDados();
+      salvarDados(`cadastrou o ADM "${nome}"`);
       input.value = '';
     });
 
@@ -474,29 +652,50 @@
         contagem: 0
       };
 
-      salvarDados();
+      salvarDados(`cadastrou a atribuição "${nomeAtribuicao}"`);
       input.value = '';
     });
 
     window.atribuirAdmATarefa = function(idAtribuicao, valorSelecionado) {
       if (!BD_Acompanhamento.atribuicoes[idAtribuicao]) return;
 
+      const atr = BD_Acompanhamento.atribuicoes[idAtribuicao];
+      let nomeAdmDestino = "Ninguém";
+
       if (valorSelecionado === "todos") {
-        BD_Acompanhamento.atribuicoes[idAtribuicao].admId = "todos";
+        atr.admId = "todos";
+        nomeAdmDestino = "Todos";
       } else {
-        BD_Acompanhamento.atribuicoes[idAtribuicao].admId = valorSelecionado;
+        atr.admId = valorSelecionado;
+        if (BD_Acompanhamento.adms[valorSelecionado]) {
+          nomeAdmDestino = BD_Acompanhamento.adms[valorSelecionado].nome;
+        }
       }
 
-      salvarDados();
+      salvarDados(`vinculou a atribuição "${atr.nome}" para ${nomeAdmDestino}`);
     };
 
     window.alterarContador = function(idAtribuicao, delta) {
       if (BD_Acompanhamento.atribuicoes[idAtribuicao]) {
-        let atual = BD_Acompanhamento.atribuicoes[idAtribuicao].contagem || 0;
+        let atr = BD_Acompanhamento.atribuicoes[idAtribuicao];
+        let atual = atr.contagem || 0;
         let novo = atual + delta;
         if (novo < 0) novo = 0;
-        BD_Acompanhamento.atribuicoes[idAtribuicao].contagem = novo;
-        salvarDados();
+        atr.contagem = novo;
+
+        let operacaoTxt = delta > 0 ? `aumentou em 1 ponto a atribuição "${atr.nome}" (total: ${novo})` : `diminuiu em 1 ponto a atribuição "${atr.nome}" (total: ${novo})`;
+        salvarDados(operacaoTxt);
+      }
+    };
+
+    window.zerarTodosOsPontos = function() {
+      if (confirm("Tem certeza que deseja zerar a pontuação de todas as atribuições?")) {
+        if (BD_Acompanhamento.atribuicoes) {
+          Object.keys(BD_Acompanhamento.atribuicoes).forEach(idAtr => {
+            BD_Acompanhamento.atribuicoes[idAtr].contagem = 0;
+          });
+          salvarDados("zerou todos os pontos das atribuições");
+        }
       }
     };
 
@@ -504,17 +703,22 @@
       const atr = BD_Acompanhamento.atribuicoes[idAtribuicao];
       if (!atr) return;
 
-      const novoNome = prompt("Digite o novo nome para esta atribuição:", atr.nome);
+      const nomeAntigo = atr.nome;
+      const novoNome = prompt("Digite o novo nome para esta atribuição:", nomeAntigo);
       if (novoNome !== null && novoNome.trim() !== "") {
-        BD_Acompanhamento.atribuicoes[idAtribuicao].nome = novoNome.trim();
-        salvarDados();
+        atr.nome = novoNome.trim();
+        salvarDados(`renomeou a atribuição "${nomeAntigo}" para "${novoNome.trim()}"`);
       }
     };
 
     window.excluirAtribuicao = function(idAtribuicao) {
-      if (confirm("Deseja remover esta atribuição?")) {
+      const atr = BD_Acompanhamento.atribuicoes[idAtribuicao];
+      if (!atr) return;
+
+      if (confirm(`Deseja remover esta atribuição (${atr.nome})?`)) {
+        let nomeRemovido = atr.nome;
         delete BD_Acompanhamento.atribuicoes[idAtribuicao];
-        salvarDados();
+        salvarDados(`excluiu a atribuição "${nomeRemovido}"`);
       }
     };
 
@@ -522,10 +726,11 @@
       const adm = BD_Acompanhamento.adms[idAdm];
       if (!adm) return;
 
-      const novoNome = prompt("Digite o novo nome para este ADM:", adm.nome);
+      const nomeAntigo = adm.nome;
+      const novoNome = prompt("Digite o novo nome para este ADM:", nomeAntigo);
       if (novoNome !== null && novoNome.trim() !== "") {
-        BD_Acompanhamento.adms[idAdm].nome = novoNome.trim();
-        salvarDados();
+        adm.nome = novoNome.trim();
+        salvarDados(`renomeou o ADM "${nomeAntigo}" para "${novoNome.trim()}"`);
       }
     };
 
@@ -534,6 +739,7 @@
       if (!adm) return;
 
       if (confirm(`Deseja remover o ADM "${adm.nome}"? As atribuições vinculadas voltarão a ficar sem responsável.`)) {
+        let nomeRemovido = adm.nome;
         if (BD_Acompanhamento.atribuicoes) {
           Object.keys(BD_Acompanhamento.atribuicoes).forEach(idAtr => {
             if (BD_Acompanhamento.atribuicoes[idAtr].admId === idAdm) {
@@ -542,13 +748,88 @@
           });
         }
         delete BD_Acompanhamento.adms[idAdm];
-        salvarDados();
+        salvarDados(`excluiu o ADM "${nomeRemovido}"`);
       }
     };
 
     function renderizarTudo() {
+      renderizarRanking();
       renderizarPontuacoes();
       renderizarCadastroAtribuicoes();
+      renderizarHistorico();
+    }
+
+    function renderizarHistorico() {
+      const container = document.getElementById('lista-historico-container');
+      container.innerHTML = '';
+
+      const historico = BD_Acompanhamento.historico || [];
+      if (historico.length === 0) {
+        container.innerHTML = `<div class="mensag-vazia" style="text-align: left;">Nenhuma alteração registrada ainda.</div>`;
+        return;
+      }
+
+      historico.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'item-historico';
+        div.innerHTML = `
+          <span class="usuario-acao">@${item.usuario}</span> ${item.acao}
+          <span class="data-acao">${item.data}</span>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderizarRanking() {
+      const container = document.getElementById('container-ranking');
+      container.innerHTML = '';
+
+      let admsEntries = Object.entries(BD_Acompanhamento.adms || {});
+
+      if (admsEntries.length === 0) {
+        container.innerHTML = `<div class="mensag-vazia" style="text-align: left;">Nenhum ADM cadastrado.</div>`;
+        return;
+      }
+
+      let listaRanking = admsEntries.map(([idAdm, adm]) => {
+        let totalPontos = 0;
+        Object.values(BD_Acompanhamento.atribuicoes || {}).forEach(atr => {
+          if (atr.admId === idAdm || atr.admId === "todos") {
+            totalPontos += (atr.contagem || 0);
+          }
+        });
+        return {
+          id: idAdm,
+          nome: adm.nome,
+          pontos: totalPontos
+        };
+      });
+
+      listaRanking.sort((a, b) => {
+        if (b.pontos !== a.pontos) {
+          return b.pontos - a.pontos;
+        }
+        return a.nome.localeCompare(b.nome);
+      });
+
+      const sufixosPosicao = ['1º', '2º', '3º', '4º', '5º', '6º', '7º', '8º', '9º', '10º'];
+
+      listaRanking.forEach((item, index) => {
+        const divItem = document.createElement('div');
+        divItem.className = 'item-ranking';
+
+        const textoPosicao = sufixosPosicao[index] || `${index + 1}º`;
+
+        divItem.innerHTML = `
+          <div class="info-posicao-adm">
+            <span class="badge-posicao">${textoPosicao}</span>
+            <span class="nome-adm-ranking">${item.nome}</span>
+          </div>
+          <span class="pontos-adm-ranking">${item.pontos} pts</span>
+        `;
+
+        container.appendChild(divItem);
+      });
     }
 
     function renderizarPontuacoes() {
@@ -576,6 +857,9 @@
         } else {
           htmlAtribs = `<div class="lista-atribuicoes-adm">`;
           atribsDoAdm.forEach(([idAtr, atr]) => {
+            // Verifica se está atribuído a "todos" para exibir a tag PLUS
+            const tagPlusHtml = atr.admId === "todos" ? `<span class="tag-plus">PLUS</span>` : '';
+
             htmlAtribs += `
               <div class="item-atribuicao-adm">
                 <div class="bloco-contador-item">
@@ -584,6 +868,7 @@
                   <button class="btn-seta-up" onclick="alterarContador('${idAtr}', 1)">►</button>
                 </div>
                 <span class="texto-atribuicao" title="${atr.nome}">${atr.nome}</span>
+                ${tagPlusHtml}
               </div>
             `;
           });
