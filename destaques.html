@@ -504,6 +504,39 @@
     let BD_HistoricoDestaques = {};
     let filtroAtual = 'todos';
 
+    // Função centralizada para registrar histórico de alterações na tabela compartilhada
+    function registrarAcaoNoHistorico(descricaoAcao) {
+      let nomeUsuario = "Desconhecido";
+      if (auth.currentUser) {
+        let bruto = auth.currentUser.email || auth.currentUser.uid || "Desconhecido";
+        nomeUsuario = bruto.split('@')[0];
+      }
+
+      const dataFormatada = new Date().toLocaleString('pt-BR');
+
+      const novaAlteracao = {
+        usuario: nomeUsuario,
+        acao: `(Destaques) ${descricaoAcao}`,
+        data: dataFormatada
+      };
+
+      db.ref('acompanhamento_adms').once('value').then((snapshot) => {
+        let dadosAtuais = snapshot.val() || { adms: {}, atribuicoes: {}, historico: [] };
+        let historicoAtual = dadosAtuais.historico || [];
+
+        historicoAtual.unshift(novaAlteracao);
+
+        if (historicoAtual.length > 5) {
+          historicoAtual = historicoAtual.slice(0, 5);
+        }
+
+        dadosAtuais.historico = historicoAtual;
+        db.ref('acompanhamento_adms').set(dadosAtuais);
+      }).catch((error) => {
+        console.error("Erro ao gravar histórico no Firebase:", error);
+      });
+    }
+
     // Preenche a data de hoje automaticamente no input de data ao carregar a página
     document.getElementById('data-destaques').valueAsDate = new Date();
 
@@ -563,6 +596,7 @@
       };
 
       salvarHistoricoDestaques();
+      registrarAcaoNoHistorico(`registrou os destaques do dia ${dataFormatada}`);
 
       document.getElementById('primeiro-lugar').value = '';
       document.getElementById('segundo-lugar').value = '';
@@ -646,7 +680,7 @@
         bloco.innerHTML = `
           <div class="historico-data-titulo">
             <span>📅 ${reg.data}</span>
-            <button class="btn-deletar-historico" onclick="excluirHistorico('${chaveId}')" title="Excluir Registro">Excluir</button>
+            <button class="btn-deletar-historico" onclick="excluirHistorico('${chaveId}', '${reg.data}')" title="Excluir Registro">Excluir</button>
           </div>
           <div class="historico-item-linha"><span class="historico-item-cargo">1º Lugar:</span><span class="historico-item-nome">${reg.primeiro}</span></div>
           <div class="historico-item-linha"><span class="historico-item-cargo">2º Lugar:</span><span class="historico-item-nome">${reg.segundo}</span></div>
@@ -734,10 +768,11 @@
       });
     }
 
-    window.excluirHistorico = function(chaveId) {
+    window.excluirHistorico = function(chaveId, dataReg) {
       if (confirm("Deseja remover este registro de destaques permanentemente?")) {
         delete BD_HistoricoDestaques[chaveId];
         salvarHistoricoDestaques();
+        registrarAcaoNoHistorico(`excluiu os destaques do dia ${dataReg || 'desconhecido'}`);
       }
     }
   </script>
