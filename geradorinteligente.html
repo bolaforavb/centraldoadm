@@ -771,8 +771,8 @@
 
         historicoAtual.unshift(novaAlteracao);
 
-        if (historicoAtual.length > 5) {
-          historicoAtual = historicoAtual.slice(0, 5);
+        if (historicoAtual.length > 20) {
+          historicoAtual = historicoAtual.slice(0, 20);
         }
 
         dadosAtuais.historico = historicoAtual;
