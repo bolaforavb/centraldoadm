@@ -684,8 +684,8 @@
       let historicoAtual = BD_Acompanhamento.historico || [];
       historicoAtual.unshift(novaAlteracao);
 
-      if (historicoAtual.length > 20) {
-        historicoAtual = historicoAtual.slice(0, 20);
+      if (historicoAtual.length > 30) {
+        historicoAtual = historicoAtual.slice(0, 30);
       }
 
       BD_Acompanhamento.historico = historicoAtual;
