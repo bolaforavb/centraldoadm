@@ -566,6 +566,7 @@ td { font-size: 1.1rem; font-weight: bold; }
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <!-- html2pdf.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
@@ -587,9 +588,10 @@ td { font-size: 1.1rem; font-weight: bold; }
     let idEmEdicao = null;
     let jogoPinadoId = null;
 
-    // Função para registrar histórico de alterações exclusivamente na aba Elenco & Times
+    // Função de registro no histórico (apenas aba Elenco & Times, com captura segura de usuário livre)
     function registrarAcaoNoHistorico(descricaoAcao) {
         let nomeUsuario = "Desconhecido";
+        
         if (auth && auth.currentUser) {
             let bruto = auth.currentUser.email || auth.currentUser.uid || "Desconhecido";
             nomeUsuario = bruto.split('@')[0];
@@ -1437,7 +1439,7 @@ td { font-size: 1.1rem; font-weight: bold; }
                 <div style="border: 1px solid #ddd; border-top: 4px solid ${corTime}; padding: 10px; border-radius: 4px; background-color: #fbfbfb;">
                     <div style="font-weight: bold; color: ${corTime}; margin-bottom: 5px; text-transform: uppercase;">TIME ${nomeTime}</div>
                     <ul style="padding-left: 15px; margin: 0; line-height: 1.4;">
-                        ${jogadoresHtml}
+                        ${jog jogadoresHtml}
                     </ul>
                 </div>
             `;
