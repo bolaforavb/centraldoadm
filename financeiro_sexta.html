@@ -662,6 +662,39 @@
     const configFiltroRef = db.ref('configFiltro_sexta');
     const configVencimentoRef = db.ref('configVencimento_sexta');
 
+    // Função centralizada para registrar histórico de alterações na tabela compartilhada
+    function registrarAcaoNoHistorico(descricaoAcao) {
+      let nomeUsuario = "Desconhecido";
+      if (auth.currentUser) {
+        let bruto = auth.currentUser.email || auth.currentUser.uid || "Desconhecido";
+        nomeUsuario = bruto.split('@')[0];
+      }
+
+      const dataFormatada = new Date().toLocaleString('pt-BR');
+
+      const novaAlteracao = {
+        usuario: nomeUsuario,
+        acao: `(Sexta) ${descricaoAcao}`,
+        data: dataFormatada
+      };
+
+      db.ref('acompanhamento_adms').once('value').then((snapshot) => {
+        let dadosAtuais = snapshot.val() || { adms: {}, atribuicoes: {}, historico: [] };
+        let historicoAtual = dadosAtuais.historico || [];
+
+        historicoAtual.unshift(novaAlteracao);
+
+        if (historicoAtual.length > 5) {
+          historicoAtual = historicoAtual.slice(0, 5);
+        }
+
+        dadosAtuais.historico = historicoAtual;
+        db.ref('acompanhamento_adms').set(dadosAtuais);
+      }).catch((error) => {
+        console.error("Erro ao gravar histórico no Firebase:", error);
+      });
+    }
+
     auth.onAuthStateChanged((user) => {
       const elementosAdmin = document.querySelectorAll('.admin-only');
       const logoutDiv = document.getElementById('auth-logged-in');
@@ -699,11 +732,14 @@
     document.getElementById('mes-select').addEventListener('change', (e) => {
       if (!usuarioAutenticado) return;
       configFiltroRef.update({ mes: e.target.value });
+      const nomeMes = document.getElementById('mes-select').options[document.getElementById('mes-select').selectedIndex].text;
+      registrarAcaoNoHistorico(`alterou o mês de pagamentos para ${nomeMes}`);
     });
 
     document.getElementById('ano-select').addEventListener('change', (e) => {
       if (!usuarioAutenticado) return;
       configFiltroRef.update({ ano: e.target.value });
+      registrarAcaoNoHistorico(`alterou o ano de pagamentos para ${e.target.value}`);
     });
 
     configFiltroRef.on('value', (snapshot) => {
@@ -717,11 +753,14 @@
     document.getElementById('dia-devedores-select').addEventListener('change', (e) => {
       if (!usuarioAutenticado) return;
       configVencimentoRef.update({ dia: e.target.value });
+      registrarAcaoNoHistorico(`alterou o dia de vencimento para ${e.target.value}`);
     });
 
     document.getElementById('mes-devedores-select').addEventListener('change', (e) => {
       if (!usuarioAutenticado) return;
       configVencimentoRef.update({ mes: e.target.value });
+      const nomeMes = document.getElementById('mes-devedores-select').options[document.getElementById('mes-devedores-select').selectedIndex].text;
+      registrarAcaoNoHistorico(`alterou o mês de vencimento para ${nomeMes}`);
     });
 
     configVencimentoRef.on('value', (snapshot) => {
@@ -770,7 +809,9 @@
       if (!usuarioAutenticado) return;
       const novoValor = prompt("Digite o novo valor do saldo (ex: 150,00):");
       if (novoValor !== null && novoValor.trim() !== "") {
-        saldoCaixaRef.set(novoValor.trim());
+        const valorTrim = novoValor.trim();
+        saldoCaixaRef.set(valorTrim);
+        registrarAcaoNoHistorico(`atualizou o saldo em caixa para R$ ${valorTrim}`);
       }
     }
 
@@ -862,7 +903,7 @@
           let botoesAcoesHtml = '';
           if (usuarioAutenticado) {
             botoesAcoesHtml = `
-              <button class="btn-vaga editavel ${tipoVaga}" onclick="toggleVaga('${item.key}', '${tipoVaga}')">
+              <button class="btn-vaga editavel ${tipoVaga}" onclick="toggleVaga('${item.key}', '${tipoVaga}', '${item.nome}')">
                 ${tipoVaga === 'temporaria' ? 'VAGA TEMPORÁRIA' : 'VAGA FIXA'}
               </button>
               <button class="btn-rename" onclick="renomearItem('${item.key}', '${item.nome}')" title="Renomear">✏️</button>
@@ -878,7 +919,7 @@
 
           div.innerHTML = `
             <div class="item-conteudo">
-              <button class="btn-pagamento ${usuarioAutenticado ? 'editavel' : ''} ${item.pago ? 'ativo' : ''}" ${usuarioAutenticado ? `onclick="toggleCheck('${item.key}', ${item.pago})"` : ''}>$</button>
+              <button class="btn-pagamento ${usuarioAutenticado ? 'editavel' : ''} ${item.pago ? 'ativo' : ''}" ${usuarioAutenticado ? `onclick="toggleCheck('${item.key}', ${item.pago}, '${item.nome}')"` : ''}>$</button>
               <span><strong>${index + 1}.</strong> ${item.nome}</span>
             </div>
             <div class="item-acoes">
@@ -941,7 +982,7 @@
           let botoesAcoesHtml = '';
           if (usuarioAutenticado) {
             botoesAcoesHtml = `
-              <button class="btn-pausa-status editavel ${statusPausa === '0%' ? 'zero' : ''}" onclick="togglePausaStatus('${item.key}', '${statusPausa}')">
+              <button class="btn-pausa-status editavel ${statusPausa === '0%' ? 'zero' : ''}" onclick="togglePausaStatus('${item.key}', '${statusPausa}', '${item.nome}')">
                 ${statusPausa} PAGO
               </button>
               <button class="btn-rename" onclick="renomearPausa('${item.key}', '${item.nome}')" title="Renomear">✏️</button>
@@ -1046,10 +1087,10 @@
           let botoesAcoesHtml = '';
           if (usuarioAutenticado) {
             botoesAcoesHtml = `
-              <button class="btn-situacao-entrada editavel ${situacaoClass}" onclick="toggleSituacaoEntrada('${item.key}', '${situacaoAtual}')">
+              <button class="btn-situacao-entrada editavel ${situacaoClass}" onclick="toggleSituacaoEntrada('${item.key}', '${situacaoAtual}', '${item.mensalista || item.diarista || ''}')">
                 ${situacaoAtual.toUpperCase()}
               </button>
-              <button class="btn-delete" onclick="removerEntrada('${item.key}')" title="Excluir">🗑️</button>
+              <button class="btn-delete" onclick="removerEntrada('${item.key}', '${item.mensalista || item.diarista || ''}')" title="Excluir">🗑️</button>
             `;
           } else {
             botoesAcoesHtml = `
@@ -1091,7 +1132,7 @@
 
           let botaoDeletarHtml = '';
           if (usuarioAutenticado) {
-            botaoDeletarHtml = `<button class="btn-delete" onclick="removerSaida('${item.key}')" title="Excluir">🗑️</button>`;
+            botaoDeletarHtml = `<button class="btn-delete" onclick="removerSaida('${item.key}', '${item.referencia}')" title="Excluir">🗑️</button>`;
           }
 
           div.innerHTML = `
@@ -1110,10 +1151,22 @@
       }
     }
 
-    function toggleCheck(key, status) { if (!usuarioAutenticado) return; pagamentosRef.child(key).update({ pago: !status }); }
-    function toggleVaga(key, tipo) { if (!usuarioAutenticado) return; pagamentosRef.child(key).update({ tipoVaga: tipo === 'temporaria' ? 'fixa' : 'temporaria' }); }
+    function toggleCheck(key, status, nome) { 
+      if (!usuarioAutenticado) return; 
+      const novoStatus = !status;
+      pagamentosRef.child(key).update({ pago: novoStatus }); 
+      const acaoTxt = novoStatus ? `marcou pagamento como PAGO para "${nome}"` : `marcou pagamento como PENDENTE para "${nome}"`;
+      registrarAcaoNoHistorico(acaoTxt);
+    }
+
+    function toggleVaga(key, tipo, nome) { 
+      if (!usuarioAutenticado) return; 
+      const novoTipo = tipo === 'temporaria' ? 'fixa' : 'temporaria';
+      pagamentosRef.child(key).update({ tipoVaga: novoTipo }); 
+      registrarAcaoNoHistorico(`alterou o tipo de vaga de "${nome}" para ${novoTipo === 'temporaria' ? 'TEMPORÁRIA' : 'FIXA'}`);
+    }
     
-    function toggleSituacaoEntrada(key, situacaoAtual) {
+    function toggleSituacaoEntrada(key, situacaoAtual, nomeRef) {
       if (!usuarioAutenticado) return;
       let novaSituacao = 'Pago';
       if (situacaoAtual === 'Pago') {
@@ -1124,12 +1177,14 @@
         novaSituacao = 'Pago';
       }
       entradasRef.child(key).update({ situacao: novaSituacao });
+      registrarAcaoNoHistorico(`alterou situação da entrada ${nomeRef ? `(${nomeRef})` : ''} para "${novaSituacao}"`);
     }
 
-    function togglePausaStatus(key, statusAtual) {
+    function togglePausaStatus(key, statusAtual, nome) {
       if (!usuarioAutenticado) return;
       const novoStatus = statusAtual === '50%' ? '0%' : '50%';
       mensalistasPausaRef.child(key).update({ statusPausa: novoStatus });
+      registrarAcaoNoHistorico(`alterou o status de pausa de "${nome}" para ${novoStatus} PAGO`);
     }
     
     function copiarPix(texto) {
@@ -1153,16 +1208,26 @@
       }
 
       pagamentosRef.push({ nome: nomeTrim, pago: false, tipoVaga: 'fixa' });
+      registrarAcaoNoHistorico(`adicionou o mensalista "${nomeTrim}" na relação de pagamentos`);
       input.value = '';
     }
+
     function renomearItem(key, nome) {
       if (!usuarioAutenticado) return;
       const novo = prompt("Novo nome:", nome);
-      if (novo && novo.trim()) pagamentosRef.child(key).update({ nome: novo.trim() });
+      if (novo && novo.trim()) {
+        const novoTrim = novo.trim();
+        pagamentosRef.child(key).update({ nome: novoTrim });
+        registrarAcaoNoHistorico(`renomeou o mensalista "${nome}" para "${novoTrim}"`);
+      }
     }
+
     function removerItem(key, nome) { 
       if (!usuarioAutenticado) return;
-      if(confirm(`Excluir ${nome}?`)) pagamentosRef.child(key).remove(); 
+      if(confirm(`Excluir ${nome}?`)) {
+        pagamentosRef.child(key).remove();
+        registrarAcaoNoHistorico(`removeu o mensalista "${nome}" da relação de pagamentos`);
+      }
     }
 
     function adicionarSaldo() {
@@ -1175,23 +1240,32 @@
       if (!nomeTrim) return;
 
       saldoPositivoRef.push({ nome: nomeTrim, valor: valorTrim || '0,00' });
+      registrarAcaoNoHistorico(`adicionou saldo positivo para "${nomeTrim}" no valor de R$ ${valorTrim || '0,00'}`);
       inputNome.value = '';
       inputValor.value = '';
     }
+
     function renomearSaldo(key, nomeAtual, valorAtual) {
       if (!usuarioAutenticado) return;
       const novoNome = prompt("Novo nome:", nomeAtual);
       if (novoNome && novoNome.trim()) {
         const novoValor = prompt("Novo valor (R$):", valorAtual);
+        const nomeFinal = novoNome.trim();
+        const valorFinal = novoValor !== null ? novoValor.trim() : valorAtual;
         saldoPositivoRef.child(key).update({ 
-          nome: novoNome.trim(), 
-          valor: novoValor !== null ? novoValor.trim() : valorAtual 
+          nome: nomeFinal, 
+          valor: valorFinal 
         });
+        registrarAcaoNoHistorico(`atualizou saldo positivo de "${nomeAtual}" para "${nomeFinal}" (R$ ${valorFinal})`);
       }
     }
+
     function removerSaldo(key, nome) {
       if (!usuarioAutenticado) return;
-      if (confirm(`Excluir ${nome}?`)) saldoPositivoRef.child(key).remove();
+      if (confirm(`Excluir ${nome}?`)) {
+        saldoPositivoRef.child(key).remove();
+        registrarAcaoNoHistorico(`removeu o registro de saldo positivo de "${nome}"`);
+      }
     }
 
     function adicionarPausa() {
@@ -1202,16 +1276,26 @@
       if (!nomeTrim) return;
 
       mensalistasPausaRef.push({ nome: nomeTrim, statusPausa: '50%' });
+      registrarAcaoNoHistorico(`adicionou "${nomeTrim}" aos mensalistas em pausa`);
       input.value = '';
     }
+
     function renomearPausa(key, nomeAtual) {
       if (!usuarioAutenticado) return;
       const novo = prompt("Novo nome:", nomeAtual);
-      if (novo && novo.trim()) mensalistasPausaRef.child(key).update({ nome: novo.trim() });
+      if (novo && novo.trim()) {
+        const novoTrim = novo.trim();
+        mensalistasPausaRef.child(key).update({ nome: novoTrim });
+        registrarAcaoNoHistorico(`renomeou o mensalista em pausa de "${nomeAtual}" para "${novoTrim}"`);
+      }
     }
+
     function removerPausa(key, nome) {
       if (!usuarioAutenticado) return;
-      if (confirm(`Excluir ${nome}?`)) mensalistasPausaRef.child(key).remove();
+      if (confirm(`Excluir ${nome}?`)) {
+        mensalistasPausaRef.child(key).remove();
+        registrarAcaoNoHistorico(`removeu "${nome}" dos mensalistas em pausa`);
+      }
     }
 
     function adicionarEspera() {
@@ -1233,18 +1317,26 @@
       const horaAtual = `${horas}:${minutos}:${segundos}`;
 
       listaEsperaRef.push({ nome: nomeTrim, data: dataAtual, hora: horaAtual });
+      registrarAcaoNoHistorico(`adicionou "${nomeTrim}" à lista de espera`);
       inputNome.value = '';
     }
+
     function renomearEspera(key, nomeAtual) {
       if (!usuarioAutenticado) return;
       const novoNome = prompt("Novo nome:", nomeAtual);
       if (novoNome && novoNome.trim()) {
-        listaEsperaRef.child(key).update({ nome: novoNome.trim() });
+        const novoTrim = novoNome.trim();
+        listaEsperaRef.child(key).update({ nome: novoTrim });
+        registrarAcaoNoHistorico(`renomeou "${nomeAtual}" na lista de espera para "${novoTrim}"`);
       }
     }
+
     function removerEspera(key, nome) {
       if (!usuarioAutenticado) return;
-      if (confirm(`Excluir ${nome} da lista de espera?`)) listaEsperaRef.child(key).remove();
+      if (confirm(`Excluir ${nome} da lista de espera?`)) {
+        listaEsperaRef.child(key).remove();
+        registrarAcaoNoHistorico(`removeu "${nome}" da lista de espera`);
+      }
     }
 
     function adicionarEntrada() {
@@ -1275,15 +1367,21 @@
         situacao: situacaoSelect
       });
 
+      const rotuloEntrada = mensalistaSelect || diaristaInput;
+      registrarAcaoNoHistorico(`cadastrou nova entrada para "${rotuloEntrada}" (${situacaoSelect})`);
+
       document.getElementById('entrada-data').value = '';
       document.getElementById('nova-entrada-mensalista').value = '';
       document.getElementById('nova-entrada-diarista').value = '';
       document.getElementById('nova-entrada-situacao').value = '';
     }
 
-    function removerEntrada(key) {
+    function removerEntrada(key, rotulo) {
       if (!usuarioAutenticado) return;
-      if (confirm("Excluir esta entrada?")) entradasRef.child(key).remove();
+      if (confirm("Excluir esta entrada?")) {
+        entradasRef.child(key).remove();
+        registrarAcaoNoHistorico(`excluiu a entrada ${rotulo ? `(${rotulo})` : ''}`);
+      }
     }
 
     function prepararArquivoSaida(input) {
@@ -1328,6 +1426,8 @@
         arquivo: arquivoSaidaTemp || ''
       });
 
+      registrarAcaoNoHistorico(`cadastrou nova saída: "${referencia} - ${descricao}"`);
+
       document.getElementById('saida-referencia').value = '';
       document.getElementById('saida-descricao').value = '';
       document.getElementById('saida-observacao').value = '';
@@ -1341,9 +1441,12 @@
       btnEnviar.style.fontWeight = "normal";
     }
 
-    function removerSaida(key) {
+    function removerSaida(key, ref) {
       if (!usuarioAutenticado) return;
-      if (confirm("Excluir esta saída?")) saidasRef.child(key).remove();
+      if (confirm("Excluir esta saída?")) {
+        saidasRef.child(key).remove();
+        registrarAcaoNoHistorico(`excluiu a saída "${ref || 'sem referência'}"`);
+      }
     }
 
     function abrirModalImagem(url) {
