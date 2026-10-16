@@ -577,6 +577,7 @@ td { font-size: 1.1rem; font-weight: bold; }
 
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
+    const auth = firebase.auth ? firebase.auth() : null;
 
     const times = ['Amarelo', 'Rosa', 'Azul', 'Roxo'];
     let partidas = [];
@@ -585,6 +586,39 @@ td { font-size: 1.1rem; font-weight: bold; }
     let elenco = [];
     let idEmEdicao = null;
     let jogoPinadoId = null;
+
+    // Função para registrar histórico de alterações exclusivamente na aba Elenco & Times
+    function registrarAcaoNoHistorico(descricaoAcao) {
+        let nomeUsuario = "Desconhecido";
+        if (auth && auth.currentUser) {
+            let bruto = auth.currentUser.email || auth.currentUser.uid || "Desconhecido";
+            nomeUsuario = bruto.split('@')[0];
+        }
+
+        const dataFormatada = new Date().toLocaleString('pt-BR');
+
+        const novaAlteracao = {
+            usuario: nomeUsuario,
+            acao: `(Elenco & Times) ${descricaoAcao}`,
+            data: dataFormatada
+        };
+
+        database.ref('acompanhamento_adms').once('value').then((snapshot) => {
+            let dadosAtuais = snapshot.val() || { adms: {}, atribuicoes: {}, historico: [] };
+            let historicoAtual = dadosAtuais.historico || [];
+
+            historicoAtual.unshift(novaAlteracao);
+
+            if (historicoAtual.length > 5) {
+                historicoAtual = historicoAtual.slice(0, 5);
+            }
+
+            dadosAtuais.historico = historicoAtual;
+            database.ref('acompanhamento_adms').set(dadosAtuais);
+        }).catch((error) => {
+            console.error("Erro ao gravar histórico no Firebase:", error);
+        });
+    }
 
     // Configurar atalhos para a tecla Enter
     document.addEventListener('DOMContentLoaded', () => {
@@ -1143,6 +1177,7 @@ td { font-size: 1.1rem; font-weight: bold; }
             jogoPinadoId = null;
             
             mudarAba('elenco');
+            registrarAcaoNoHistorico("iniciou um novo torneio (resetou placares e times)");
             mostrarAviso("Novo torneio iniciado! Os cadastros foram mantidos.", "sucesso");
         }
     }
@@ -1173,6 +1208,7 @@ td { font-size: 1.1rem; font-weight: bold; }
             btnSalvar.style.backgroundColor = ""; 
             btnSalvar.style.color = "";
             
+            registrarAcaoNoHistorico(`atualizou o cadastro do(a) jogador(a) "${nomeCadastrar}"`);
             mostrarAviso("Cadastro atualizado com sucesso!", "sucesso");
 
         } else {
@@ -1188,6 +1224,7 @@ td { font-size: 1.1rem; font-weight: bold; }
                 time: 'Sem Time'
             };
             elenco.push(novoJogador);
+            registrarAcaoNoHistorico(`cadastrou o(a) novo(a) jogador(a) "${nomeCadastrar}" (${tipoInput.value})`);
             mostrarAviso("Jogador cadastrado com sucesso!", "sucesso");
         }
 
@@ -1241,22 +1278,29 @@ td { font-size: 1.1rem; font-weight: bold; }
         inputJogador.value = '';
         
         salvarElencoNuvem();
+        registrarAcaoNoHistorico(`escalou "${jogador.nome}" no Time ${timeEscolhido}`);
         mostrarAviso(`${jogador.nome} escalado no time ${timeEscolhido}!`, "sucesso");
     }
 
     function removerDoTime(id) {
         const jogador = elenco.find(j => j.id === id);
         if (jogador) {
+            let nomeAntigo = jogador.nome;
+            let timeAntigo = jogador.time;
             jogador.presente = false;
             jogador.time = 'Sem Time';
             salvarElencoNuvem();
+            registrarAcaoNoHistorico(`removeu "${nomeAntigo}" do Time ${timeAntigo}`);
         }
     }
 
     function removerJogador(id) {
+        const jogador = elenco.find(j => j.id === id);
         if(confirm("Tem certeza que deseja excluir este jogador do banco de dados permanentemente?")) {
+            let nomeRemovido = jogador ? jogador.nome : id;
             elenco = elenco.filter(j => j.id !== id);
             salvarElencoNuvem();
+            registrarAcaoNoHistorico(`excluiu permanentemente o(a) jogador(a) "${nomeRemovido}" do sistema`);
         }
     }
 
