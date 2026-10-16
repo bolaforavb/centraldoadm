@@ -303,7 +303,13 @@
       color: #12364e;
       border-bottom: 1px solid rgba(0,0,0,0.1);
       padding-bottom: 6px;
-      margin-bottom: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .header-adm-minimizado {
+      border-bottom: none;
+      padding-bottom: 0;
     }
 
     .acoes-header-adm {
@@ -341,6 +347,7 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
+      margin-top: 8px;
     }
 
     .item-atribuicao-adm {
@@ -425,7 +432,7 @@
       background-color: rgba(217, 48, 37, 0.1);
     }
 
-    /* Lista do Cadastro de Atribuições */
+    /* Lista do Gerenciamento de Atribuições */
     .lista-cadastro-atribuicoes {
       display: flex;
       flex-direction: column;
@@ -514,13 +521,21 @@
       <div id="container-ranking" class="lista-ranking"></div>
     </div>
 
-    <!-- 3. Atribuições e Pontuações -->
+    <!-- 3. Bloco Colapsável: Atribuições e Pontuações -->
     <div class="bloco-card">
-      <div class="header-card-com-acao">
-        <div class="titulo-secao">Atribuições e pontuações</div>
-        <button type="button" class="btn-zerar-pontos" onclick="zerarTodosOsPontos()">ZERAR</button>
+      <div class="header-card-toggle" onclick="alternarMinimizadoPontuacoes()">
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+          <div class="titulo-secao">Atribuições e pontuações</div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button type="button" class="btn-zerar-pontos" onclick="event.stopPropagation(); zerarTodosOsPontos()">ZERAR</button>
+            <button type="button" id="btn-toggle-pont" class="btn-toggle-bloco" aria-label="Expandir ou minimizar">▼</button>
+          </div>
+        </div>
       </div>
-      <div id="container-pontuacoes" style="margin-top: 12px;"></div>
+
+      <div id="conteudo-atribuicoes-pontuacoes" class="conteudo-minimizado">
+        <div id="container-pontuacoes" style="margin-top: 12px;"></div>
+      </div>
     </div>
 
     <!-- 4. Bloco Colapsável: Histórico de Alterações -->
@@ -537,10 +552,10 @@
       </div>
     </div>
 
-    <!-- 5. Cadastro de Atribuições (Minimizado por padrão) -->
+    <!-- 5. Gerenciamento de Atribuições (Minimizado por padrão) -->
     <div class="bloco-card">
       <div class="header-card-toggle" onclick="alternarMinimizadoCadastroAtr()">
-        <div class="titulo-secao">Cadastro de atribuições</div>
+        <div class="titulo-secao">Gerenciamento de atribuições</div>
         <button type="button" id="btn-toggle-atr" class="btn-toggle-bloco" aria-label="Expandir ou minimizar">▼</button>
       </div>
 
@@ -606,6 +621,31 @@
       historico: [] 
     };
 
+    function alternarMinimizadoPontuacoes() {
+      const conteudo = document.getElementById('conteudo-atribuicoes-pontuacoes');
+      const btn = document.getElementById('btn-toggle-pont');
+      
+      const estaMinimizado = conteudo.classList.toggle('conteudo-minimizado');
+      btn.textContent = estaMinimizado ? '▼' : '▲';
+    }
+
+    function alternarMinimizadoAdmCard(idAdm) {
+      const conteudo = document.getElementById(`conteudo-adm-${idAdm}`);
+      const btn = document.getElementById(`btn-toggle-adm-${idAdm}`);
+      const header = document.getElementById(`header-adm-${idAdm}`);
+      
+      if (!conteudo || !btn) return;
+
+      const estaMinimizado = conteudo.classList.toggle('conteudo-minimizado');
+      btn.textContent = estaMinimizado ? '▼' : '▲';
+
+      if (estaMinimizado) {
+        header.classList.add('header-adm-minimizado');
+      } else {
+        header.classList.remove('header-adm-minimizado');
+      }
+    }
+
     function alternarMinimizadoCadastroAtr() {
       const conteudo = document.getElementById('conteudo-cadastro-atribuicoes');
       const btn = document.getElementById('btn-toggle-atr');
@@ -641,7 +681,6 @@
       let historicoAtual = BD_Acompanhamento.historico || [];
       historicoAtual.unshift(novaAlteracao);
 
-      // Alterado para manter até 20 registros armazenados no Firebase
       if (historicoAtual.length > 20) {
         historicoAtual = historicoAtual.slice(0, 20);
       }
@@ -843,7 +882,6 @@
         container.appendChild(div);
       });
 
-      // Renderiza os botões de navegação da paginação
       const btnAnteriorHtml = `<button class="btn-paginacao" onclick="mudarPaginaHistorico(-1)" ${paginaHistoricoAtual === 1 ? 'disabled' : ''}>◀ Anterior</button>`;
       const spanInfoHtml = `<span class="info-paginacao">Página ${paginaHistoricoAtual} de ${totalPaginas}</span>`;
       const btnProximoHtml = `<button class="btn-paginacao" onclick="mudarPaginaHistorico(1)" ${paginaHistoricoAtual === totalPaginas ? 'disabled' : ''}>Próxima ▶</button>`;
@@ -946,14 +984,17 @@
         }
 
         card.innerHTML = `
-          <div class="header-adm">
+          <div class="header-adm header-adm-minimizado" id="header-adm-${idAdm}" onclick="alternarMinimizadoAdmCard('${idAdm}')">
             <span>${adm.nome}</span>
-            <div class="acoes-header-adm">
+            <div class="acoes-header-adm" onclick="event.stopPropagation()">
               <button class="btn-acao-adm btn-renomear-adm" onclick="renomearAdm('${idAdm}')" title="Renomear ADM">✏️</button>
               <button class="btn-acao-adm btn-deletar-adm" onclick="excluirAdm('${idAdm}')" title="Excluir ADM">✕</button>
+              <button type="button" id="btn-toggle-adm-${idAdm}" class="btn-toggle-bloco" onclick="event.stopPropagation(); alternarMinimizadoAdmCard('${idAdm}')" aria-label="Expandir ou minimizar">▼</button>
             </div>
           </div>
-          ${htmlAtribs}
+          <div id="conteudo-adm-${idAdm}" class="conteudo-minimizado">
+            ${htmlAtribs}
+          </div>
         `;
 
         container.appendChild(card);
