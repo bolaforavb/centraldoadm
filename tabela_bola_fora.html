@@ -588,7 +588,6 @@ td { font-size: 1.1rem; font-weight: bold; }
     let idEmEdicao = null;
     let jogoPinadoId = null;
 
-    // Função de registro no histórico (apenas aba Elenco & Times, com captura segura de usuário livre)
     function registrarAcaoNoHistorico(descricaoAcao) {
         let nomeUsuario = "Desconhecido";
         
@@ -622,7 +621,6 @@ td { font-size: 1.1rem; font-weight: bold; }
         });
     }
 
-    // Configurar atalhos para a tecla Enter
     document.addEventListener('DOMContentLoaded', () => {
         const inputNovoNome = document.getElementById('novo-nome');
         const selectNovoTipo = document.getElementById('novo-tipo');
@@ -1439,7 +1437,7 @@ td { font-size: 1.1rem; font-weight: bold; }
                 <div style="border: 1px solid #ddd; border-top: 4px solid ${corTime}; padding: 10px; border-radius: 4px; background-color: #fbfbfb;">
                     <div style="font-weight: bold; color: ${corTime}; margin-bottom: 5px; text-transform: uppercase;">TIME ${nomeTime}</div>
                     <ul style="padding-left: 15px; margin: 0; line-height: 1.4;">
-                        ${jog jogadoresHtml}
+                        ${jogadoresHtml}
                     </ul>
                 </div>
             `;
