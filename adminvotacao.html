@@ -217,6 +217,39 @@ let tipoItemSelecionado = null;
 let cacheDadosGlobais = null;
 let codigoFoiCarregado = false;
 
+// Função centralizada para registrar histórico de alterações na tabela compartilhada
+function registrarAcaoNoHistorico(descricaoAcao) {
+  let nomeUsuario = "Desconhecido";
+  if (auth.currentUser) {
+    let bruto = auth.currentUser.email || auth.currentUser.uid || "Desconhecido";
+    nomeUsuario = bruto.split('@')[0];
+  }
+
+  const dataFormatada = new Date().toLocaleString('pt-BR');
+
+  const novaAlteracao = {
+    usuario: nomeUsuario,
+    acao: `(Votação) ${descricaoAcao}`,
+    data: dataFormatada
+  };
+
+  get(ref(db, 'acompanhamento_adms')).then((snapshot) => {
+    let dadosAtuais = snapshot.val() || { adms: {}, atribuicoes: {}, historico: [] };
+    let historicoAtual = dadosAtuais.historico || [];
+
+    historicoAtual.unshift(novaAlteracao);
+
+    if (historicoAtual.length > 5) {
+      historicoAtual = historicoAtual.slice(0, 5);
+    }
+
+    dadosAtuais.historico = historicoAtual;
+    set(ref(db, 'acompanhamento_adms'), dadosAtuais);
+  }).catch((error) => {
+    console.error("Erro ao gravar histórico no Firebase:", error);
+  });
+}
+
 onAuthStateChanged(auth, (user) => {
   if (!user) {
     window.location.href = "index.html";
@@ -277,6 +310,7 @@ window.salvarCodigoDia = function() {
     input.disabled = true;
     document.getElementById('btn-salvar-codigo').disabled = true;
     document.getElementById('btn-editar-codigo').disabled = false;
+    registrarAcaoNoHistorico(`definiu o código do dia para "${codigo}"`);
     alert("Código do dia salvo com sucesso!");
   }).catch((err) => {
     console.error("Erro ao salvar código:", err);
@@ -290,6 +324,7 @@ window.habilitarEdicaoCodigo = function() {
   input.focus();
   document.getElementById('btn-salvar-codigo').disabled = false;
   document.getElementById('btn-editar-codigo').disabled = true;
+  registrarAcaoNoHistorico("abilitou a edição do código do dia");
 }
 
 window.atualizarFiltroVotantes = function() {
@@ -319,6 +354,7 @@ window.adicionarVotante = function(e) {
           set(ref(db, 'candidates'), candidates);
         }
       });
+      registrarAcaoNoHistorico(`adicionou o(a) mensalista/votante "${nome}"`);
     }
   });
   input.value = "";
@@ -329,6 +365,7 @@ window.removerVotante = function(voterName) {
     let voters = snapshot.val() || [];
     voters = voters.filter(v => v !== voterName);
     set(ref(db, 'voters'), voters);
+    registrarAcaoNoHistorico(`removeu o(a) mensalista/votante "${voterName}"`);
   });
 }
 
@@ -351,14 +388,25 @@ window.renomearMensalista = function(nomeAntigo) {
       candidates = candidates.map(c => c.name === nomeAntigo ? { ...c, name: nomeFormatado } : c);
       set(ref(db, 'candidates'), candidates);
     });
+    registrarAcaoNoHistorico(`renomeou o(a) mensalista de "${nomeAntigo}" para "${nomeFormatado}"`);
   });
 }
 
 window.alternarVisibilidadeCandidato = function(id) {
   get(child(ref(db), 'candidates')).then((snapshot) => {
     let candidates = snapshot.val() || [];
-    candidates = candidates.map(c => String(c.id) === String(id) ? { ...c, hidden: !c.hidden } : c);
+    let nomeCandidato = "";
+    let novoEstado = false;
+    candidates = candidates.map(c => {
+      if (String(c.id) === String(id)) {
+        nomeCandidato = c.name;
+        novoEstado = !c.hidden;
+        return { ...c, hidden: novoEstado };
+      }
+      return c;
+    });
     set(ref(db, 'candidates'), candidates);
+    registrarAcaoNoHistorico(`alterou visibilidade do(a) mensalista "${nomeCandidato || id}" para ${novoEstado ? 'Oculto' : 'Visível'}`);
   });
 }
 
@@ -368,6 +416,7 @@ window.ocultarTodosVotantes = function() {
       let candidates = snapshot.val() || [];
       candidates = candidates.map(c => ({ ...c, hidden: true }));
       set(ref(db, 'candidates'), candidates);
+      registrarAcaoNoHistorico("ocultou todos os votantes / fechou a votação pública");
     });
   }
 }
@@ -375,28 +424,36 @@ window.ocultarTodosVotantes = function() {
 window.alternarFavoritoCandidato = function(id) {
   get(child(ref(db), 'candidates')).then((snapshot) => {
     let candidates = snapshot.val() || [];
+    let nomeCandidato = "";
+    let estadoAtual = false;
     candidates = candidates.map(c => {
       if (String(c.id) === String(id)) {
-        const atual = c.favorito === true || c.favorito === "true";
-        return { ...c, favorito: !atual };
+        nomeCandidato = c.name;
+        estadoAtual = !(c.favorito === true || c.favorito === "true");
+        return { ...c, favorito: estadoAtual };
       }
       return c;
     });
     set(ref(db, 'candidates'), candidates);
+    registrarAcaoNoHistorico(`alternou status Terça-feira de "${nomeCandidato || id}" para ${estadoAtual ? 'Ativo' : 'Inativo'}`);
   });
 }
 
 window.alternarFavoritoSexta = function(id) {
   get(child(ref(db), 'candidates')).then((snapshot) => {
     let candidates = snapshot.val() || [];
+    let nomeCandidato = "";
+    let estadoAtual = false;
     candidates = candidates.map(c => {
       if (String(c.id) === String(id)) {
-        const atual = c.favoritoSexta === true || c.favoritoSexta === "true";
-        return { ...c, favoritoSexta: !atual };
+        nomeCandidato = c.name;
+        estadoAtual = !(c.favoritoSexta === true || c.favoritoSexta === "true");
+        return { ...c, favoritoSexta: estadoAtual };
       }
       return c;
     });
     set(ref(db, 'candidates'), candidates);
+    registrarAcaoNoHistorico(`alternou status Sexta-feira de "${nomeCandidato || id}" para ${estadoAtual ? 'Ativo' : 'Inativo'}`);
   });
 }
 
@@ -448,6 +505,7 @@ window.fazerUploadNovaFotoNoBanco = function() {
       dataEnvio: new Date().toISOString()
     }).then(() => {
       selecionarFotoParaItem(base64Data);
+      registrarAcaoNoHistorico(`enviou uma nova foto (${file.name}) e atribuiu ao item`);
     }).catch((err) => {
       console.error("Erro ao enviar foto:", err);
       alert("Erro ao enviar a foto para o banco.");
@@ -469,13 +527,22 @@ function selecionarFotoParaItem(url) {
         candidates.push({ id: safeld, name: itemSelecionadoParaFoto, photo: url, hidden: false, favorito: false, favoritoSexta: false });
       }
       set(ref(db, 'candidates'), candidates);
+      registrarAcaoNoHistorico(`atualizou a foto do(a) mensalista "${itemSelecionadoParaFoto}"`);
       fecharModalFotos();
     });
   } else if (tipoItemSelecionado === 'diarista') {
     get(child(ref(db), 'destaqueCandidates')).then((snapshot) => {
       let destaques = snapshot.val() || [];
-      destaques = destaques.map(d => String(d.id) === String(itemSelecionadoParaFoto) ? { ...d, photo: url } : d);
+      let nomeDiarista = "";
+      destaques = destaques.map(d => {
+        if (String(d.id) === String(itemSelecionadoParaFoto)) {
+          nomeDiarista = d.name;
+          return { ...d, photo: url };
+        }
+        return d;
+      });
       set(ref(db, 'destaqueCandidates'), destaques);
+      registrarAcaoNoHistorico(`atualizou a foto do(a) diarista "${nomeDiarista || itemSelecionadoParaFoto}"`);
       fecharModalFotos();
     });
   }
@@ -521,6 +588,7 @@ window.adicionarDestaque = function(e) {
       destaques.push({ id: safeld, name: nome, photo: "https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png", hidden: false });
       destaques.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
       set(ref(db, 'destaqueCandidates'), destaques);
+      registrarAcaoNoHistorico(`cadastrou o(a) diarista "${nome}"`);
     }
     input.value = "";
   });
@@ -529,8 +597,16 @@ window.adicionarDestaque = function(e) {
 window.removerDestaque = function(id) {
   get(child(ref(db), 'destaqueCandidates')).then((snapshot) => {
     let destaques = snapshot.val() || [];
-    destaques = destaques.filter(d => String(d.id) !== String(id));
+    let nomeRemovido = "";
+    destaques = destaques.filter(d => {
+      if (String(d.id) === String(id)) {
+        nomeRemovido = d.name;
+        return false;
+      }
+      return true;
+    });
     set(ref(db, 'destaqueCandidates'), destaques);
+    registrarAcaoNoHistorico(`removeu o(a) diarista "${nomeRemovido || id}"`);
   });
 }
 
@@ -548,14 +624,25 @@ window.renomearDestaque = function(idAntigo, nomeAntigo) {
     destaques = destaques.map(d => String(d.id) === String(idAntigo) ? { ...d, name: nomeFormatado } : d);
     destaques.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
     set(ref(db, 'destaqueCandidates'), destaques);
+    registrarAcaoNoHistorico(`renomeou o(a) diarista de "${nomeAntigo}" para "${nomeFormatado}"`);
   });
 }
 
 window.alternarVisibilidadeDestaque = function(id) {
   get(child(ref(db), 'destaqueCandidates')).then((snapshot) => {
     let destaques = snapshot.val() || [];
-    destaques = destaques.map(d => String(d.id) === String(id) ? { ...d, hidden: !d.hidden } : d);
+    let nomeDiarista = "";
+    let novoEstado = false;
+    destaques = destaques.map(d => {
+      if (String(d.id) === String(id)) {
+        nomeDiarista = d.name;
+        novoEstado = !d.hidden;
+        return { ...d, hidden: novoEstado };
+      }
+      return d;
+    });
     set(ref(db, 'destaqueCandidates'), destaques);
+    registrarAcaoNoHistorico(`alterou visibilidade do(a) diarista "${nomeDiarista || id}" para ${novoEstado ? 'Oculto' : 'Visível'}`);
   });
 }
 
@@ -563,6 +650,7 @@ window.resetarVotos = function() {
   if (confirm("Tem certeza que deseja apagar todos os votos computados e liberar novamente os eleitores?")) {
     set(ref(db, 'votedUsers'), null);
     set(ref(db, 'votes'), null);
+    registrarAcaoNoHistorico("limpou/apagou todos os votos computados");
     alert("Todos os votos foram apagados com sucesso.");
   }
 }
