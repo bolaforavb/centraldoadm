@@ -750,6 +750,38 @@
       sexta: { filtro: 'todos', criterio: 'alfabetica', direcao: 'asc', ultimosTimes: null }
     };
 
+    function registrarAcaoNoHistorico(descricaoAcao) {
+      let nomeUsuario = "Desconhecido";
+      if (auth.currentUser) {
+        let bruto = auth.currentUser.email || auth.currentUser.uid || "Desconhecido";
+        nomeUsuario = bruto.split('@')[0];
+      }
+
+      const dataFormatada = new Date().toLocaleString('pt-BR');
+
+      const novaAlteracao = {
+        usuario: nomeUsuario,
+        acao: `(Gerador Inteligente) ${descricaoAcao}`,
+        data: dataFormatada
+      };
+
+      db.ref('acompanhamento_adms').once('value').then((snapshot) => {
+        let dadosAtuais = snapshot.val() || { adms: {}, atribuicoes: {}, historico: [] };
+        let historicoAtual = dadosAtuais.historico || [];
+
+        historicoAtual.unshift(novaAlteracao);
+
+        if (historicoAtual.length > 5) {
+          historicoAtual = historicoAtual.slice(0, 5);
+        }
+
+        dadosAtuais.historico = historicoAtual;
+        db.ref('acompanhamento_adms').set(dadosAtuais);
+      }).catch((error) => {
+        console.error("Erro ao gravar histórico no Firebase:", error);
+      });
+    }
+
     function alternarSecaoJogadores(dia) {
       const conteudo = document.getElementById(`conteudo-jogadores-${dia}`);
       const botao = document.getElementById(`btn-toggle-icone-${dia}`);
@@ -892,6 +924,7 @@
       });
 
       salvarDados();
+      registrarAcaoNoHistorico(`${novoEstado ? 'marcou' : 'desmarcou'} todos os jogadores visíveis na ${dia === 'terca' ? 'Terça-feira' : 'Sexta-feira'}`);
     }
 
     function atualizarTabelaVisual(dia) {
@@ -976,14 +1009,18 @@
 
     window.alternarFlag = function(dia, nome) {
       if (!BD_GeradorTimes[dia] || !BD_GeradorTimes[dia][nome]) return;
-      BD_GeradorTimes[dia][nome].flagado = !BD_GeradorTimes[dia][nome].flagado;
+      let novoEstado = !BD_GeradorTimes[dia][nome].flagado;
+      BD_GeradorTimes[dia][nome].flagado = novoEstado;
       salvarDados();
+      registrarAcaoNoHistorico(`${novoEstado ? 'marcou' : 'desmarcou'} o jogador "${nome}" na ${dia === 'terca' ? 'Terça-feira' : 'Sexta-feira'}`);
     }
 
     window.alternarTipoJogador = function(dia, nome, tipo) {
       if (!BD_GeradorTimes[dia] || !BD_GeradorTimes[dia][nome]) return;
-      BD_GeradorTimes[dia][nome][tipo] = !BD_GeradorTimes[dia][nome][tipo];
+      let novoEstado = !BD_GeradorTimes[dia][nome][tipo];
+      BD_GeradorTimes[dia][nome][tipo] = novoEstado;
       salvarDados();
+      registrarAcaoNoHistorico(`alterou o status ${tipo.toUpperCase()} de "${nome}" para ${novoEstado ? 'Ativo' : 'Inativo'} (${dia === 'terca' ? 'Terça' : 'Sexta'})`);
     }
 
     window.alterarNivel = function(dia, nome, delta) {
@@ -996,13 +1033,16 @@
 
       BD_GeradorTimes[dia][nome].nivel = novoNivel;
       salvarDados();
+      registrarAcaoNoHistorico(`alterou o nível do jogador "${nome}" para ${novoNivel.toFixed(1)} (${dia === 'terca' ? 'Terça' : 'Sexta'})`);
     }
 
     window.alternarHabilidade = function(dia, nome, campo) {
       if (!BD_GeradorTimes[dia] || !BD_GeradorTimes[dia][nome]) return;
       let atual = BD_GeradorTimes[dia][nome][campo] !== undefined ? BD_GeradorTimes[dia][nome][campo] : false;
-      BD_GeradorTimes[dia][nome][campo] = !atual;
+      let novoEstado = !atual;
+      BD_GeradorTimes[dia][nome][campo] = novoEstado;
       salvarDados();
+      registrarAcaoNoHistorico(`alterou fundamento ${campo.toUpperCase()} de "${nome}" para ${novoEstado ? 'Ativo' : 'Inativo'} (${dia === 'terca' ? 'Terça' : 'Sexta'})`);
     }
 
     document.getElementById('form-novo-jogador').addEventListener('submit', function(e) {
@@ -1038,6 +1078,7 @@
       };
 
       salvarDados();
+      registrarAcaoNoHistorico(`cadastrou o novo jogador "${nome}" na ${dia === 'terca' ? 'Terça-feira' : 'Sexta-feira'}`);
       input.value = '';
     });
 
@@ -1046,6 +1087,7 @@
         if (BD_GeradorTimes[dia]) {
           delete BD_GeradorTimes[dia][nome];
           salvarDados();
+          registrarAcaoNoHistorico(`excluiu o jogador "${nome}" da ${dia === 'terca' ? 'Terça-feira' : 'Sexta-feira'}`);
         }
       }
     }
@@ -1067,10 +1109,23 @@
           if (dados.recepcao) listaIniciais.push('R');
           if (dados.saque) listaIniciais.push('S');
 
-          let bonusFundamentos = listaIniciais.length * 0.2;
-          let scoreTotal = nivel + bonusFundamentos + (Math.random() * 0.05); // Adiciona leve aleatoriedade para variar novas distribuições ao clicar
+          let scoreTotal = nivel + (listaIniciais.length * 0.05);
 
-          selecionados.push({ nome, nivel, isAdm, scoreTotal, fundamentos: listaIniciais });
+          selecionados.push({ 
+            nome, 
+            nivel, 
+            isAdm, 
+            scoreTotal, 
+            fundamentos: listaIniciais,
+            habObj: {
+              M: dados.movimentacao ? 1 : 0,
+              A: dados.ataque ? 1 : 0,
+              B: dados.bloqueio ? 1 : 0,
+              L: dados.levantamento ? 1 : 0,
+              R: dados.recepcao ? 1 : 0,
+              S: dados.saque ? 1 : 0
+            }
+          });
         }
       });
 
@@ -1079,55 +1134,93 @@
         return;
       }
 
-      let listaTimes = [
-        { chave: 'amarelo', membros: [], somaScore: 0 },
-        { chave: 'azul', membros: [], somaScore: 0 },
-        { chave: 'rosa', membros: [], somaScore: 0 },
-        { chave: 'roxo', membros: [], somaScore: 0 }
-      ];
+      // Algoritmo de Múltiplas Simulações: Gera várias distribuições e escolhe a melhor
+      // onde a prioridade é a média de nível mais próxima possível entre os times,
+      // e o segundo plano equilibra as quantidades de cada habilidade por time.
+      let melhorConfig = null;
+      let menorDesvioGlobal = Infinity;
 
-      // Separa ADMs e não-ADMs e ordena por pontuação descendente
-      let adms = selecionados.filter(j => j.isAdm);
-      let naoAdms = selecionados.filter(j => !j.isAdm);
+      for (let tentativa = 0; tentativa < 150; tentativa++) {
+        let listaTimes = [
+          { chave: 'amarelo', membros: [], somaScore: 0, somaNivel: 0, habTotais: {M:0, A:0, B:0, L:0, R:0, S:0} },
+          { chave: 'azul', membros: [], somaScore: 0, somaNivel: 0, habTotais: {M:0, A:0, B:0, L:0, R:0, S:0} },
+          { chave: 'rosa', membros: [], somaScore: 0, somaNivel: 0, habTotais: {M:0, A:0, B:0, L:0, R:0, S:0} },
+          { chave: 'roxo', membros: [], somaScore: 0, somaNivel: 0, habTotais: {M:0, A:0, B:0, L:0, R:0, S:0} }
+        ];
 
-      adms.sort((a, b) => b.scoreTotal - a.scoreTotal);
-      naoAdms.sort((a, b) => b.scoreTotal - a.scoreTotal);
+        let adms = selecionados.filter(j => j.isAdm);
+        let naoAdms = selecionados.filter(j => !j.isAdm);
 
-      // Distribui ADMs primeiro em times diferentes (garantindo o limite estrito de 4 times)
-      // Embaralha levemente a ordem inicial dos times para cada clique gerar variações novas
-      listaTimes.sort(() => Math.random() - 0.5);
+        adms.sort((a, b) => b.scoreTotal - a.scoreTotal);
+        naoAdms.sort((a, b) => b.scoreTotal - a.scoreTotal);
+        naoAdms.sort(() => Math.random() - 0.15); // introduz variação controlada para explorar combinações
 
-      adms.forEach((adm, index) => {
-        let timeAlvo = listaTimes[index % 4];
-        timeAlvo.membros.push(adm);
-        timeAlvo.somaScore += adm.scoreTotal;
-      });
+        listaTimes.sort(() => Math.random() - 0.5);
 
-      // Distribui os demais jogadores utilizando o método serpentina/equilíbrio por menor pontuação atual
-      naoAdms.forEach(jogador => {
-        // Ordena os times para sempre alocar o jogador no time com menor soma atual, respeitando o teto de 4 membros
-        listaTimes.sort((a, b) => {
-          if (a.membros.length >= 4) return 1;
-          if (b.membros.length >= 4) return -1;
-          return a.somaScore - b.somaScore;
+        // Aloca ADMs em times diferentes
+        adms.forEach((adm, index) => {
+          let timeAlvo = listaTimes[index % 4];
+          timeAlvo.membros.push(adm);
+          timeAlvo.somaScore += adm.scoreTotal;
+          timeAlvo.somaNivel += adm.nivel;
+          for(let h in adm.habObj) timeAlvo.habTotais[h] += adm.habObj[h];
         });
 
-        // Encontra o primeiro time com menos de 4 membros
-        let timeDisponivel = listaTimes.find(t => t.membros.length < 4);
-        if (timeDisponivel) {
-          timeDisponivel.membros.push(jogador);
-          timeDisponivel.somaScore += jogador.scoreTotal;
+        // Aloca os demais jogadores priorizando o balanceamento de nível (média) e secundariamente equilibrando habilidades
+        naoAdms.forEach(jogador => {
+          listaTimes.sort((a, b) => {
+            if (a.membros.length >= 4) return 1;
+            if (b.membros.length >= 4) return -1;
+            // Critério principal: menor soma de nível/score atual
+            let diffScore = a.somaScore - b.somaScore;
+            if (Math.abs(diffScore) > 0.3) return diffScore;
+            
+            // Critério secundário de segundo plano: escolher o time que possui menos daquele tipo de habilidade principal do jogador
+            let habPesoA = jogador.fundamentos.reduce((acc, f) => acc + a.habTotais[f], 0);
+            let habPesoB = jogador.fundamentos.reduce((acc, f) => acc + b.habTotais[f], 0);
+            return habPesoA - habPesoB;
+          });
+
+          let timeDisponivel = listaTimes.find(t => t.membros.length < 4);
+          if (timeDisponivel) {
+            timeDisponivel.membros.push(jogador);
+            timeDisponivel.somaScore += jogador.scoreTotal;
+            timeDisponivel.somaNivel += jogador.nivel;
+            for(let h in jogador.habObj) timeDisponivel.habTotais[h] += jogador.habObj[h];
+          }
+        });
+
+        // Calcula a métrica de desvio (qualidade do equilíbrio de médias e de habilidades)
+        let medias = listaTimes.map(t => t.somaNivel / 4);
+        let mediaGeral = medias.reduce((a,b)=>a+b, 0) / 4;
+        let desvioMedias = medias.reduce((acc, m) => acc + Math.pow(m - mediaGeral, 2), 0);
+        
+        // Desvio de habilidades entre os times
+        let desvioHab = 0;
+        ['M', 'A', 'B', 'L', 'R', 'S'].forEach(h => {
+          let vals = listaTimes.map(t => t.habTotais[h]);
+          let mediaH = vals.reduce((a,b)=>a+b,0)/4;
+          desvioHab += vals.reduce((acc, v) => acc + Math.abs(v - mediaH), 0);
+        });
+
+        // Função de custo total (peso maior nas médias, peso menor complementar nas habilidades)
+        let custoTotal = desvioMedias * 10 + desvioHab;
+
+        if (custoTotal < menorDesvioGlobal) {
+          menorDesvioGlobal = custoTotal;
+          // Organiza o objeto final de times
+          let objTemp = {};
+          listaTimes.forEach(t => {
+            t.membros.sort((a, b) => b.nivel - a.nivel);
+            objTemp[t.chave] = t.membros;
+          });
+          melhorConfig = objTemp;
         }
-      });
+      }
 
-      let times = {};
-      listaTimes.forEach(t => {
-        t.membros.sort((a, b) => b.nivel - a.nivel);
-        times[t.chave] = t.membros;
-      });
-
-      estadoControle[dia].ultimosTimes = times;
-      renderizarTimes(dia, times);
+      estadoControle[dia].ultimosTimes = melhorConfig;
+      renderizarTimes(dia, melhorConfig);
+      registrarAcaoNoHistorico(`gerou os times balanceados de ${dia === 'terca' ? 'Terça-feira' : 'Sexta-feira'}`);
     }
 
     function renderizarTimes(dia, times) {
