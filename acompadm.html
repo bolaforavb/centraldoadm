@@ -122,12 +122,15 @@
       letter-spacing: 0.5px;
     }
 
-    /* Lista de Histórico de Alterações */
+    /* Lista de Histórico de Alterações com tamanho fixo */
     .lista-historico {
       display: flex;
       flex-direction: column;
       gap: 8px;
       margin-top: 12px;
+      min-height: 300px; /* Tamanho fixo reservado para caber exatamente 5 itens por página sem oscilar */
+      max-height: 300px;
+      overflow-y: hidden;
     }
 
     .item-historico {
@@ -943,6 +946,17 @@
 
     function renderizarPontuacoes() {
       const container = document.getElementById('container-pontuacoes');
+      
+      // Guarda quais cards de ADM estão atualmente abertos (não minimizados) antes de renderizar
+      const idsAbertos = [];
+      container.querySelectorAll('.card-adm').forEach(card => {
+        const conteudoDiv = card.querySelector('[id^="conteudo-adm-"]');
+        if (conteudoDiv && !conteudoDiv.classList.contains('conteudo-minimizado')) {
+          const idAdm = conteudoDiv.id.replace('conteudo-adm-', '');
+          idsAbertos.push(idAdm);
+        }
+      });
+
       container.innerHTML = '';
 
       let admsEntries = Object.entries(BD_Acompanhamento.adms || {});
@@ -983,16 +997,22 @@
           htmlAtribs += `</div>`;
         }
 
+        // Restaura o estado aberto/minimizado do card
+        const estavaAberto = idsAbertos.includes(idAdm);
+        const classeMinimizado = estavaAberto ? '' : 'conteudo-minimizado';
+        const classeHeaderMinimizado = estavaAberto ? '' : 'header-adm-minimizado';
+        const textoBotaoToggle = estavaAberto ? '▲' : '▼';
+
         card.innerHTML = `
-          <div class="header-adm header-adm-minimizado" id="header-adm-${idAdm}" onclick="alternarMinimizadoAdmCard('${idAdm}')">
+          <div class="header-adm ${classeHeaderMinimizado}" id="header-adm-${idAdm}" onclick="alternarMinimizadoAdmCard('${idAdm}')">
             <span>${adm.nome}</span>
             <div class="acoes-header-adm" onclick="event.stopPropagation()">
               <button class="btn-acao-adm btn-renomear-adm" onclick="renomearAdm('${idAdm}')" title="Renomear ADM">✏️</button>
               <button class="btn-acao-adm btn-deletar-adm" onclick="excluirAdm('${idAdm}')" title="Excluir ADM">✕</button>
-              <button type="button" id="btn-toggle-adm-${idAdm}" class="btn-toggle-bloco" onclick="event.stopPropagation(); alternarMinimizadoAdmCard('${idAdm}')" aria-label="Expandir ou minimizar">▼</button>
+              <button type="button" id="btn-toggle-adm-${idAdm}" class="btn-toggle-bloco" onclick="event.stopPropagation(); alternarMinimizadoAdmCard('${idAdm}')" aria-label="Expandir ou minimizar">${textoBotaoToggle}</button>
             </div>
           </div>
-          <div id="conteudo-adm-${idAdm}" class="conteudo-minimizado">
+          <div id="conteudo-adm-${idAdm}" class="${classeMinimizado}">
             ${htmlAtribs}
           </div>
         `;
