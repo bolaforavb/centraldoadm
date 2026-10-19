@@ -108,7 +108,7 @@
       color: white;
     }
 
-    /* Estilo do Botão Inadimplente (Inativo cinza/suave e Ativo vermelho) */
+    /* Estilo do Botão Inadimplente / Adimplente */
     .btn-inadimplente {
       background-color: rgba(0, 0, 0, 0.04);
       color: #999999;
@@ -1065,12 +1065,13 @@
 
         const isInadimplente = !!adm.inadimplente;
         const classeAtivoInadimplente = isInadimplente ? 'ativo' : '';
+        const textoBotaoStatus = isInadimplente ? 'Inadimplente' : 'Adimplente';
 
         card.innerHTML = `
           <div class="header-adm ${classeHeaderMinimizado}" id="header-adm-${idAdm}" onclick="alternarMinimizadoAdmCard('${idAdm}')">
             <span>${adm.nome}</span>
             <div class="acoes-header-adm" onclick="event.stopPropagation()">
-              <button type="button" class="btn-inadimplente ${classeAtivoInadimplente}" onclick="toggleInadimplenteAdm('${idAdm}')" title="Alternar status de inadimplente">INADIMPLENTE</button>
+              <button type="button" class="btn-inadimplente ${classeAtivoInadimplente}" onclick="toggleInadimplenteAdm('${idAdm}')" title="Alternar status de inadimplente">${textoBotaoStatus}</button>
               <button class="btn-acao-adm btn-renomear-adm" onclick="renomearAdm('${idAdm}')" title="Renomear ADM">✏️</button>
               <button class="btn-acao-adm btn-deletar-adm" onclick="excluirAdm('${idAdm}')" title="Excluir ADM">✕</button>
               <button type="button" id="btn-toggle-adm-${idAdm}" class="btn-toggle-bloco" onclick="event.stopPropagation(); alternarMinimizadoAdmCard('${idAdm}')" aria-label="Expandir ou minimizar">${textoBotaoToggle}</button>
