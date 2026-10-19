@@ -771,7 +771,8 @@
       BD_Acompanhamento.atribuicoes[novoId] = {
         nome: nomeAtribuicao,
         admId: "",
-        contagem: 0
+        contagem: 0,
+        pontosIndividuais: {} // Mapeia pontos por ADM para atribuições do tipo "todos"
       };
 
       salvarDados(`cadastrou a atribuição "${nomeAtribuicao}"`);
@@ -806,15 +807,29 @@
       salvarDados(`vinculou a atribuição "${atr.nome}" para ${nomeAdmDestino}`);
     };
 
-    window.alterarContador = function(idAtribuicao, delta) {
+    window.alterarContador = function(idAtribuicao, idAdm, delta) {
       if (BD_Acompanhamento.atribuicoes[idAtribuicao]) {
         let atr = BD_Acompanhamento.atribuicoes[idAtribuicao];
-        let atual = atr.contagem || 0;
-        let novo = atual + delta;
-        if (novo < 0) novo = 0;
-        atr.contagem = novo;
+        let nomeAdmRef = "";
+        
+        if (BD_Acompanhamento.adms[idAdm]) {
+          nomeAdmRef = ` para o ADM "${BD_Acompanhamento.adms[idAdm].nome}"`;
+        }
 
-        let operacaoTxt = delta > 0 ? `aumentou em 1 ponto a atribuição "${atr.nome}" (total: ${novo})` : `diminuiu em 1 ponto a atribuição "${atr.nome}" (total: ${novo})`;
+        if (atr.admId === "todos") {
+          if (!atr.pontosIndividuais) atr.pontosIndividuais = {};
+          let atual = atr.pontosIndividuais[idAdm] || 0;
+          let novo = atual + delta;
+          if (novo < 0) novo = 0;
+          atr.pontosIndividuais[idAdm] = novo;
+        } else {
+          let atual = atr.contagem || 0;
+          let novo = atual + delta;
+          if (novo < 0) novo = 0;
+          atr.contagem = novo;
+        }
+
+        let operacaoTxt = delta > 0 ? `aumentou em 1 ponto a atribuição "${atr.nome}"${nomeAdmRef}` : `diminuiu em 1 ponto a atribuição "${atr.nome}"${nomeAdmRef}`;
         salvarDados(operacaoTxt);
       }
     };
@@ -824,6 +839,11 @@
         if (BD_Acompanhamento.atribuicoes) {
           Object.keys(BD_Acompanhamento.atribuicoes).forEach(idAtr => {
             BD_Acompanhamento.atribuicoes[idAtr].contagem = 0;
+            if (BD_Acompanhamento.atribuicoes[idAtr].pontosIndividuais) {
+              Object.keys(BD_Acompanhamento.atribuicoes[idAtr].pontosIndividuais).forEach(idAdm => {
+                BD_Acompanhamento.atribuicoes[idAtr].pontosIndividuais[idAdm] = 0;
+              });
+            }
           });
           salvarDados("zerou todos os pontos das atribuições");
         }
@@ -875,6 +895,9 @@
           Object.keys(BD_Acompanhamento.atribuicoes).forEach(idAtr => {
             if (BD_Acompanhamento.atribuicoes[idAtr].admId === idAdm) {
               BD_Acompanhamento.atribuicoes[idAtr].admId = "";
+            }
+            if (BD_Acompanhamento.atribuicoes[idAtr].pontosIndividuais) {
+              delete BD_Acompanhamento.atribuicoes[idAtr].pontosIndividuais[idAdm];
             }
           });
         }
@@ -953,8 +976,12 @@
       let listaRanking = admsEntries.map(([idAdm, adm]) => {
         let totalPontos = 0;
         Object.values(BD_Acompanhamento.atribuicoes || {}).forEach(atr => {
-          if (atr.admId === idAdm || atr.admId === "todos") {
+          if (atr.admId === idAdm) {
             totalPontos += (atr.contagem || 0);
+          } else if (atr.admId === "todos") {
+            if (atr.pontosIndividuais && atr.pontosIndividuais[idAdm]) {
+              totalPontos += atr.pontosIndividuais[idAdm];
+            }
           }
         });
         return {
@@ -1042,13 +1069,21 @@
           htmlAtribs = `<div class="lista-atribuicoes-adm">`;
           atribsDoAdm.forEach(([idAtr, atr]) => {
             const tagPlusHtml = atr.admId === "todos" ? `<span class="tag-plus">PLUS</span>` : '';
+            
+            let valorPontos = 0;
+            if (atr.admId === "todos") {
+              if (!atr.pontosIndividuais) atr.pontosIndividuais = {};
+              valorPontos = atr.pontosIndividuais[idAdm] || 0;
+            } else {
+              valorPontos = atr.contagem || 0;
+            }
 
             htmlAtribs += `
               <div class="item-atribuicao-adm">
                 <div class="bloco-contador-item">
-                  <button class="btn-seta-down" onclick="alterarContador('${idAtr}', -1)">◄</button>
-                  <span class="valor-contador">${atr.contagem || 0}</span>
-                  <button class="btn-seta-up" onclick="alterarContador('${idAtr}', 1)">►</button>
+                  <button class="btn-seta-down" onclick="alterarContador('${idAtr}', '${idAdm}', -1)">◄</button>
+                  <span class="valor-contador">${valorPontos}</span>
+                  <button class="btn-seta-up" onclick="alterarContador('${idAtr}', '${idAdm}', 1)">►</button>
                 </div>
                 <span class="texto-atribuicao" title="${atr.nome}">${atr.nome}</span>
                 ${tagPlusHtml}
