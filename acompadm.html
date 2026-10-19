@@ -1065,7 +1065,7 @@
 
         const isInadimplente = !!adm.inadimplente;
         const classeAtivoInadimplente = isInadimplente ? 'ativo' : '';
-        const textoBotaoStatus = isInadimplente ? 'Inadimplente' : 'Adimplente';
+        const textoBotaoStatus = isInadimplente ? 'INADIMPLENTE' : 'ADIMPLENTE';
 
         card.innerHTML = `
           <div class="header-adm ${classeHeaderMinimizado}" id="header-adm-${idAdm}" onclick="alternarMinimizadoAdmCard('${idAdm}')">
