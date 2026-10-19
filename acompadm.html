@@ -108,6 +108,30 @@
       color: white;
     }
 
+    /* Estilo do Botão Inadimplente */
+    .btn-inadimplente {
+      background-color: rgba(217, 48, 37, 0.1);
+      color: #d93025;
+      border: 1px solid rgba(217, 48, 37, 0.3);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-inadimplente:hover {
+      background-color: #d93025;
+      color: white;
+    }
+
+    .btn-inadimplente.ativo {
+      background-color: #d93025;
+      color: white;
+    }
+
     /* Tag PLUS para atribuições de 'todos' */
     .tag-plus {
       font-size: 10px;
@@ -122,13 +146,26 @@
       letter-spacing: 0.5px;
     }
 
+    /* Tag Inadimplente no Ranking */
+    .tag-inadimplente-ranking {
+      font-size: 9px;
+      font-weight: bold;
+      color: #d93025;
+      background-color: rgba(217, 48, 37, 0.1);
+      border: 1px solid rgba(217, 48, 37, 0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+      text-transform: uppercase;
+    }
+
     /* Lista de Histórico de Alterações com tamanho fixo */
     .lista-historico {
       display: flex;
       flex-direction: column;
       gap: 8px;
       margin-top: 12px;
-      min-height: 300px; /* Tamanho fixo reservado para caber exatamente 5 itens por página sem oscilar */
+      min-height: 300px;
       max-height: 300px;
       overflow-y: hidden;
     }
@@ -154,7 +191,6 @@
       margin-top: 2px;
     }
 
-    /* Paginação do Histórico */
     .paginacao-historico {
       display: flex;
       justify-content: space-between;
@@ -191,7 +227,6 @@
       color: #12364e;
     }
 
-    /* Utilitário para ocultar conteúdo quando minimizado */
     .conteudo-minimizado {
       display: none !important;
     }
@@ -230,7 +265,6 @@
     }
     .btn-add-tabela:hover { background-color: #af8a23; }
 
-    /* Estilos do Bloco Ranking */
     .lista-ranking {
       display: flex;
       flex-direction: column;
@@ -248,9 +282,9 @@
       border-left: 4px solid #12364e;
     }
 
-    .item-ranking:nth-child(1) { border-left-color: #d9b246; } /* 1º lugar Ouro/Amarelo */
-    .item-ranking:nth-child(2) { border-left-color: #a0a0a0; } /* 2º lugar Prata */
-    .item-ranking:nth-child(3) { border-left-color: #cd7f32; } /* 3º lugar Bronze */
+    .item-ranking:nth-child(1) { border-left-color: #d9b246; } 
+    .item-ranking:nth-child(2) { border-left-color: #a0a0a0; } 
+    .item-ranking:nth-child(3) { border-left-color: #cd7f32; } 
 
     .info-posicao-adm {
       display: flex;
@@ -273,6 +307,8 @@
       font-size: 14px;
       font-weight: bold;
       color: #12364e;
+      display: flex;
+      align-items: center;
     }
 
     .pontos-adm-ranking {
@@ -284,7 +320,6 @@
       border-radius: 6px;
     }
 
-    /* Bloco Atribuições e Pontuações */
     .card-adm {
       background-color: #f7f5f2;
       border-radius: 10px;
@@ -435,7 +470,6 @@
       background-color: rgba(217, 48, 37, 0.1);
     }
 
-    /* Lista do Gerenciamento de Atribuições */
     .lista-cadastro-atribuicoes {
       display: flex;
       flex-direction: column;
@@ -550,7 +584,6 @@
 
       <div id="conteudo-historico-alteracoes" class="conteudo-minimizado">
         <div id="lista-historico-container" class="lista-historico"></div>
-        <!-- Controles de Paginação -->
         <div id="controles-paginacao-historico" class="paginacao-historico"></div>
       </div>
     </div>
@@ -600,7 +633,7 @@
     const auth = firebase.auth();
 
     let usuarioAtualNome = "";
-    let paginaHistoricoAtual = 1; // Página atual da paginação do histórico
+    let paginaHistoricoAtual = 1;
     const itensPorPaginaHistorico = 5;
 
     auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
@@ -716,7 +749,10 @@
       const novoId = 'adm_' + Date.now();
       if (!BD_Acompanhamento.adms) BD_Acompanhamento.adms = {};
       
-      BD_Acompanhamento.adms[novoId] = { nome: nome };
+      BD_Acompanhamento.adms[novoId] = { 
+        nome: nome,
+        inadimplente: false 
+      };
       salvarDados(`cadastrou o ADM "${nome}"`);
       input.value = '';
     });
@@ -739,6 +775,16 @@
       salvarDados(`cadastrou a atribuição "${nomeAtribuicao}"`);
       input.value = '';
     });
+
+    // Função para Alternar o Status de Inadimplente do ADM
+    window.toggleInadimplenteAdm = function(idAdm) {
+      const adm = BD_Acompanhamento.adms[idAdm];
+      if (!adm) return;
+
+      adm.inadimplente = !adm.inadimplente;
+      const statusTxt = adm.inadimplente ? "marcou como inadimplente" : "removeu o status de inadimplente de";
+      salvarDados(`${statusTxt} o ADM "${adm.nome}"`);
+    };
 
     window.atribuirAdmATarefa = function(idAtribuicao, valorSelecionado) {
       if (!BD_Acompanhamento.atribuicoes[idAtribuicao]) return;
@@ -913,10 +959,12 @@
         return {
           id: idAdm,
           nome: adm.nome,
-          pontos: totalPontos
+          pontos: totalPontos,
+          inadimplente: !!adm.inadimplente
         };
       });
 
+      // Ordenação padrão por pontos decrescentes
       listaRanking.sort((a, b) => {
         if (b.pontos !== a.pontos) {
           return b.pontos - a.pontos;
@@ -924,18 +972,37 @@
         return a.nome.localeCompare(b.nome);
       });
 
+      // Tratamento para congelar a posição de ADMs inadimplentes fixando-os no índice 3 (4º lugar ou conforme pontuação original/congelada)
+      // Se preferir congelar rigorosamente na posição 4, podemos ajustar o array:
+      let ativos = listaRanking.filter(item => !item.inadimplente);
+      let inadimplentes = listaRanking.filter(item => item.inadimplente);
+
+      // Inserir os inadimplentes congelados na 4ª posição (índice 3) ou ao final se houver menos de 3 ativos, etc.
+      // A instrução diz: "pontuando ou não, ele ficará em 4" (ou seja, posição 4º fixada).
+      let rankingFinal = [...ativos];
+      inadimplentes.forEach(inad => {
+        // Insere na posição 4 (índice 3), ou se a lista for menor que 3, insere no final dos disponíveis
+        let posicaoDesejada = 3; // Índice 3 corresponde ao 4º lugar
+        if (rankingFinal.length < posicaoDesejada) {
+          rankingFinal.push(inad);
+        } else {
+          rankingFinal.splice(posicaoDesejada, 0, inad);
+        }
+      });
+
       const sufixosPosicao = ['1º', '2º', '3º', '4º', '5º', '6º', '7º', '8º', '9º', '10º'];
 
-      listaRanking.forEach((item, index) => {
+      rankingFinal.forEach((item, index) => {
         const divItem = document.createElement('div');
         divItem.className = 'item-ranking';
 
         const textoPosicao = sufixosPosicao[index] || `${index + 1}º`;
+        const tagInadimplenteHtml = item.inadimplente ? `<span class="tag-inadimplente-ranking">INADIMPLENTE</span>` : '';
 
         divItem.innerHTML = `
           <div class="info-posicao-adm">
             <span class="badge-posicao">${textoPosicao}</span>
-            <span class="nome-adm-ranking">${item.nome}</span>
+            <span class="nome-adm-ranking">${item.nome} ${tagInadimplenteHtml}</span>
           </div>
           <span class="pontos-adm-ranking">${item.pontos} pts</span>
         `;
@@ -947,7 +1014,6 @@
     function renderizarPontuacoes() {
       const container = document.getElementById('container-pontuacoes');
       
-      // Guarda quais cards de ADM estão atualmente abertos (não minimizados) antes de renderizar
       const idsAbertos = [];
       container.querySelectorAll('.card-adm').forEach(card => {
         const conteudoDiv = card.querySelector('[id^="conteudo-adm-"]');
@@ -997,16 +1063,20 @@
           htmlAtribs += `</div>`;
         }
 
-        // Restaura o estado aberto/minimizado do card
         const estavaAberto = idsAbertos.includes(idAdm);
         const classeMinimizado = estavaAberto ? '' : 'conteudo-minimizado';
         const classeHeaderMinimizado = estavaAberto ? '' : 'header-adm-minimizado';
         const textoBotaoToggle = estavaAberto ? '▲' : '▼';
 
+        // Classes de estado do botão inadimplente
+        const isInadimplente = !!adm.inadimplente;
+        const classeAtivoInadimplente = isInadimplente ? 'ativo' : '';
+
         card.innerHTML = `
           <div class="header-adm ${classeHeaderMinimizado}" id="header-adm-${idAdm}" onclick="alternarMinimizadoAdmCard('${idAdm}')">
             <span>${adm.nome}</span>
             <div class="acoes-header-adm" onclick="event.stopPropagation()">
+              <button type="button" class="btn-inadimplente ${classeAtivoInadimplente}" onclick="toggleInadimplenteAdm('${idAdm}')" title="Alternar status de inadimplente">INADIMPLENTE</button>
               <button class="btn-acao-adm btn-renomear-adm" onclick="renomearAdm('${idAdm}')" title="Renomear ADM">✏️</button>
               <button class="btn-acao-adm btn-deletar-adm" onclick="excluirAdm('${idAdm}')" title="Excluir ADM">✕</button>
               <button type="button" id="btn-toggle-adm-${idAdm}" class="btn-toggle-bloco" onclick="event.stopPropagation(); alternarMinimizadoAdmCard('${idAdm}')" aria-label="Expandir ou minimizar">${textoBotaoToggle}</button>
