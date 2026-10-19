@@ -398,6 +398,22 @@
       padding: 8px 10px;
       border-radius: 6px;
       font-size: 12px;
+      cursor: grab;
+    }
+    .item-atribuicao-adm:active {
+      cursor: grabbing;
+    }
+    .item-atribuicao-adm.dragging {
+      opacity: 0.4;
+    }
+
+    .drag-handle {
+      color: #888;
+      font-size: 14px;
+      cursor: grab;
+      user-select: none;
+      padding: 0 2px;
+      flex-shrink: 0;
     }
 
     .texto-atribuicao {
@@ -487,6 +503,13 @@
       padding: 8px 10px;
       border-radius: 8px;
       font-size: 12px;
+      cursor: grab;
+    }
+    .item-cadastro-atribuicao:active {
+      cursor: grabbing;
+    }
+    .item-cadastro-atribuicao.dragging {
+      opacity: 0.4;
     }
 
     .select-responsavel {
@@ -768,11 +791,14 @@
       const novoId = 'atr_' + Date.now();
       if (!BD_Acompanhamento.atribuicoes) BD_Acompanhamento.atribuicoes = {};
 
+      const maxOrdem = Object.values(BD_Acompanhamento.atribuicoes).reduce((max, atr) => Math.max(max, atr.ordem || 0), -1);
+
       BD_Acompanhamento.atribuicoes[novoId] = {
         nome: nomeAtribuicao,
         admId: "",
         contagem: 0,
-        pontosIndividuais: {} // Mapeia pontos por ADM para atribuições do tipo "todos"
+        ordem: maxOrdem + 1,
+        pontosIndividuais: {}
       };
 
       salvarDados(`cadastrou a atribuição "${nomeAtribuicao}"`);
@@ -1004,7 +1030,7 @@
 
       let rankingFinal = [...ativos];
       inadimplentes.forEach(inad => {
-        let posicaoDesejada = 3; // Índice 3 (4º lugar)
+        let posicaoDesejada = 3; 
         if (rankingFinal.length < posicaoDesejada) {
           rankingFinal.push(inad);
         } else {
@@ -1059,14 +1085,16 @@
         const card = document.createElement('div');
         card.className = 'card-adm';
 
-        const atribsDoAdm = Object.entries(BD_Acompanhamento.atribuicoes || {})
+        let atribsDoAdm = Object.entries(BD_Acompanhamento.atribuicoes || {})
           .filter(([_, atr]) => atr.admId === idAdm || atr.admId === "todos");
+
+        atribsDoAdm.sort((a, b) => (a[1].ordem || 0) - (b[1].ordem || 0));
 
         let htmlAtribs = '';
         if (atribsDoAdm.length === 0) {
           htmlAtribs = `<div class="mensag-vazia" style="text-align: left;">Nenhuma atribuição vinculada.</div>`;
         } else {
-          htmlAtribs = `<div class="lista-atribuicoes-adm">`;
+          htmlAtribs = `<div class="lista-atribuicoes-adm" data-admid="${idAdm}">`;
           atribsDoAdm.forEach(([idAtr, atr]) => {
             const tagPlusHtml = atr.admId === "todos" ? `<span class="tag-plus">PLUS</span>` : '';
             
@@ -1079,7 +1107,8 @@
             }
 
             htmlAtribs += `
-              <div class="item-atribuicao-adm">
+              <div class="item-atribuicao-adm" draggable="true" data-id="${idAtr}">
+                <span class="drag-handle" title="Arraste para reordenar">☰</span>
                 <div class="bloco-contador-item">
                   <button class="btn-seta-down" onclick="alterarContador('${idAtr}', '${idAdm}', -1)">◄</button>
                   <span class="valor-contador">${valorPontos}</span>
@@ -1119,16 +1148,20 @@
 
         container.appendChild(card);
       });
+
+      configurarDragAndDropPontuacoes();
     }
 
     function renderizarCadastroAtribuicoes() {
       const container = document.getElementById('lista-atribuicoes-cadastradas');
       container.innerHTML = '';
 
-      const atribsEntries = Object.entries(BD_Acompanhamento.atribuicoes || {});
+      let atribsEntries = Object.entries(BD_Acompanhamento.atribuicoes || {});
       if (atribsEntries.length === 0) {
         return;
       }
+
+      atribsEntries.sort((a, b) => (a[1].ordem || 0) - (b[1].ordem || 0));
 
       let admsEntries = Object.entries(BD_Acompanhamento.adms || {});
       admsEntries.sort((a, b) => a[1].nome.localeCompare(b[1].nome));
@@ -1136,6 +1169,8 @@
       atribsEntries.forEach(([idAtr, atr]) => {
         const item = document.createElement('div');
         item.className = 'item-cadastro-atribuicao';
+        item.setAttribute('draggable', 'true');
+        item.setAttribute('data-id', idAtr);
 
         let optionsHtml = `
           <option value="">Selecionar ADM...</option>
@@ -1147,6 +1182,7 @@
         });
 
         item.innerHTML = `
+          <span class="drag-handle" title="Arraste para reordenar">☰</span>
           <select class="select-responsavel" onchange="atribuirAdmATarefa('${idAtr}', this.value)">
             ${optionsHtml}
           </select>
@@ -1159,6 +1195,107 @@
 
         container.appendChild(item);
       });
+
+      configurarDragAndDropCadastro();
+    }
+
+    function configurarDragAndDropCadastro() {
+      const container = document.getElementById('lista-atribuicoes-cadastradas');
+      let elementoArrastando = null;
+
+      container.querySelectorAll('.item-cadastro-atribuicao').forEach(item => {
+        item.addEventListener('dragstart', (e) => {
+          elementoArrastando = item;
+          setTimeout(() => item.classList.add('dragging'), 0);
+        });
+
+        item.addEventListener('dragend', () => {
+          item.classList.remove('dragging');
+          elementoArrastando = null;
+          salvarNovaOrdemGeral();
+        });
+
+        item.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          const aposElemento = obterElementoApos(container, e.clientY);
+          if (aposElemento == null) {
+            container.appendChild(elementoArrastando);
+          } else {
+            container.insertBefore(elementoArrastando, aposElemento);
+          }
+        });
+      });
+    }
+
+    function configurarDragAndDropPontuacoes() {
+      document.querySelectorAll('.lista-atribuicoes-adm').forEach(container => {
+        let elementoArrastando = null;
+
+        container.querySelectorAll('.item-atribuicao-adm').forEach(item => {
+          item.addEventListener('dragstart', (e) => {
+            elementoArrastando = item;
+            setTimeout(() => item.classList.add('dragging'), 0);
+          });
+
+          item.addEventListener('dragend', () => {
+            item.classList.remove('dragging');
+            elementoArrastando = null;
+            salvarNovaOrdemGeral();
+          });
+
+          item.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const aposElemento = obterElementoApos(container, e.clientY);
+            if (aposElemento == null) {
+              container.appendChild(elementoArrastando);
+            } else {
+              container.insertBefore(elementoArrastando, aposElemento);
+            }
+          });
+        });
+      });
+    }
+
+    function obterElementoApos(container, y) {
+      const elementosDrags = [...container.querySelectorAll('[draggable="true"]:not(.dragging)')];
+
+      return elementosDrags.reduce((maisProximo, filho) => {
+        const caixa = filho.getBoundingClientRect();
+        const deslocamento = y - caixa.top - caixa.height / 2;
+        if (deslocamento < 0 && deslocamento > maisProximo.deslocamento) {
+          return { deslocamento: deslocamento, elemento: filho };
+        } else {
+          return maisProximo;
+        }
+      }, { deslocamento: Number.NEGATIVE_INFINITY }).elemento;
+    }
+
+    function salvarNovaOrdemGeral() {
+      const itensUnicosIds = [];
+      
+      document.querySelectorAll('#lista-atribuicoes-cadastradas .item-cadastro-atribuicao').forEach(item => {
+        const id = item.getAttribute('data-id');
+        if (id && !itensUnicosIds.includes(id)) {
+          itensUnicosIds.push(id);
+        }
+      });
+
+      document.querySelectorAll('.lista-atribuicoes-adm').forEach(container => {
+        container.querySelectorAll('.item-atribuicao-adm').forEach(item => {
+          const id = item.getAttribute('data-id');
+          if (id && !itensUnicosIds.includes(id)) {
+            itensUnicosIds.push(id);
+          }
+        });
+      });
+
+      itensUnicosIds.forEach((idAtr, index) => {
+        if (BD_Acompanhamento.atribuicoes[idAtr]) {
+          BD_Acompanhamento.atribuicoes[idAtr].ordem = index;
+        }
+      });
+
+      salvarDados("reordenou as atribuições");
     }
   </script>
 
