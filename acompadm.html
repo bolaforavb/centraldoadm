@@ -776,7 +776,8 @@
       
       BD_Acompanhamento.adms[novoId] = { 
         nome: nome,
-        inadimplente: false 
+        inadimplente: false,
+        ordemAtribuicoes: []
       };
       salvarDados(`cadastrou o ADM "${nome}"`);
       input.value = '';
@@ -895,6 +896,16 @@
       if (confirm(`Deseja remover esta atribuição (${atr.nome})?`)) {
         let nomeRemovido = atr.nome;
         delete BD_Acompanhamento.atribuicoes[idAtribuicao];
+        
+        // Remove também das ordens personalizadas dos ADMs
+        if (BD_Acompanhamento.adms) {
+          Object.values(BD_Acompanhamento.adms).forEach(adm => {
+            if (adm.ordemAtribuicoes && Array.isArray(adm.ordemAtribuicoes)) {
+              adm.ordemAtribuicoes = adm.ordemAtribuicoes.filter(id => id !== idAtribuicao);
+            }
+          });
+        }
+
         salvarDados(`excluiu a atribuição "${nomeRemovido}"`);
       }
     };
@@ -1088,7 +1099,16 @@
         let atribsDoAdm = Object.entries(BD_Acompanhamento.atribuicoes || {})
           .filter(([_, atr]) => atr.admId === idAdm || atr.admId === "todos");
 
-        atribsDoAdm.sort((a, b) => (a[1].ordem || 0) - (b[1].ordem || 0));
+        // Ordenação independente por ADM com base em ordemAtribuicoes salva
+        const ordemSalva = adm.ordemAtribuicoes || [];
+        atribsDoAdm.sort((a, b) => {
+          let indexA = ordemSalva.indexOf(a[0]);
+          let indexB = ordemSalva.indexOf(b[0]);
+          if (indexA === -1) indexA = 9999;
+          if (indexB === -1) indexB = 9999;
+          if (indexA !== indexB) return indexA - indexB;
+          return (a[1].ordem || 0) - (b[1].ordem || 0);
+        });
 
         let htmlAtribs = '';
         if (atribsDoAdm.length === 0) {
@@ -1212,7 +1232,7 @@
         item.addEventListener('dragend', () => {
           item.classList.remove('dragging');
           elementoArrastando = null;
-          salvarNovaOrdemGeral();
+          salvarNovaOrdemCadastro();
         });
 
         item.addEventListener('dragover', (e) => {
@@ -1230,6 +1250,7 @@
     function configurarDragAndDropPontuacoes() {
       document.querySelectorAll('.lista-atribuicoes-adm').forEach(container => {
         let elementoArrastando = null;
+        let idAdm = container.getAttribute('data-admid');
 
         container.querySelectorAll('.item-atribuicao-adm').forEach(item => {
           item.addEventListener('dragstart', (e) => {
@@ -1240,7 +1261,7 @@
           item.addEventListener('dragend', () => {
             item.classList.remove('dragging');
             elementoArrastando = null;
-            salvarNovaOrdemGeral();
+            salvarNovaOrdemAdm(idAdm, container);
           });
 
           item.addEventListener('dragover', (e) => {
@@ -1270,23 +1291,13 @@
       }, { deslocamento: Number.NEGATIVE_INFINITY }).elemento;
     }
 
-    function salvarNovaOrdemGeral() {
+    function salvarNovaOrdemCadastro() {
       const itensUnicosIds = [];
-      
       document.querySelectorAll('#lista-atribuicoes-cadastradas .item-cadastro-atribuicao').forEach(item => {
         const id = item.getAttribute('data-id');
         if (id && !itensUnicosIds.includes(id)) {
           itensUnicosIds.push(id);
         }
-      });
-
-      document.querySelectorAll('.lista-atribuicoes-adm').forEach(container => {
-        container.querySelectorAll('.item-atribuicao-adm').forEach(item => {
-          const id = item.getAttribute('data-id');
-          if (id && !itensUnicosIds.includes(id)) {
-            itensUnicosIds.push(id);
-          }
-        });
       });
 
       itensUnicosIds.forEach((idAtr, index) => {
@@ -1295,7 +1306,22 @@
         }
       });
 
-      salvarDados("reordenou as atribuições");
+      salvarDados("reordenou as atribuições gerais");
+    }
+
+    function salvarNovaOrdemAdm(idAdm, container) {
+      if (!BD_Acompanhamento.adms[idAdm]) return;
+
+      const novaOrdemIds = [];
+      container.querySelectorAll('.item-atribuicao-adm').forEach(item => {
+        const id = item.getAttribute('data-id');
+        if (id && !novaOrdemIds.includes(id)) {
+          novaOrdemIds.push(id);
+        }
+      });
+
+      BD_Acompanhamento.adms[idAdm].ordemAtribuicoes = novaOrdemIds;
+      salvarDados(`reordenou as atribuições do ADM "${BD_Acompanhamento.adms[idAdm].nome}"`);
     }
   </script>
 
