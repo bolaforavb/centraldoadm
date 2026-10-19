@@ -108,28 +108,30 @@
       color: white;
     }
 
-    /* Estilo do Botão Inadimplente */
+    /* Estilo do Botão Inadimplente (Inativo cinza/suave e Ativo vermelho) */
     .btn-inadimplente {
-      background-color: rgba(217, 48, 37, 0.1);
-      color: #d93025;
-      border: 1px solid rgba(217, 48, 37, 0.3);
+      background-color: rgba(0, 0, 0, 0.04);
+      color: #999999;
+      border: 1px solid rgba(0, 0, 0, 0.1);
       padding: 4px 8px;
       border-radius: 6px;
       font-size: 11px;
       font-weight: bold;
       cursor: pointer;
-      transition: background 0.2s, color 0.2s;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
       -webkit-tap-highlight-color: transparent;
     }
 
     .btn-inadimplente:hover {
-      background-color: #d93025;
-      color: white;
+      background-color: rgba(217, 48, 37, 0.1);
+      color: #d93025;
+      border-color: rgba(217, 48, 37, 0.3);
     }
 
     .btn-inadimplente.ativo {
       background-color: #d93025;
       color: white;
+      border-color: #d93025;
     }
 
     /* Tag PLUS para atribuições de 'todos' */
@@ -776,7 +778,6 @@
       input.value = '';
     });
 
-    // Função para Alternar o Status de Inadimplente do ADM
     window.toggleInadimplenteAdm = function(idAdm) {
       const adm = BD_Acompanhamento.adms[idAdm];
       if (!adm) return;
@@ -964,7 +965,6 @@
         };
       });
 
-      // Ordenação padrão por pontos decrescentes
       listaRanking.sort((a, b) => {
         if (b.pontos !== a.pontos) {
           return b.pontos - a.pontos;
@@ -972,17 +972,12 @@
         return a.nome.localeCompare(b.nome);
       });
 
-      // Tratamento para congelar a posição de ADMs inadimplentes fixando-os no índice 3 (4º lugar ou conforme pontuação original/congelada)
-      // Se preferir congelar rigorosamente na posição 4, podemos ajustar o array:
       let ativos = listaRanking.filter(item => !item.inadimplente);
       let inadimplentes = listaRanking.filter(item => item.inadimplente);
 
-      // Inserir os inadimplentes congelados na 4ª posição (índice 3) ou ao final se houver menos de 3 ativos, etc.
-      // A instrução diz: "pontuando ou não, ele ficará em 4" (ou seja, posição 4º fixada).
       let rankingFinal = [...ativos];
       inadimplentes.forEach(inad => {
-        // Insere na posição 4 (índice 3), ou se a lista for menor que 3, insere no final dos disponíveis
-        let posicaoDesejada = 3; // Índice 3 corresponde ao 4º lugar
+        let posicaoDesejada = 3; // Índice 3 (4º lugar)
         if (rankingFinal.length < posicaoDesejada) {
           rankingFinal.push(inad);
         } else {
@@ -1068,7 +1063,6 @@
         const classeHeaderMinimizado = estavaAberto ? '' : 'header-adm-minimizado';
         const textoBotaoToggle = estavaAberto ? '▲' : '▼';
 
-        // Classes de estado do botão inadimplente
         const isInadimplente = !!adm.inadimplente;
         const classeAtivoInadimplente = isInadimplente ? 'ativo' : '';
 
