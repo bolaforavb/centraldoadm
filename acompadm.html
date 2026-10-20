@@ -1018,10 +1018,9 @@
           if (atr.admId === idAdm) {
             totalPontos += (atr.contagem || 0);
           } else if (atr.admId === "todos") {
+            // Apenas contabiliza para os emojis, NÃO somando no total de pontos da tabela de ranking
             if (atr.pontosIndividuais && atr.pontosIndividuais[idAdm]) {
-              let ptsPlus = atr.pontosIndividuais[idAdm];
-              totalPontos += ptsPlus;
-              totalPontosPlus += ptsPlus;
+              totalPontosPlus += atr.pontosIndividuais[idAdm];
             }
           }
         });
