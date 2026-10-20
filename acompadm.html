@@ -311,6 +311,7 @@
       color: #12364e;
       display: flex;
       align-items: center;
+      gap: 6px;
     }
 
     .pontos-adm-ranking {
@@ -1012,12 +1013,16 @@
 
       let listaRanking = admsEntries.map(([idAdm, adm]) => {
         let totalPontos = 0;
-        Object.values(BD_Acompanhamento.atribuicoes || {}).forEach(atr => {
+        let totalPontosPlus = 0; // Contabiliza pontos específicos de atribuições PLUS (todos) para os emojis
+        
+        Object.entries(BD_Acompanhamento.atribuicoes || {}).forEach(([idAtr, atr]) => {
           if (atr.admId === idAdm) {
             totalPontos += (atr.contagem || 0);
           } else if (atr.admId === "todos") {
             if (atr.pontosIndividuais && atr.pontosIndividuais[idAdm]) {
-              totalPontos += atr.pontosIndividuais[idAdm];
+              let ptsPlus = atr.pontosIndividuais[idAdm];
+              totalPontos += ptsPlus;
+              totalPontosPlus += ptsPlus; // Soma específica para exibir os emojis de vôlei
             }
           }
         });
@@ -1025,6 +1030,7 @@
           id: idAdm,
           nome: adm.nome,
           pontos: totalPontos,
+          pontosPlus: totalPontosPlus,
           inadimplente: !!adm.inadimplente
         };
       });
@@ -1057,11 +1063,14 @@
 
         const textoPosicao = sufixosPosicao[index] || `${index + 1}º`;
         const tagInadimplenteHtml = item.inadimplente ? `<span class="tag-inadimplente-ranking">INADIMPLENTE</span>` : '';
+        
+        // Gera a string com os emojis de bola de vôlei baseada na quantidade de pontos PLUS acumulados
+        const emojisVolei = '🏐'.repeat(item.pontosPlus);
 
         divItem.innerHTML = `
           <div class="info-posicao-adm">
             <span class="badge-posicao">${textoPosicao}</span>
-            <span class="nome-adm-ranking">${item.nome} ${tagInadimplenteHtml}</span>
+            <span class="nome-adm-ranking">${item.nome} ${emojisVolei} ${tagInadimplenteHtml}</span>
           </div>
           <span class="pontos-adm-ranking">${item.pontos} pts</span>
         `;
@@ -1264,8 +1273,7 @@
             salvarNovaOrdemAdm(idAdm, container);
           });
 
-          item.addEventListener('dragover', (e) => {
-            e.preventDefault();
+          item.addEventListener('dragover', (e) =>.preventDefault();
             const aposElemento = obterElementoApos(container, e.clientY);
             if (aposElemento == null) {
               container.appendChild(elementoArrastando);
@@ -1315,7 +1323,7 @@
       const novaOrdemIds = [];
       container.querySelectorAll('.item-atribuicao-adm').forEach(item => {
         const id = item.getAttribute('data-id');
-        if (id && !novaOrdemIds.includes(id)) {
+        if (id && !novaOrdevIds.includes(id)) {
           novaOrdemIds.push(id);
         }
       });
