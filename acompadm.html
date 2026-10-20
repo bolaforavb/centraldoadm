@@ -898,7 +898,6 @@
         let nomeRemovido = atr.nome;
         delete BD_Acompanhamento.atribuicoes[idAtribuicao];
         
-        // Remove também das ordens personalizadas dos ADMs
         if (BD_Acompanhamento.adms) {
           Object.values(BD_Acompanhamento.adms).forEach(adm => {
             if (adm.ordemAtribuicoes && Array.isArray(adm.ordemAtribuicoes)) {
@@ -1013,7 +1012,7 @@
 
       let listaRanking = admsEntries.map(([idAdm, adm]) => {
         let totalPontos = 0;
-        let totalPontosPlus = 0; // Contabiliza pontos específicos de atribuições PLUS (todos) para os emojis
+        let totalPontosPlus = 0;
         
         Object.entries(BD_Acompanhamento.atribuicoes || {}).forEach(([idAtr, atr]) => {
           if (atr.admId === idAdm) {
@@ -1022,7 +1021,7 @@
             if (atr.pontosIndividuais && atr.pontosIndividuais[idAdm]) {
               let ptsPlus = atr.pontosIndividuais[idAdm];
               totalPontos += ptsPlus;
-              totalPontosPlus += ptsPlus; // Soma específica para exibir os emojis de vôlei
+              totalPontosPlus += ptsPlus;
             }
           }
         });
@@ -1063,8 +1062,6 @@
 
         const textoPosicao = sufixosPosicao[index] || `${index + 1}º`;
         const tagInadimplenteHtml = item.inadimplente ? `<span class="tag-inadimplente-ranking">INADIMPLENTE</span>` : '';
-        
-        // Gera a string com os emojis de bola de vôlei baseada na quantidade de pontos PLUS acumulados
         const emojisVolei = '🏐'.repeat(item.pontosPlus);
 
         divItem.innerHTML = `
@@ -1108,7 +1105,6 @@
         let atribsDoAdm = Object.entries(BD_Acompanhamento.atribuicoes || {})
           .filter(([_, atr]) => atr.admId === idAdm || atr.admId === "todos");
 
-        // Ordenação independente por ADM com base em ordemAtribuicoes salva
         const ordemSalva = adm.ordemAtribuicoes || [];
         atribsDoAdm.sort((a, b) => {
           let indexA = ordemSalva.indexOf(a[0]);
@@ -1273,7 +1269,8 @@
             salvarNovaOrdemAdm(idAdm, container);
           });
 
-          item.addEventListener('dragover', (e) =>.preventDefault();
+          item.addEventListener('dragover', (e) => {
+            e.preventDefault();
             const aposElemento = obterElementoApos(container, e.clientY);
             if (aposElemento == null) {
               container.appendChild(elementoArrastando);
@@ -1323,7 +1320,7 @@
       const novaOrdemIds = [];
       container.querySelectorAll('.item-atribuicao-adm').forEach(item => {
         const id = item.getAttribute('data-id');
-        if (id && !novaOrdevIds.includes(id)) {
+        if (id && !novaOrdemIds.includes(id)) {
           novaOrdemIds.push(id);
         }
       });
