@@ -182,7 +182,7 @@
       z-index: 2;
     }
 
-    /* --- POP-UP SOBREPOSTO AO PLACAR (COM TEXTO 100% MAIOR) --- */
+    /* --- POP-UP SOBREPOSTO AO PLACAR (TEXTO AUMENTADO EM 100%) --- */
     .overlay-fase {
       display: none;
       position: absolute;
@@ -196,15 +196,24 @@
     }
 
     .texto-piscando {
-      font-size: clamp(80px, 16vw, 160px);
+      font-size: clamp(140px, 28vw, 280px);
       font-weight: bold;
       color: #ffeb3b;
       text-transform: uppercase;
       letter-spacing: 3px;
-      text-shadow: 0 0 20px rgba(255, 235, 59, 0.6);
+      line-height: 0.92;
+      text-shadow: 0 0 30px rgba(255, 235, 59, 0.8);
       animation: piscarTexto 1s infinite alternate;
-      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       padding: 0 20px;
+    }
+
+    .linha-fase {
+      display: block;
+      text-align: center;
+      width: 100%;
     }
 
     @keyframes piscarTexto {
@@ -533,7 +542,10 @@
       
       <!-- Pop-up de Aviso Piscando -->
       <div class="overlay-fase" id="overlayFase">
-        <div class="texto-piscando" id="textoOverlay">SEMIFINAL</div>
+        <div class="texto-piscando" id="textoOverlay">
+          <span class="linha-fase">SEMI</span>
+          <span class="linha-fase">FINAL</span>
+        </div>
       </div>
 
       <div class="container-relogio-isolado">
@@ -592,7 +604,7 @@
 
   </div>
 
-  <!-- Botões de Fase (Semi / Finais) posicionados entre o placar e a tabela -->
+  <!-- Botões de Fase (Semi / Finais) -->
   <div class="container-fases">
     <button class="btn-fase" id="btn-semi" onclick="alternarFase('semi')">SEMIFINAL</button>
     <button class="btn-fase" id="btn-finais" onclick="alternarFase('finais')">FINAL</button>
@@ -844,12 +856,12 @@
         if (fase === 'semi') {
           btnSemi.classList.add('ativo');
           btnFinais.classList.remove('ativo');
-          textoOverlay.innerText = "SEMIFINAL";
+          textoOverlay.innerHTML = '<span class="linha-fase">SEMI</span><span class="linha-fase">FINAL</span>';
           overlay.style.display = 'flex';
         } else if (fase === 'finais') {
           btnFinais.classList.add('ativo');
           btnSemi.classList.remove('ativo');
-          textoOverlay.innerText = "FINAL";
+          textoOverlay.innerHTML = '<span class="linha-fase">FINAL</span>';
           overlay.style.display = 'flex';
         } else {
           btnSemi.classList.remove('ativo');
