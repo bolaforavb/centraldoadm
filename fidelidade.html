@@ -247,12 +247,6 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       padding: 0 10px;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-    .nome-diarista-centralizado:hover {
-      color: #d9b246;
-      text-decoration: underline;
     }
 
     .item-registro-datas {
@@ -1020,7 +1014,6 @@
       return dataStr;
     }
 
-    // Tornada global para ser acessada pelo atributo oninput do HTML
     window.filtrarRegistros = function() {
       atualizarTabelaRegistrosVisual();
     }
@@ -1032,14 +1025,12 @@
       const inputBusca = document.getElementById('busca-registros');
       const termoBusca = inputBusca ? inputBusca.value.toLowerCase().trim() : '';
 
-      // Organiza por ordem alfabética do nome da diarista
       const registrosOrdenados = Object.entries(BD_Registros).sort((a, b) => {
         const nomeA = (a[1].nome || '').toLowerCase();
         const nomeB = (b[1].nome || '').toLowerCase();
         return nomeA.localeCompare(nomeB, 'pt-BR');
       });
 
-      // Aplica o filtro de busca se houver texto digitado
       const registrosFiltrados = registrosOrdenados.filter(([id, reg]) => {
         const nome = (reg.nome || '').toLowerCase();
         return nome.includes(termoBusca);
@@ -1055,16 +1046,18 @@
         item.className = 'item-registro';
 
         const fotoDiarista = (BD_Diaristas[reg.nome] && BD_Diaristas[reg.nome].foto) ? BD_Diaristas[reg.nome].foto : '';
+        
+        // No bloco de registros, o clique na foto agora abre em tamanho maior (abrirModalVerFoto)
         let elementoFotoRegistro = fotoDiarista 
-          ? `<img src="${fotoDiarista}" class="avatar-circle" onclick="abrirModalFotos('${reg.nome}')" title="Alterar foto">` 
-          : `<div class="avatar-placeholder" onclick="abrirModalFotos('${reg.nome}')" title="Adicionar foto">+Foto</div>`;
+          ? `<img src="${fotoDiarista}" class="avatar-circle" onclick="abrirModalVerFoto('${reg.nome}')" title="Ver foto de ${reg.nome}">` 
+          : `<div class="avatar-placeholder" style="cursor: default; opacity: 0.5;" title="Sem foto">+Foto</div>`;
         
         item.innerHTML = `
           <div class="item-registro-topo">
             <div style="display: flex; align-items: center; gap: 6px;">
               ${elementoFotoRegistro}
             </div>
-            <span class="nome-diarista-centralizado" onclick="abrirModalVerFoto('${reg.nome}')" title="Ver foto de ${reg.nome}">${reg.nome}</span>
+            <span class="nome-diarista-centralizado">${reg.nome}</span>
             <div style="display: flex; align-items: center; gap: 4px;">
               <button class="btn-editar-registro" onclick="abrirModalEditarRegistro('${id}')" title="Editar registro">✏️</button>
               <button class="btn-deletar-ranking" onclick="excluirRegistro('${id}')" title="Excluir registro">✕</button>
