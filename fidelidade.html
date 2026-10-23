@@ -532,7 +532,7 @@
       <div class="header-resultado-linha">
         <div class="titulo-secao">Registros</div>
         <div style="width: 160px;">
-          <input type="text" id="busca-registros" placeholder="Buscar nome..." oninput="atualizarTabelaRegistrosVisual()" style="padding: 5px 8px; font-size: 12px; border-radius: 6px;">
+          <input type="text" id="busca-registros" placeholder="Buscar nome..." oninput="filtrarRegistros()" style="padding: 5px 8px; font-size: 12px; border-radius: 6px;">
         </div>
       </div>
       <form id="form-novo-registro" class="form-registros">
@@ -679,7 +679,7 @@
 
       const novaAlteracao = {
         usuario: nomeUsuario,
-        acao: `(Fidelidade) ${descricaoAcao}`,
+        acao: `(Diaristas) ${descricaoAcao}`,
         data: dataFormatada
       };
 
@@ -1020,11 +1020,17 @@
       return dataStr;
     }
 
+    // Tornada global para ser acessada pelo atributo oninput do HTML
+    window.filtrarRegistros = function() {
+      atualizarTabelaRegistrosVisual();
+    }
+
     function atualizarTabelaRegistrosVisual() {
       const containerRegistros = document.getElementById('tabela-registros');
       containerRegistros.innerHTML = '';
 
-      const termoBusca = document.getElementById('busca-registros').value.toLowerCase().trim();
+      const inputBusca = document.getElementById('busca-registros');
+      const termoBusca = inputBusca ? inputBusca.value.toLowerCase().trim() : '';
 
       // Organiza por ordem alfabética do nome da diarista
       const registrosOrdenados = Object.entries(BD_Registros).sort((a, b) => {
