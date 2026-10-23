@@ -108,6 +108,41 @@
       color: white;
     }
 
+    /* Botão Compartilhar WhatsApp no Ranking */
+    .btn-compartilhar-whatsapp {
+      background-color: rgba(37, 211, 102, 0.15);
+      color: #128c7e;
+      border: 1px solid rgba(37, 211, 102, 0.4);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.2s, color 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-compartilhar-whatsapp:hover {
+      background-color: #25d366;
+      color: white;
+    }
+
+    /* Estilo do Filtro do Histórico */
+    .select-filtro-historico {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(18, 54, 78, 0.3);
+      color: #12364e;
+      background-color: #f7f5f2;
+      font-weight: bold;
+      outline: none;
+      cursor: pointer;
+    }
+
     /* Estilo do Botão Inadimplente / Adimplente */
     .btn-inadimplente {
       background-color: rgba(0, 0, 0, 0.04);
@@ -580,7 +615,12 @@
 
     <!-- 2. Ranking -->
     <div class="bloco-card">
-      <div class="titulo-secao">Ranking</div>
+      <div class="header-card-com-acao">
+        <div class="titulo-secao">Ranking</div>
+        <button type="button" class="btn-compartilhar-whatsapp" onclick="compartilharRankingWhatsApp()">
+          📲 Compartilhar
+        </button>
+      </div>
       <div id="container-ranking" class="lista-ranking"></div>
     </div>
 
@@ -604,8 +644,15 @@
     <!-- 4. Bloco Colapsável: Histórico de Alterações -->
     <div class="bloco-card">
       <div class="header-card-toggle" onclick="alternarMinimizadoHistorico()">
-        <div class="titulo-secao">Histórico de Alterações</div>
-        <button type="button" id="btn-toggle-hist" class="btn-toggle-bloco" aria-label="Expandir ou minimizar">▼</button>
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+          <div class="titulo-secao">Histórico de Alterações</div>
+          <div style="display: flex; align-items: center; gap: 8px;" onclick="event.stopPropagation()">
+            <select id="filtro-usuario-historico" class="select-filtro-historico" onchange="filtrarHistoricoPorUsuario(this.value)">
+              <option value="">Todos os usuários</option>
+            </select>
+            <button type="button" id="btn-toggle-hist" class="btn-toggle-bloco" aria-label="Expandir ou minimizar">▼</button>
+          </div>
+        </div>
       </div>
 
       <div id="conteudo-historico-alteracoes" class="conteudo-minimizado">
@@ -660,6 +707,7 @@
 
     let usuarioAtualNome = "";
     let paginaHistoricoAtual = 1;
+    let usuarioFiltroHistorico = "";
     const itensPorPaginaHistorico = 5;
 
     auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
@@ -944,7 +992,7 @@
     };
 
     window.mudarPaginaHistorico = function(direcao) {
-      const historico = BD_Acompanhamento.historico || [];
+      const historico = obterHistoricoFiltrado();
       const totalPaginas = Math.ceil(historico.length / itensPorPaginaHistorico) || 1;
       
       paginaHistoricoAtual += direcao;
@@ -954,61 +1002,22 @@
       renderizarHistorico();
     };
 
-    function renderizarTudo() {
-      renderizarRanking();
-      renderizarPontuacoes();
-      renderizarCadastroAtribuicoes();
+    window.filtrarHistoricoPorUsuario = function(usuario) {
+      usuarioFiltroHistorico = usuario;
+      paginaHistoricoAtual = 1;
       renderizarHistorico();
-    }
+    };
 
-    function renderizarHistorico() {
-      const container = document.getElementById('lista-historico-container');
-      const containerControles = document.getElementById('controles-paginacao-historico');
-      container.innerHTML = '';
-      containerControles.innerHTML = '';
-
+    function obterHistoricoFiltrado() {
       const historico = BD_Acompanhamento.historico || [];
-      if (historico.length === 0) {
-        container.innerHTML = `<div class="mensag-vazia" style="text-align: left;">Nenhuma alteração registrada ainda.</div>`;
-        return;
-      }
-
-      const totalPaginas = Math.ceil(historico.length / itensPorPaginaHistorico) || 1;
-      if (paginaHistoricoAtual > totalPaginas) {
-        paginaHistoricoAtual = totalPaginas;
-      }
-
-      const inicio = (paginaHistoricoAtual - 1) * itensPorPaginaHistorico;
-      const fim = inicio + itensPorPaginaHistorico;
-      const itensPagina = historico.slice(inicio, fim);
-
-      itensPagina.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'item-historico';
-        div.innerHTML = `
-          <span class="usuario-acao">@${item.usuario}</span> ${item.acao}
-          <span class="data-acao">${item.data}</span>
-        `;
-        container.appendChild(div);
-      });
-
-      const btnAnteriorHtml = `<button class="btn-paginacao" onclick="mudarPaginaHistorico(-1)" ${paginaHistoricoAtual === 1 ? 'disabled' : ''}>◀ Anterior</button>`;
-      const spanInfoHtml = `<span class="info-paginacao">Página ${paginaHistoricoAtual} de ${totalPaginas}</span>`;
-      const btnProximoHtml = `<button class="btn-paginacao" onclick="mudarPaginaHistorico(1)" ${paginaHistoricoAtual === totalPaginas ? 'disabled' : ''}>Próxima ▶</button>`;
-
-      containerControles.innerHTML = btnAnteriorHtml + spanInfoHtml + btnProximoHtml;
+      if (!usuarioFiltroHistorico) return historico;
+      return historico.filter(item => item.usuario === usuarioFiltroHistorico);
     }
 
-    function renderizarRanking() {
-      const container = document.getElementById('container-ranking');
-      container.innerHTML = '';
-
+    function obterRankingCalculado() {
       let admsEntries = Object.entries(BD_Acompanhamento.adms || {});
 
-      if (admsEntries.length === 0) {
-        container.innerHTML = `<div class="mensag-vazia" style="text-align: left;">Nenhum ADM cadastrado.</div>`;
-        return;
-      }
+      if (admsEntries.length === 0) return [];
 
       let listaRanking = admsEntries.map(([idAdm, adm]) => {
         let totalPontos = 0;
@@ -1018,7 +1027,6 @@
           if (atr.admId === idAdm) {
             totalPontos += (atr.contagem || 0);
           } else if (atr.admId === "todos") {
-            // Apenas contabiliza para os emojis, NÃO somando no total de pontos da tabela de ranking
             if (atr.pontosIndividuais && atr.pontosIndividuais[idAdm]) {
               totalPontosPlus += atr.pontosIndividuais[idAdm];
             }
@@ -1052,6 +1060,105 @@
           rankingFinal.splice(posicaoDesejada, 0, inad);
         }
       });
+
+      return rankingFinal;
+    }
+
+    window.compartilharRankingWhatsApp = function() {
+      const ranking = obterRankingCalculado();
+      if (ranking.length === 0) {
+        alert("Não há dados de ranking para compartilhar.");
+        return;
+      }
+
+      const sufixosPosicao = ['1º', '2º', '3º', '4º', '5º', '6º', '7º', '8º', '9º', '10º'];
+      let textoMensagem = "*📊 RANKING DOS ADMS*\n\n";
+
+      ranking.forEach((item, index) => {
+        const posicaoStr = sufixosPosicao[index] || `${index + 1}º`;
+        const emojisVolei = '🏐'.repeat(item.pontosPlus);
+        const tagInad = item.inadimplente ? " [INADIMPLENTE]" : "";
+        const complementoVolei = emojisVolei ? ` ${emojisVolei}` : "";
+
+        textoMensagem += `${posicaoStr} *${item.nome}*${complementoVolei}${tagInad} - *${item.pontos} pts*\n`;
+      });
+
+      const agora = new Date().toLocaleString('pt-BR');
+      textoMensagem += `\n📅 _Atualizado em: ${agora}_`;
+
+      const linkWhatsApp = `https://api.whatsapp.com/send?text=${encodeURIComponent(textoMensagem)}`;
+      window.open(linkWhatsApp, '_blank');
+    };
+
+    function renderizarTudo() {
+      renderizarRanking();
+      renderizarPontuacoes();
+      renderizarCadastroAtribuicoes();
+      renderizarHistorico();
+    }
+
+    function renderizarHistorico() {
+      const container = document.getElementById('lista-historico-container');
+      const containerControles = document.getElementById('controles-paginacao-historico');
+      const selectFiltro = document.getElementById('filtro-usuario-historico');
+      
+      container.innerHTML = '';
+      containerControles.innerHTML = '';
+
+      const historicoGeral = BD_Acompanhamento.historico || [];
+
+      // Atualizar lista de opções do select com os usuários únicos presentes no histórico
+      const usuariosUnicos = [...new Set(historicoGeral.map(item => item.usuario))].sort();
+      let optionsHtml = `<option value="">Todos os usuários</option>`;
+      usuariosUnicos.forEach(usr => {
+        const selected = usuarioFiltroHistorico === usr ? 'selected' : '';
+        optionsHtml += `<option value="${usr}" ${selected}>@${usr}</option>`;
+      });
+      selectFiltro.innerHTML = optionsHtml;
+
+      const historicoFiltrado = obterHistoricoFiltrado();
+
+      if (historicoFiltrado.length === 0) {
+        container.innerHTML = `<div class="mensag-vazia" style="text-align: left;">Nenhuma alteração registrada para este filtro.</div>`;
+        return;
+      }
+
+      const totalPaginas = Math.ceil(historicoFiltrado.length / itensPorPaginaHistorico) || 1;
+      if (paginaHistoricoAtual > totalPaginas) {
+        paginaHistoricoAtual = totalPaginas;
+      }
+
+      const inicio = (paginaHistoricoAtual - 1) * itensPorPaginaHistorico;
+      const fim = inicio + itensPorPaginaHistorico;
+      const itensPagina = historicoFiltrado.slice(inicio, fim);
+
+      itensPagina.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'item-historico';
+        div.innerHTML = `
+          <span class="usuario-acao">@${item.usuario}</span> ${item.acao}
+          <span class="data-acao">${item.data}</span>
+        `;
+        container.appendChild(div);
+      });
+
+      const btnAnteriorHtml = `<button class="btn-paginacao" onclick="mudarPaginaHistorico(-1)" ${paginaHistoricoAtual === 1 ? 'disabled' : ''}>◀ Anterior</button>`;
+      const spanInfoHtml = `<span class="info-paginacao">Página ${paginaHistoricoAtual} de ${totalPaginas}</span>`;
+      const btnProximoHtml = `<button class="btn-paginacao" onclick="mudarPaginaHistorico(1)" ${paginaHistoricoAtual === totalPaginas ? 'disabled' : ''}>Próxima ▶</button>`;
+
+      containerControles.innerHTML = btnAnteriorHtml + spanInfoHtml + btnProximoHtml;
+    }
+
+    function renderizarRanking() {
+      const container = document.getElementById('container-ranking');
+      container.innerHTML = '';
+
+      let rankingFinal = obterRankingCalculado();
+
+      if (rankingFinal.length === 0) {
+        container.innerHTML = `<div class="mensag-vazia" style="text-align: left;">Nenhum ADM cadastrado.</div>`;
+        return;
+      }
 
       const sufixosPosicao = ['1º', '2º', '3º', '4º', '5º', '6º', '7º', '8º', '9º', '10º'];
 
@@ -1324,7 +1431,7 @@
         }
       });
 
-      BD_Acompanhamento.adms[idAdm].ordemAtribuicoes = novaOrdemIds;
+      BD_Acompanhamentos.adms[idAdm].ordemAtribuicoes = novaOrdemIds;
       salvarDados(`reordenou as atribuições do ADM "${BD_Acompanhamento.adms[idAdm].nome}"`);
     }
   </script>
