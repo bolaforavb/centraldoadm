@@ -529,7 +529,12 @@
 
     <!-- Bloco de Registros -->
     <div class="bloco-card">
-      <div class="titulo-secao">Registros</div>
+      <div class="header-resultado-linha">
+        <div class="titulo-secao">Registros</div>
+        <div style="width: 160px;">
+          <input type="text" id="busca-registros" placeholder="Buscar nome..." oninput="atualizarTabelaRegistrosVisual()" style="padding: 5px 8px; font-size: 12px; border-radius: 6px;">
+        </div>
+      </div>
       <form id="form-novo-registro" class="form-registros">
         <div class="form-registros-linha">
           <input type="text" id="reg-nome" placeholder="Nome do Diarista" required>
@@ -674,7 +679,7 @@
 
       const novaAlteracao = {
         usuario: nomeUsuario,
-        acao: `(Diaristas) ${descricaoAcao}`,
+        acao: `(Fidelidade) ${descricaoAcao}`,
         data: dataFormatada
       };
 
@@ -1019,14 +1024,27 @@
       const containerRegistros = document.getElementById('tabela-registros');
       containerRegistros.innerHTML = '';
 
-      const registrosOrdenados = Object.entries(BD_Registros).sort((a, b) => a[0].localeCompare(b[0]));
+      const termoBusca = document.getElementById('busca-registros').value.toLowerCase().trim();
 
-      if (registrosOrdenados.length === 0) {
-        containerRegistros.innerHTML = `<div style="text-align:center; padding: 20px; font-size:13px; opacity:0.6;">Nenhum registro cadastrado.</div>`;
+      // Organiza por ordem alfabética do nome da diarista
+      const registrosOrdenados = Object.entries(BD_Registros).sort((a, b) => {
+        const nomeA = (a[1].nome || '').toLowerCase();
+        const nomeB = (b[1].nome || '').toLowerCase();
+        return nomeA.localeCompare(nomeB, 'pt-BR');
+      });
+
+      // Aplica o filtro de busca se houver texto digitado
+      const registrosFiltrados = registrosOrdenados.filter(([id, reg]) => {
+        const nome = (reg.nome || '').toLowerCase();
+        return nome.includes(termoBusca);
+      });
+
+      if (registrosFiltrados.length === 0) {
+        containerRegistros.innerHTML = `<div style="text-align:center; padding: 20px; font-size:13px; opacity:0.6;">Nenhum registro encontrado.</div>`;
         return;
       }
 
-      registrosOrdenados.forEach(([id, reg]) => {
+      registrosFiltrados.forEach(([id, reg]) => {
         const item = document.createElement('div');
         item.className = 'item-registro';
 
