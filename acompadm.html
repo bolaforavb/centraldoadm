@@ -1107,7 +1107,6 @@
 
       const historicoGeral = BD_Acompanhamento.historico || [];
 
-      // Atualizar lista de opções do select com os usuários únicos presentes no histórico
       const usuariosUnicos = [...new Set(historicoGeral.map(item => item.usuario))].sort();
       let optionsHtml = `<option value="">Todos os usuários</option>`;
       usuariosUnicos.forEach(usr => {
@@ -1431,7 +1430,7 @@
         }
       });
 
-      BD_Acompanhamentos.adms[idAdm].ordemAtribuicoes = novaOrdemIds;
+      BD_Acompanhamento.adms[idAdm].ordemAtribuicoes = novaOrdemIds;
       salvarDados(`reordenou as atribuições do ADM "${BD_Acompanhamento.adms[idAdm].nome}"`);
     }
   </script>
