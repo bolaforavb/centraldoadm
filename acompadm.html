@@ -644,14 +644,12 @@
     <!-- 4. Bloco Colapsável: Histórico de Alterações -->
     <div class="bloco-card">
       <div class="header-card-toggle" onclick="alternarMinimizadoHistorico()">
-        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-          <div class="titulo-secao">Histórico de Alterações</div>
-          <div style="display: flex; align-items: center; gap: 8px;" onclick="event.stopPropagation()">
-            <select id="filtro-usuario-historico" class="select-filtro-historico" onchange="filtrarHistoricoPorUsuario(this.value)">
-              <option value="">Todos os usuários</option>
-            </select>
-            <button type="button" id="btn-toggle-hist" class="btn-toggle-bloco" aria-label="Expandir ou minimizar">▼</button>
-          </div>
+        <div class="titulo-secao">Histórico de Alterações</div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <select id="filtro-usuario-historico" class="select-filtro-historico" onclick="event.stopPropagation()" onchange="filtrarHistoricoPorUsuario(this.value)">
+            <option value="">Todos os usuários</option>
+          </select>
+          <button type="button" id="btn-toggle-hist" class="btn-toggle-bloco" aria-label="Expandir ou minimizar">▼</button>
         </div>
       </div>
 
@@ -1425,7 +1423,7 @@
       const novaOrdemIds = [];
       container.querySelectorAll('.item-atribuicao-adm').forEach(item => {
         const id = item.getAttribute('data-id');
-        if (id && !novaOrdemIds.includes(id)) {
+        if (id && !novaOrmdIds.includes(id)) {
           novaOrdemIds.push(id);
         }
       });
