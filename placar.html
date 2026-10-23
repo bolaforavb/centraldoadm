@@ -1,3 +1,22 @@
+Com certeza, Cris! Vamos dar aquele destaque prateado metálico de respeito para a semifinal.
+
+O segredo para o prata se destacar sem parecer cinza opaco ou "sujo" é aumentar o contraste nos cantos e adicionar um leve brilho prateado suave nas bordas da estrutura.
+
+Substitua apenas a regra CSS do `.estrutura-placar.tema-semifinal` no seu `<style>` por essa versão atualizada (ou use o código completo abaixo):
+
+```css
+    .estrutura-placar.tema-semifinal {
+      background: linear-gradient(135deg, #a3a8b0 0%, #e6e8eb 45%, #ffffff 50%, #e6e8eb 55%, #8a9099 100%) !important;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.45), inset 0 0 15px rgba(255, 255, 255, 0.6) !important;
+    }
+
+```
+
+---
+
+### Aqui está o código completo atualizado com esse prata metálico bem marcante:
+
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -152,7 +171,6 @@
       box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
     }
 
-    /* Seletor de Tema Suspenso ao Lado Direito */
     .seletor-tema-placar {
       background-color: #12364e;
       color: #e1d8cd;
@@ -184,13 +202,13 @@
 
     .estrutura-placar {
       display: flex;
-      background-color: #ffffff; /* Fundo padrão do placar */
+      background-color: #ffffff; 
       border-radius: 20px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.3);
       position: relative;
       overflow: hidden;
       width: 100%;
-      transition: background 0.4s ease; /* Transição suave de cor do fundo */
+      transition: background 0.4s ease, box-shadow 0.4s ease;
     }
 
     /* --- TEMAS DE COR DO FUNDO DA ESTRUTURA DO PLACAR --- */
@@ -198,10 +216,13 @@
       background: #ffffff !important;
     }
 
+    /* PRATA METÁLICO INTENSO E EVIDENTE */
     .estrutura-placar.tema-semifinal {
-      background: linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 50%, #bdbdbd 100%) !important;
+      background: linear-gradient(135deg, #a3a8b0 0%, #e6e8eb 45%, #ffffff 50%, #e6e8eb 55%, #8a9099 100%) !important;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.45), inset 0 0 15px rgba(255, 255, 255, 0.6) !important;
     }
 
+    /* DOURADO DA FINAL */
     .estrutura-placar.tema-final {
       background: linear-gradient(135deg, #f7d468 0%, #d9b246 50%, #b88e28 100%) !important;
     }
@@ -684,7 +705,7 @@
       corEsquerda: "",
       corDireita: "",
       fase: null,
-      tema: "padrao" // Novo campo para o tema visual
+      tema: "padrao"
     };
 
     let ultimaFaseProcessada = null;
@@ -1043,10 +1064,8 @@
     function alternarFase(tipo) {
       if (placarLocal.fase === tipo) {
         placarLocal.fase = null;
-        placarLocal.tema = "padrao"; // Volta para o tema padrão ao desativar
       } else {
         placarLocal.fase = tipo;
-        // Altera automaticamente o tema de fundo conforme o botão clicado
         placarLocal.tema = (tipo === 'semi') ? 'semifinal' : 'final';
       }
       placarRef.set(placarLocal);
@@ -1138,3 +1157,5 @@
 
 </body>
 </html>
+
+```
