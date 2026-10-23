@@ -91,14 +91,17 @@
     }
 
     /* Inputs padronizados */
-    input[type="text"], input[type="date"] {
+    input[type="text"], input[type="date"], input[type="file"] {
       padding: 10px;
       border: 1px solid #ccc;
       border-radius: 8px;
       font-size: 14px;
       color: #12364e;
       outline: none;
+      width: 100%;
+      background: white;
     }
+    input[type="file"] { padding: 7px; }
 
     .form-inline {
       display: flex;
@@ -644,36 +647,59 @@
     </a>
   </footer>
 
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getDatabase, ref, onValue, set, get, child, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
-      authDomain: "central-adm-bolafora.firebaseapp.com",
-      databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com",
-      projectId: "central-adm-bolafora",
-      storageBucket: "central-adm-bolafora.firebasestorage.app",
-      messagingSenderId: "429477810517",
-      appId: "1:429477810517:web:3be6c842269cbdfe4b5fdc"
+      databaseURL: "https://central-adm-bolafora-default-rtdb.firebaseio.com/"
     };
-    
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const auth = firebase.auth();
 
-    auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
-      .then(() => {
-        auth.onAuthStateChanged((user) => {
-          if (!user) {
-            window.location.href = 'index.html'; 
-          }
-        });
-      })
-      .catch((error) => {
-        console.error("Erro ao definir persistência de sessão:", error);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    setPersistence(auth, browserSessionPersistence).catch(console.error);
+
+    // Função centralizada para registrar histórico de alterações na tabela compartilhada
+    function registrarAcaoNoHistorico(descricaoAcao) {
+      let nomeUsuario = "Desconhecido";
+      if (auth.currentUser) {
+        let bruto = auth.currentUser.email || auth.currentUser.uid || "Desconhecido";
+        nomeUsuario = bruto.split('@')[0];
+      }
+
+      const dataFormatada = new Date().toLocaleString('pt-BR');
+
+      const novaAlteracao = {
+        usuario: nomeUsuario,
+        acao: `(Diaristas) ${descricaoAcao}`,
+        data: dataFormatada
+      };
+
+      get(ref(db, 'acompanhamento_adms')).then((snapshot) => {
+        let dadosAtuais = snapshot.val() || { adms: {}, atribuicoes: {}, historico: [] };
+        let historicoAtual = dadosAtuais.historico || [];
+
+        historicoAtual.unshift(novaAlteracao);
+
+        if (historicoAtual.length > 50) {
+          historicoAtual = historicoAtual.slice(0, 50);
+        }
+
+        dadosAtuais.historico = historicoAtual;
+        set(ref(db, 'acompanhamento_adms'), dadosAtuais);
+      }).catch((error) => {
+        console.error("Erro ao gravar histórico no Firebase:", error);
       });
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "index.html";
+      }
+    });
 
     let BD_Diaristas = {
       "Ana Beatriz": { presencas: 0, foto: "" },
@@ -695,12 +721,12 @@
     let fotoTemporariaNovoDiarista = "";
 
     function salvarDados() {
-      db.ref('diarista_fidelidade').set(BD_Diaristas);
-      db.ref('diarias_gratis').set(BD_DiariasGratis);
-      db.ref('registros_diaristas').set(BD_Registros);
+      set(ref(db, 'diarista_fidelidade'), BD_Diaristas);
+      set(ref(db, 'diarias_gratis'), BD_DiariasGratis);
+      set(ref(db, 'registros_diaristas'), BD_Registros);
     }
 
-    db.ref('diarista_fidelidade').on('value', (snapshot) => {
+    onValue(ref(db, 'diarista_fidelidade'), (snapshot) => {
       const dadosNuvem = snapshot.val();
       if (dadosNuvem) {
         BD_Diaristas = {};
@@ -717,7 +743,7 @@
       atualizarTabelaVisual();
     });
 
-    db.ref('diarias_gratis').on('value', (snapshot) => {
+    onValue(ref(db, 'diarias_gratis'), (snapshot) => {
       const dadosNuvem = snapshot.val();
       if (dadosNuvem) {
         BD_DiariasGratis = dadosNuvem;
@@ -725,7 +751,7 @@
       atualizarTabelaVisual();
     });
 
-    db.ref('registros_diaristas').on('value', (snapshot) => {
+    onValue(ref(db, 'registros_diaristas'), (snapshot) => {
       const dadosNuvem = snapshot.val();
       if (dadosNuvem) {
         BD_Registros = dadosNuvem;
@@ -733,7 +759,7 @@
       atualizarTabelaRegistrosVisual();
     });
 
-    db.ref('arquivos_enviados').on('value', (snapshot) => {
+    onValue(ref(db, 'arquivos_enviados'), (snapshot) => {
       const val = snapshot.val();
       BD_FotosDisponiveis = [];
       if (val) {
@@ -759,7 +785,6 @@
           }
         });
       }
-      // Atualiza a galeria se o modal estiver aberto
       if (document.getElementById('modal-fotos').style.display === 'flex') {
         renderizarGaleriaFotosModal();
       }
@@ -770,7 +795,7 @@
       galeriaContainer.innerHTML = '';
 
       if (BD_FotosDisponiveis.length === 0) {
-        galeriaContainer.innerHTML = `<div style="grid-column: span 3; text-align: center; padding: 20px; font-size: 12px; opacity: 0.6;">Nenhuma foto encontrada no banco "arquivos_enviados".</div>`;
+        galeriaContainer.innerHTML = `<div style="grid-column: span 3; text-align: center; padding: 20px; font-size: 12px; opacity: 0.6;">Nenhuma foto encontrada no banco.</div>`;
       } else {
         BD_FotosDisponiveis.forEach(fotoUrl => {
           const img = document.createElement('img');
@@ -782,26 +807,26 @@
       }
     }
 
-    function abrirModalFotos(nomeDiarista) {
+    window.abrirModalFotos = function(nomeDiarista) {
       diaristaSelecionadaParaFoto = nomeDiarista;
       document.getElementById('input-upload-nova-foto').value = '';
       renderizarGaleriaFotosModal();
       document.getElementById('modal-fotos').style.display = 'flex';
     }
 
-    function abrirModalFotosParaNovoDiarista() {
+    window.abrirModalFotosParaNovoDiarista = function() {
       diaristaSelecionadaParaFoto = "__NOVO_DIARISTA__";
       document.getElementById('input-upload-nova-foto').value = '';
       renderizarGaleriaFotosModal();
       document.getElementById('modal-fotos').style.display = 'flex';
     }
 
-    function fecharModalFotos() {
+    window.fecharModalFotos = function() {
       document.getElementById('modal-fotos').style.display = 'none';
       diaristaSelecionadaParaFoto = null;
     }
 
-    function fazerUploadNovaFotoNoBanco() {
+    window.fazerUploadNovaFotoNoBanco = function() {
       const fileInput = document.getElementById('input-upload-nova-foto');
       const file = fileInput.files[0];
       if (!file) {
@@ -813,16 +838,15 @@
       reader.onload = function(e) {
         const base64Data = e.target.result;
         
-        // Salva no banco de dados "arquivos_enviados"
-        const novoArquivoRef = db.ref('arquivos_enviados').push();
-        novoArquivoRef.set({
+        const novoArquivoRef = push(ref(db, 'arquivos_enviados'));
+        set(novoArquivoRef, {
           nome: file.name,
           tipoMime: file.type,
           dadosBase64: base64Data,
           dataEnvio: new Date().toISOString()
         }).then(() => {
-          // Seleciona automaticamente essa nova foto para a diarista atual
           selecionarFotoParaDiarista(base64Data);
+          registrarAcaoNoHistorico(`enviou nova foto (${file.name}) ao banco`);
         }).catch((err) => {
           console.error("Erro ao enviar foto:", err);
           alert("Erro ao enviar a foto para o banco.");
@@ -841,6 +865,7 @@
       } else if (diaristaSelecionadaParaFoto && BD_Diaristas[diaristaSelecionadaParaFoto]) {
         BD_Diaristas[diaristaSelecionadaParaFoto].foto = url;
         salvarDados();
+        registrarAcaoNoHistorico(`atualizou a foto da diarista "${diaristaSelecionadaParaFoto}"`);
         fecharModalFotos();
       }
     }
@@ -861,13 +886,13 @@
         img.style.objectFit = 'contain';
         containerFoto.appendChild(img);
       } else {
-        containerFoto.innerHTML = `<div style="padding: 30px; font-size: 13px; opacity: 0.6;">Nenhuma foto cadastrada para esta diarista. Clique no ícone de avatar ao lado para adicionar.</div>`;
+        containerFoto.innerHTML = `<div style="padding: 30px; font-size: 13px; opacity: 0.6;">Nenhuma foto cadastrada para esta diarista.</div>`;
       }
 
       document.getElementById('modal-ver-foto').style.display = 'flex';
     }
 
-    function fecharModalVerFoto() {
+    window.fecharModalVerFoto = function() {
       document.getElementById('modal-ver-foto').style.display = 'none';
     }
 
@@ -898,6 +923,7 @@
       }
 
       salvarDados();
+      registrarAcaoNoHistorico(`renomeou a diarista de "${nomeAntigo}" para "${nomeFormatado}"`);
     };
 
     window.abrirModalEditarRegistro = function(id) {
@@ -914,7 +940,7 @@
       document.getElementById('modal-editar-registro').style.display = 'flex';
     }
 
-    function fecharModalEditarRegistro() {
+    window.fecharModalEditarRegistro = function() {
       document.getElementById('modal-editar-registro').style.display = 'none';
     }
 
@@ -923,8 +949,9 @@
       const id = document.getElementById('edit-reg-id').value;
       if (!id || !BD_Registros[id]) return;
 
+      const nomeDiarista = document.getElementById('edit-reg-nome').value.trim();
       BD_Registros[id] = {
-        nome: document.getElementById('edit-reg-nome').value.trim(),
+        nome: nomeDiarista,
         p1: document.getElementById('edit-reg-p1').value,
         p2: document.getElementById('edit-reg-p2').value,
         p3: document.getElementById('edit-reg-p3').value,
@@ -932,6 +959,7 @@
       };
 
       salvarDados();
+      registrarAcaoNoHistorico(`editou o registro da diarista "${nomeDiarista}"`);
       fecharModalEditarRegistro();
     });
 
@@ -1051,13 +1079,16 @@
       let novoValor = diarista.presencas + delta;
       if (novoValor < 0) novoValor = 0;
 
+      let ganhouGratis = false;
       if (novoValor >= 3) {
         novoValor = 0; 
         BD_DiariasGratis[nome] = (BD_DiariasGratis[nome] || 0) + 1;
+        ganhouGratis = true;
       }
 
       diarista.presencas = novoValor;
       salvarDados();
+      registrarAcaoNoHistorico(`alterou presença da diarista "${nome}" (presenças: ${diarista.presencas}${ganhouGratis ? ', ganhou 1 dia grátis' : ''})`);
     }
 
     document.getElementById('form-nova-diarista').addEventListener('submit', function(e) {
@@ -1072,6 +1103,7 @@
 
       BD_Diaristas[nome] = { presencas: 0, foto: fotoTemporariaNovoDiarista };
       salvarDados();
+      registrarAcaoNoHistorico(`cadastrou a nova diarista "${nome}"`);
 
       input.value = '';
       fotoTemporariaNovoDiarista = "";
@@ -1092,6 +1124,7 @@
       BD_Registros[idUnico] = { nome, p1, p2, p3, gratis };
 
       salvarDados();
+      registrarAcaoNoHistorico(`adicionou registro de datas para a diarista "${nome}"`);
 
       document.getElementById('reg-nome').value = '';
       document.getElementById('reg-p1').value = '';
@@ -1105,13 +1138,16 @@
         delete BD_Diaristas[nome];
         delete BD_DiariasGratis[nome];
         salvarDados();
+        registrarAcaoNoHistorico(`removeu a diarista "${nome}"`);
       }
     }
 
     window.excluirRegistro = function(id) {
       if (confirm(`Remover este registro?`)) {
+        const nomeRelacionado = BD_Registros[id] ? BD_Registros[id].nome : id;
         delete BD_Registros[id];
         salvarDados();
+        registrarAcaoNoHistorico(`removeu o registro de datas da diarista "${nomeRelacionado}"`);
       }
     }
   </script>
