@@ -109,12 +109,13 @@
       transform: scale(0.98);
     }
 
-    /* --- BOTÕES SEMI / FINAIS --- */
+    /* --- BOTÕES SEMI / FINAIS + SELETOR DE TEMA --- */
     .container-fases {
       width: 100%;
       max-width: 900px;
       display: flex;
       justify-content: center;
+      align-items: center;
       gap: 12px;
       margin-top: 4px;
       margin-bottom: 12px;
@@ -151,6 +152,27 @@
       box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
     }
 
+    /* Seletor de Tema Suspenso ao Lado Direito */
+    .seletor-tema-placar {
+      background-color: #12364e;
+      color: #e1d8cd;
+      border: 1px solid #e1d8cd;
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      outline: none;
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    .seletor-tema-placar option {
+      background-color: #12364e;
+      color: #e1d8cd;
+    }
+
     .container-placar-global {
       width: 100%;
       max-width: 900px;
@@ -162,12 +184,26 @@
 
     .estrutura-placar {
       display: flex;
-      background-color: white;
+      background-color: #ffffff; /* Fundo padrão do placar */
       border-radius: 20px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.3);
       position: relative;
       overflow: hidden;
       width: 100%;
+      transition: background 0.4s ease; /* Transição suave de cor do fundo */
+    }
+
+    /* --- TEMAS DE COR DO FUNDO DA ESTRUTURA DO PLACAR --- */
+    .estrutura-placar.tema-padrao {
+      background: #ffffff !important;
+    }
+
+    .estrutura-placar.tema-semifinal {
+      background: linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 50%, #bdbdbd 100%) !important;
+    }
+
+    .estrutura-placar.tema-final {
+      background: linear-gradient(135deg, #f7d468 0%, #d9b246 50%, #b88e28 100%) !important;
     }
 
     .estrutura-placar::before {
@@ -182,7 +218,7 @@
       z-index: 2;
     }
 
-    /* --- POP-UP SOBREPOSTO AO PLACAR (TEXTO AUMENTADO EM 100%) --- */
+    /* --- POP-UP SOBREPOSTO AO PLACAR --- */
     .overlay-fase {
       display: none;
       position: absolute;
@@ -604,10 +640,16 @@
 
   </div>
 
-  <!-- Botões de Fase (Semi / Finais) -->
+  <!-- Botões de Fase (Semi / Finais) + Menu Suspenso de Temas -->
   <div class="container-fases">
     <button class="btn-fase" id="btn-semi" onclick="alternarFase('semi')">Semi</button>
     <button class="btn-fase" id="btn-finais" onclick="alternarFase('finais')">Finais</button>
+    
+    <select class="seletor-tema-placar" id="seletorTema" onchange="alterarTemaManual()">
+      <option value="padrao">Tema: Padrão</option>
+      <option value="semifinal">Tema: Semifinal (Prata)</option>
+      <option value="final">Tema: Final (Dourado)</option>
+    </select>
   </div>
 
   <div class="container-placar-global" style="padding-top: 0;">
@@ -641,10 +683,11 @@
       direita: 0,
       corEsquerda: "",
       corDireita: "",
-      fase: null
+      fase: null,
+      tema: "padrao" // Novo campo para o tema visual
     };
 
-    let ultimaFaseProcessada = null; // Controla para tocar o áudio apenas uma vez ao mudar
+    let ultimaFaseProcessada = null;
 
     const estilosCores = {
       "Amarelo": { bg: "#ffeb3b", text: "#000" },
@@ -662,21 +705,18 @@
     let audioSource = null;
     let estaTocando = false;
 
-    // Carrega o apito padrão
     fetch('https://bolaforavb.github.io/centraldoadm/apito.wav')
       .then(res => res.arrayBuffer())
       .then(buf => (audioContext || (audioContext = new (window.AudioContext || window.webkitAudioContext)())).decodeAudioData(buf))
       .then(decoded => { audioBufferApito = decoded; })
       .catch(err => console.error("Erro ao carregar apito.wav:", err));
 
-    // Carrega o áudio de semifinal
     fetch('https://bolaforavb.github.io/centraldoadm/anuncio_semifinais.wav')
       .then(res => res.arrayBuffer())
       .then(buf => (audioContext || (audioContext = new (window.AudioContext || window.webkitAudioContext)())).decodeAudioData(buf))
       .then(decoded => { audioBufferSemi = decoded; })
       .catch(err => console.error("Erro ao carregar anuncio_semifinais.wav:", err));
 
-    // Carrega o áudio de final
     fetch('https://bolaforavb.github.io/centraldoadm/anuncio_finais.wav')
       .then(res => res.arrayBuffer())
       .then(buf => (audioContext || (audioContext = new (window.AudioContext || window.webkitAudioContext)())).decodeAudioData(buf))
@@ -871,6 +911,29 @@
       }
     }
 
+    // --- CONTROLE DE TEMAS DE COR DO PLACAR ---
+    function aplicarTemaVisual(nomeTema) {
+      const placarMain = document.getElementById('placar-main');
+      const seletorTema = document.getElementById('seletorTema');
+
+      if (placarMain) {
+        placarMain.classList.remove('tema-padrao', 'tema-semifinal', 'tema-final');
+        placarMain.classList.add(`tema-${nomeTema || 'padrao'}`);
+      }
+
+      if (seletorTema) {
+        seletorTema.value = nomeTema || 'padrao';
+      }
+    }
+
+    function alterarTemaManual() {
+      const seletorTema = document.getElementById('seletorTema');
+      if (seletorTema) {
+        placarLocal.tema = seletorTema.value;
+        placarRef.set(placarLocal);
+      }
+    }
+
     // --- ATUALIZAÇÃO VISUAL E SONORA DA FASE (SEMI / FINAIS) ---
     function atualizarVisualFase(fase) {
       const btnSemi = document.getElementById('btn-semi');
@@ -885,7 +948,6 @@
           textoOverlay.innerHTML = '<span class="linha-fase">SEMI</span><span class="linha-fase">FINAL</span>';
           overlay.style.display = 'flex';
 
-          // Toca o som de semifinal apenas se mudou agora para 'semi'
           if (ultimaFaseProcessada !== 'semi') {
             tocarAudioUnico(audioBufferSemi);
           }
@@ -896,7 +958,6 @@
           textoOverlay.innerHTML = '<span class="linha-fase">FINAL</span>';
           overlay.style.display = 'flex';
 
-          // Toca o som de final apenas se mudou agora para 'finais'
           if (ultimaFaseProcessada !== 'finais') {
             tocarAudioUnico(audioBufferFinal);
           }
@@ -931,8 +992,9 @@
         atualizarAparenciaSeletor('direita', placarLocal.corDireita || "");
         atualizarOpcoesDisponiveis();
         atualizarVisualFase(placarLocal.fase || null);
+        aplicarTemaVisual(placarLocal.tema || 'padrao');
       } else {
-        const estadoInicial = { esquerda: 0, direita: 0, corEsquerda: "", corDireita: "", fase: null };
+        const estadoInicial = { esquerda: 0, direita: 0, corEsquerda: "", corDireita: "", fase: null, tema: "padrao" };
         placarRef.set(estadoInicial);
       }
     });
@@ -974,15 +1036,18 @@
 
     function zerarPlacar() {
       if (confirm("Deseja reiniciar a contagem do placar para 0 x 0?")) {
-        placarRef.set({ esquerda: 0, direita: 0, corEsquerda: "", corDireita: "", fase: null });
+        placarRef.set({ esquerda: 0, direita: 0, corEsquerda: "", corDireita: "", fase: null, tema: "padrao" });
       }
     }
 
     function alternarFase(tipo) {
       if (placarLocal.fase === tipo) {
         placarLocal.fase = null;
+        placarLocal.tema = "padrao"; // Volta para o tema padrão ao desativar
       } else {
         placarLocal.fase = tipo;
+        // Altera automaticamente o tema de fundo conforme o botão clicado
+        placarLocal.tema = (tipo === 'semi') ? 'semifinal' : 'final';
       }
       placarRef.set(placarLocal);
     }
