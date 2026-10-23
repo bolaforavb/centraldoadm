@@ -606,8 +606,8 @@
 
   <!-- Botões de Fase (Semi / Finais) -->
   <div class="container-fases">
-    <button class="btn-fase" id="btn-semi" onclick="alternarFase('semi')">SEMIFINAL</button>
-    <button class="btn-fase" id="btn-finais" onclick="alternarFase('finais')">FINAL</button>
+    <button class="btn-fase" id="btn-semi" onclick="alternarFase('semi')">Semi</button>
+    <button class="btn-fase" id="btn-finais" onclick="alternarFase('finais')">Finais</button>
   </div>
 
   <div class="container-placar-global" style="padding-top: 0;">
@@ -644,6 +644,8 @@
       fase: null
     };
 
+    let ultimaFaseProcessada = null; // Controla para tocar o áudio apenas uma vez ao mudar
+
     const estilosCores = {
       "Amarelo": { bg: "#ffeb3b", text: "#000" },
       "Azul": { bg: "#2196f3", text: "#fff" },
@@ -654,42 +656,69 @@
 
     // --- ENGENHARIA DE ÁUDIO VIA WEB AUDIO API ---
     let audioContext;
-    let audioBuffer;
+    let audioBufferApito;
+    let audioBufferSemi;
+    let audioBufferFinal;
     let audioSource = null;
     let estaTocando = false;
 
+    // Carrega o apito padrão
     fetch('https://bolaforavb.github.io/centraldoadm/apito.wav')
-      .then(response => response.arrayBuffer())
-      .then(arrayBuffer => {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        return audioContext.decodeAudioData(arrayBuffer);
-      })
-      .then(buffer => {
-        audioBuffer = buffer;
-      })
-      .catch(err => console.error("Erro ao carregar o arquivo .wav do repositório:", err));
+      .then(res => res.arrayBuffer())
+      .then(buf => (audioContext || (audioContext = new (window.AudioContext || window.webkitAudioContext)())).decodeAudioData(buf))
+      .then(decoded => { audioBufferApito = decoded; })
+      .catch(err => console.error("Erro ao carregar apito.wav:", err));
+
+    // Carrega o áudio de semifinal
+    fetch('https://bolaforavb.github.io/centraldoadm/anuncio_semifinais.wav')
+      .then(res => res.arrayBuffer())
+      .then(buf => (audioContext || (audioContext = new (window.AudioContext || window.webkitAudioContext)())).decodeAudioData(buf))
+      .then(decoded => { audioBufferSemi = decoded; })
+      .catch(err => console.error("Erro ao carregar anuncio_semifinais.wav:", err));
+
+    // Carrega o áudio de final
+    fetch('https://bolaforavb.github.io/centraldoadm/anuncio_finais.wav')
+      .then(res => res.arrayBuffer())
+      .then(buf => (audioContext || (audioContext = new (window.AudioContext || window.webkitAudioContext)())).decodeAudioData(buf))
+      .then(decoded => { audioBufferFinal = decoded; })
+      .catch(err => console.error("Erro ao carregar anuncio_finais.wav:", err));
+
+    function tocarAudioUnico(buffer) {
+      if (!buffer) return;
+      try {
+        if (!audioContext) {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioContext.state === 'suspended') {
+          audioContext.resume();
+        }
+
+        const source = audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioContext.destination);
+        source.start(0);
+      } catch (e) {
+        console.error("Erro ao reproduzir áudio único:", e);
+      }
+    }
 
     function iniciarApito(event) {
       if (event) event.preventDefault();
-      
-      if (!audioBuffer || estaTocando) return;
+      if (!audioBufferApito || estaTocando) return;
 
       if (!audioContext) {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
       }
-      if (audioContext && audioContext.state === 'suspended') {
+      if (audioContext.state === 'suspended') {
         audioContext.resume();
       }
 
       estaTocando = true;
-
       audioSource = audioContext.createBufferSource();
-      audioSource.buffer = audioBuffer;
+      audioSource.buffer = audioBufferApito;
       audioSource.loop = true;
-
       audioSource.loopStart = 0.15; 
-      audioSource.loopEnd = audioBuffer.duration - 0.40; 
-
+      audioSource.loopEnd = audioBufferApito.duration - 0.40; 
       audioSource.connect(audioContext.destination);
       audioSource.start(0);
     }
@@ -697,11 +726,8 @@
     function pararApito(event) {
       if (event) event.preventDefault();
       estaTocando = false;
-      
       if (audioSource) {
-        try {
-          audioSource.stop();
-        } catch(e) {}
+        try { audioSource.stop(); } catch(e) {}
         audioSource = null;
       }
     }
@@ -845,7 +871,7 @@
       }
     }
 
-    // --- ATUALIZAÇÃO VISUAL DA FASE (SEMI / FINAIS) ---
+    // --- ATUALIZAÇÃO VISUAL E SONORA DA FASE (SEMI / FINAIS) ---
     function atualizarVisualFase(fase) {
       const btnSemi = document.getElementById('btn-semi');
       const btnFinais = document.getElementById('btn-finais');
@@ -858,16 +884,30 @@
           btnFinais.classList.remove('ativo');
           textoOverlay.innerHTML = '<span class="linha-fase">SEMI</span><span class="linha-fase">FINAL</span>';
           overlay.style.display = 'flex';
+
+          // Toca o som de semifinal apenas se mudou agora para 'semi'
+          if (ultimaFaseProcessada !== 'semi') {
+            tocarAudioUnico(audioBufferSemi);
+          }
+
         } else if (fase === 'finais') {
           btnFinais.classList.add('ativo');
           btnSemi.classList.remove('ativo');
           textoOverlay.innerHTML = '<span class="linha-fase">FINAL</span>';
           overlay.style.display = 'flex';
+
+          // Toca o som de final apenas se mudou agora para 'finais'
+          if (ultimaFaseProcessada !== 'finais') {
+            tocarAudioUnico(audioBufferFinal);
+          }
+
         } else {
           btnSemi.classList.remove('ativo');
           btnFinais.classList.remove('ativo');
           overlay.style.display = 'none';
         }
+
+        ultimaFaseProcessada = fase;
       }
     }
 
