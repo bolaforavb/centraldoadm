@@ -26,7 +26,6 @@
 }
 
 html {
-    /* Estica a área de rolagem para permitir centralizar o último item na tela */
     scroll-padding-bottom: 45vh;
     scroll-behavior: smooth;
 }
@@ -34,7 +33,8 @@ html {
 body {
     background-color: var(--bege-oficial);
     color: var(--azul-oficial);
-    padding-bottom: 45vh; /* Folga interna para o scroll comportar a centralização */
+    padding-bottom: 45vh;
+    position: relative; /* Necessário para posicionamento absoluto do tooltip */
 }
 
 /* ==========================================
@@ -124,12 +124,11 @@ h2 {
     background-color: var(--branco);
     border: 2px solid var(--azul-oficial);
     border-radius: 4px;
-    overflow: hidden;
+    overflow: visible;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     transition: border-color 0.2s ease, box-shadow 0.2s ease, border-width 0.2s ease;
 }
 
-/* Efeito Neon e Borda Dourada para jogo Pinado */
 @keyframes neonGlow {
     0% {
         box-shadow: 0 0 8px #d9b246, 0 0 16px rgba(217, 178, 70, 0.6), inset 0 0 6px rgba(217, 178, 70, 0.3);
@@ -167,6 +166,7 @@ h2 {
     align-items: center;
     justify-content: center;
     text-transform: uppercase;
+    position: relative; 
 }
 
 .header-cell.vazia {
@@ -174,6 +174,68 @@ h2 {
     background-color: var(--azul-oficial);
     padding: 0;
     justify-content: center;
+}
+
+/* ==========================================
+   TOOLTIP DO TIME (CLEAN E ACOMPANHA SCROLL)
+   ========================================== */
+.time-info-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-info-time {
+    background: transparent;
+    border: none;
+    color: var(--amarelo-oficial);
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s;
+}
+
+.btn-info-time:hover {
+    transform: scale(1.2);
+}
+
+/* Janelinha Flutuante Global (Posicionamento absoluto para seguir o scroll) */
+.time-tooltip-global {
+    display: none;
+    width: max-content;
+    min-width: 110px;
+    max-width: 250px;
+    background-color: #ffffff;
+    color: var(--azul-oficial);
+    text-align: left;
+    border-radius: 6px;
+    padding: 8px 12px;
+    position: absolute;
+    z-index: 99999;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+    border: 1px solid #d1d5db;
+    font-size: 0.8rem;
+    font-weight: normal;
+    text-transform: none;
+    white-space: nowrap;
+}
+
+.time-tooltip-global.ativo {
+    display: block;
+}
+
+.time-tooltip-global ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.time-tooltip-global li {
+    padding: 3px 0;
+    color: #1f2937;
 }
 
 .btn-pin {
@@ -584,6 +646,9 @@ td { font-size: 1.1rem; font-weight: bold; }
 
     <div id="toast" class="toast"></div>
 
+    <!-- Tooltip Global Dinâmico -->
+    <div id="tooltip-global" class="time-tooltip-global"></div>
+
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -608,6 +673,7 @@ td { font-size: 1.1rem; font-weight: bold; }
     let elenco = [];
     let idEmEdicao = null;
     let jogoPinadoId = null;
+    let timeTooltipAtivo = null; // Controla qual time está aberto no tooltip
 
     function registrarAcaoNoHistorico(descricaoAcao) {
         let nomeUsuario = "Desconhecido";
@@ -670,7 +736,21 @@ td { font-size: 1.1rem; font-weight: bold; }
                 });
             }
         });
+
+        // Fecha o tooltip global ao clicar em qualquer outro lugar fora dele ou do botão 'i'
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.time-info-container') && !e.target.closest('#tooltip-global')) {
+                fecharTooltipGlobal();
+            }
+        });
     });
+
+    function fecharTooltipGlobal() {
+        const tooltipGlobal = document.getElementById('tooltip-global');
+        tooltipGlobal.classList.remove('ativo');
+        tooltipGlobal.style.display = 'none';
+        timeTooltipAtivo = null;
+    }
 
     function normalizarArrayFirebase(dado) {
         if (!dado) return [];
@@ -722,6 +802,58 @@ td { font-size: 1.1rem; font-weight: bold; }
     }
 
     escutarBancoDeDados();
+
+    function mostrarTooltipGlobal(event, nomeTime) {
+        event.stopPropagation();
+        const tooltipGlobal = document.getElementById('tooltip-global');
+        
+        // Se clicar no mesmo time que já está aberto, fecha-o
+        if (timeTooltipAtivo === nomeTime && tooltipGlobal.classList.contains('ativo')) {
+            fecharTooltipGlobal();
+            return;
+        }
+
+        timeTooltipAtivo = nomeTime;
+        const botao = event.currentTarget;
+        const rect = botao.getBoundingClientRect();
+
+        const jogadoresDoTime = elenco.filter(j => j.time === nomeTime && j.presente);
+        let listaJogosHtml = jogadoresDoTime.length === 0 
+            ? '<li>Nenhum jogador escalado</li>' 
+            : jogadoresDoTime.map(j => `<li>${j.nome} ${j.tipo === 'mensalista' ? '⭐️' : ''}</li>`).join('');
+
+        tooltipGlobal.innerHTML = `<ul>${listaJogosHtml}</ul>`;
+        
+        // Exibe temporariamente para cálculo exato de largura
+        tooltipGlobal.style.display = 'block';
+        tooltipGlobal.classList.add('ativo');
+        const tooltipWidth = tooltipGlobal.offsetWidth;
+
+        // Posicionamento absoluto utilizando window.scrollY e window.scrollX para acompanhar o scroll perfeitamente
+        let posX = rect.left + window.scrollX + (rect.width / 2) - (tooltipWidth / 2);
+        let posY = rect.top + window.scrollY - (jogadoresDoTime.length * 22 + 18); 
+
+        if (rect.top < 130) {
+            posY = rect.bottom + window.scrollY + 8;
+        }
+
+        if (posX < 10) posX = 10;
+        if (posX + tooltipWidth > window.innerWidth) posX = window.innerWidth - tooltipWidth - 10;
+
+        tooltipGlobal.style.left = `${posX}px`;
+        tooltipGlobal.style.top = `${posY}px`;
+    }
+
+    function gerarHtmlHeaderTime(nomeTime) {
+        if (!nomeTime) return 'TIME';
+
+        return `
+            <div class="time-info-container">
+                <span>${nomeTime}</span>
+                <button type="button" class="btn-info-time" onclick="mostrarTooltipGlobal(event, '${nomeTime}')" title="Ver jogadores">ℹ️</button>
+            </div>
+        `;
+    }
 
     function alternarPin(idJogo) {
         if (jogoPinadoId === String(idJogo)) {
@@ -869,11 +1001,11 @@ td { font-size: 1.1rem; font-weight: bold; }
             divJogo.innerHTML = `
                 <div class="jogo-card ${isPinado ? 'pinado' : ''}">
                     <div class="jogo-grid">
-                        <div class="header-cell">${jogo.timeA || 'Time'}</div>
+                        <div class="header-cell">${gerarHtmlHeaderTime(jogo.timeA)}</div>
                         <div class="header-cell vazia">
                             <button type="button" class="btn-pin" onclick="alternarPin('${jogo.id}')" title="Fixar Jogo">📌</button>
                         </div>
-                        <div class="header-cell">${jogo.timeB || 'Time'}</div>
+                        <div class="header-cell">${gerarHtmlHeaderTime(jogo.timeB)}</div>
                         <div class="header-cell vencedor-header">VENCEDOR</div>
 
                         <div class="data-cell">
@@ -931,11 +1063,11 @@ td { font-size: 1.1rem; font-weight: bold; }
                 <div class="jogo-wrapper">
                     <div class="jogo-card ${isPinado ? 'pinado' : ''}">
                         <div class="jogo-grid">
-                            <div class="header-cell">${jogo.timeA}</div>
+                            <div class="header-cell">${gerarHtmlHeaderTime(jogo.timeA)}</div>
                             <div class="header-cell vazia">
                                 <button type="button" class="btn-pin" onclick="alternarPin('${jogo.id}')" title="Fixar Jogo">📌</button>
                             </div>
-                            <div class="header-cell">${jogo.timeB}</div>
+                            <div class="header-cell">${gerarHtmlHeaderTime(jogo.timeB)}</div>
                             <div class="header-cell vencedor-header">VENCEDOR</div>
 
                             <div class="data-cell">
@@ -984,11 +1116,11 @@ td { font-size: 1.1rem; font-weight: bold; }
                     <div class="jogo-wrapper">
                         <div class="jogo-card ${isPinado ? 'pinado' : ''}">
                             <div class="jogo-grid">
-                                <div class="header-cell">${jogo.timeA}</div>
+                                <div class="header-cell">${gerarHtmlHeaderTime(jogo.timeA)}</div>
                                 <div class="header-cell vazia">
                                     <button type="button" class="btn-pin" onclick="alternarPin('${jogo.id}')" title="Fixar Jogo">📌</button>
                                 </div>
-                                <div class="header-cell">${jogo.timeB}</div>
+                                <div class="header-cell">${gerarHtmlHeaderTime(jogo.timeB)}</div>
                                 <div class="header-cell vencedor-header">VENCEDOR</div>
 
                                 <div class="data-cell">
@@ -1053,7 +1185,6 @@ td { font-size: 1.1rem; font-weight: bold; }
         if (todosFinalizados && semiFinais.length === 0) {
             gerarSemifinais();
             
-            // Pina automaticamente o primeiro jogo da semifinal e muda para a aba de finais
             if (semiFinais.length > 0) {
                 jogoPinadoId = String(semiFinais[0].id);
                 rolarParaJogoPinado();
@@ -1096,7 +1227,6 @@ td { font-size: 1.1rem; font-weight: bold; }
             if (todasSemiFinalizadas && finais.length === 0) {
                 gerarFinais();
                 
-                // Pina automaticamente a disputa de 3º lugar assim que as finais são geradas
                 const jogo3Lugar = finais.find(f => f.tipo === '3lugar');
                 if (jogo3Lugar) {
                     jogoPinadoId = String(jogo3Lugar.id);
