@@ -776,6 +776,11 @@ td { font-size: 1.1rem; font-weight: bold; }
     }
 
     function puxarPlacarParaJogo(idJogo, isMataMata = false) {
+        // ATRELADO TAMBÉM AO PIN: Dispara o PIN ao puxar o placar (apenas na fase de grupos)
+        if (!isMataMata) {
+            alternarPin(idJogo);
+        }
+
         database.ref('placar_digital').once('value').then((snapshot) => {
             let placarDigital = snapshot.val();
             if (!placarDigital) {
