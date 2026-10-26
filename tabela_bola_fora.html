@@ -28,6 +28,7 @@
 html {
     /* Estica a área de rolagem para permitir centralizar o último item na tela */
     scroll-padding-bottom: 45vh;
+    scroll-behavior: smooth;
 }
 
 body {
@@ -128,9 +129,24 @@ h2 {
     transition: border-color 0.2s ease, box-shadow 0.2s ease, border-width 0.2s ease;
 }
 
+/* Efeito Neon e Borda Dourada para jogo Pinado */
+@keyframes neonGlow {
+    0% {
+        box-shadow: 0 0 8px #d9b246, 0 0 16px rgba(217, 178, 70, 0.6), inset 0 0 6px rgba(217, 178, 70, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 14px #ffd700, 0 0 25px rgba(255, 215, 0, 0.9), inset 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+    100% {
+        box-shadow: 0 0 8px #d9b246, 0 0 16px rgba(217, 178, 70, 0.6), inset 0 0 6px rgba(217, 178, 70, 0.3);
+    }
+}
+
 .jogo-card.pinado {
-    border: 2px solid var(--amarelo-oficial);
-    box-shadow: 0 4px 12px rgba(217, 178, 70, 0.4);
+    border: 2px solid #ffd700;
+    animation: neonGlow 1.8s infinite ease-in-out;
+    position: relative;
+    z-index: 2;
 }
 
 .jogo-grid {
@@ -712,10 +728,51 @@ td { font-size: 1.1rem; font-weight: bold; }
             jogoPinadoId = null;
         } else {
             jogoPinadoId = String(idJogo);
+            rolarParaJogoPinado();
         }
         
         renderizarJogos();
         renderizarMataMata();
+    }
+
+    function rolarParaJogoPinado() {
+        if (!jogoPinadoId) return;
+        setTimeout(() => {
+            const cardPinado = document.querySelector(`.jogo-card.pinado`);
+            if (cardPinado) {
+                cardPinado.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 100);
+    }
+
+    function avancarProximoPin(idJogoAtual, listaPartidas) {
+        if (!listaPartidas || listaPartidas.length === 0) return;
+
+        const idxAtual = listaPartidas.findIndex(p => String(p.id) === String(idJogoAtual));
+        let proximoJogo = null;
+
+        if (idxAtual !== -1) {
+            for (let i = idxAtual + 1; i < listaPartidas.length; i++) {
+                if (!listaPartidas[i].finalizada) {
+                    proximoJogo = listaPartidas[i];
+                    break;
+                }
+            }
+        }
+
+        if (!proximoJogo) {
+            proximoJogo = listaPartidas.find(p => !p.finalizada);
+        }
+
+        if (proximoJogo) {
+            jogoPinadoId = String(proximoJogo.id);
+        } else {
+            jogoPinadoId = null;
+        }
+
+        renderizarJogos();
+        renderizarMataMata();
+        rolarParaJogoPinado();
     }
 
     function puxarPlacarParaJogo(idJogo, isMataMata = false) {
@@ -994,6 +1051,8 @@ td { font-size: 1.1rem; font-weight: bold; }
             mostrarAviso("Fase de grupos concluída! Semifinais liberadas.", "info");
         }
 
+        avancarProximoPin(idJogo, partidas);
+
         database.ref('torneio').update({
             partidas: partidas,
             semiFinais: semiFinais.length > 0 ? semiFinais : null
@@ -1025,6 +1084,9 @@ td { font-size: 1.1rem; font-weight: bold; }
             if (todasSemiFinalizadas && finais.length === 0) {
                 gerarFinais();
             }
+            avancarProximoPin(idJogo, semiFinais);
+        } else {
+            avancarProximoPin(idJogo, finais);
         }
 
         database.ref('torneio').update({
@@ -1506,7 +1568,6 @@ td { font-size: 1.1rem; font-weight: bold; }
     document.addEventListener('DOMContentLoaded', () => {
       let touchStartY = 0;
 
-      // Suporte a toque (celulares e tablets)
       document.addEventListener('touchstart', (e) => {
         if (e.touches.length === 1) {
           touchStartY = e.touches.clientY;
@@ -1521,20 +1582,17 @@ td { font-size: 1.1rem; font-weight: bold; }
         const scrollHeight = document.documentElement.scrollHeight;
         const clientHeight = document.documentElement.clientHeight;
 
-        // Se chegou no final e puxou para baixo, volta para o topo
         if (scrollTop + clientHeight >= scrollHeight - 2 && deltaY > 0) {
           e.preventDefault();
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
       }, { passive: false });
 
-      // Suporte a mouse (computadores)
       document.addEventListener('wheel', (e) => {
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         const scrollHeight = document.documentElement.scrollHeight;
         const clientHeight = document.documentElement.clientHeight;
 
-        // Se chegou no fim da página e rolou o mouse para baixo
         if (scrollTop + clientHeight >= scrollHeight - 2 && e.deltaY > 0) {
           e.preventDefault();
           window.scrollTo({ top: 0, behavior: 'smooth' });
