@@ -776,8 +776,8 @@ td { font-size: 1.1rem; font-weight: bold; }
     }
 
     function puxarPlacarParaJogo(idJogo, isMataMata = false) {
-        // Só pina/centraliza se NÃO for mata-mata E o jogo ainda NÃO estiver pinado (garante que não remove se já estiver)
-        if (!isMataMata && jogoPinadoId !== String(idJogo)) {
+        // Pina e centraliza o jogo se ele ainda não estiver pinado (funciona para Fase de Grupos e Finais)
+        if (jogoPinadoId !== String(idJogo)) {
             alternarPin(idJogo);
         }
 
