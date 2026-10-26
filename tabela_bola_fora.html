@@ -776,7 +776,6 @@ td { font-size: 1.1rem; font-weight: bold; }
     }
 
     function puxarPlacarParaJogo(idJogo, isMataMata = false) {
-        // Pina e centraliza o jogo se ele ainda não estiver pinado (funciona para Fase de Grupos e Finais)
         if (jogoPinadoId !== String(idJogo)) {
             alternarPin(idJogo);
         }
@@ -1054,6 +1053,7 @@ td { font-size: 1.1rem; font-weight: bold; }
         if (todosFinalizados && semiFinais.length === 0) {
             gerarSemifinais();
             mostrarAviso("Fase de grupos concluída! Semifinais liberadas.", "info");
+            mudarAba('finais'); // Leva automaticamente para a guia das finais ao concluir os grupos
         }
 
         avancarProximoPin(idJogo, partidas);
