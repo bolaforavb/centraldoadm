@@ -27,23 +27,18 @@
       overflow-y: auto; 
     }
 
-    .topo-acoes {
+    /* --- BARRA ÚNICA COM OS 7 CONTROLES LADO A LADO --- */
+    .barra-controles-unificada {
       width: 100%;
       max-width: 900px;
       display: flex;
-      justify-content: center; 
+      justify-content: center;
       align-items: center;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 10px;
       padding: 12px 12px 0 12px;
       margin-top: 14px;
-      margin-bottom: 8px;
-    }
-
-    .topo-esquerda,
-    .topo-direita {
-      display: flex;
-      gap: 12px;
+      margin-bottom: 12px;
     }
 
     .btn-topo-discreto {
@@ -77,25 +72,12 @@
       color: #fff;
     }
 
-    /* --- BOTÕES SEMI / FINAIS + SELETOR DE TEMA --- */
-    .container-fases {
-      width: 100%;
-      max-width: 900px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 12px;
-      margin-top: 10px;
-      margin-bottom: 12px;
-      padding: 0 12px;
-    }
-
     .btn-fase {
       background-color: transparent;
       color: #e1d8cd;
       border: 1px solid #e1d8cd;
       border-radius: 8px;
-      padding: 6px 20px;
+      padding: 6px 16px;
       font-size: 11px;
       font-weight: bold;
       text-transform: uppercase;
@@ -125,7 +107,7 @@
       color: #e1d8cd;
       border: 1px solid #e1d8cd;
       border-radius: 8px;
-      padding: 5px 10px;
+      padding: 6px 10px;
       font-size: 11px;
       font-weight: bold;
       text-transform: uppercase;
@@ -432,7 +414,7 @@
       line-height: 1;
     }
 
-    /* --- BOLA DE VÔLEI COM POSICIONAMENTO ABSOLUTO RENATE ÀS BORDAS EXTERNAS --- */
+    /* --- BOLA DE VÔLEI COM BORDINHA AZUL ROYAL (#12364e) --- */
     .bola-volei-indicador {
       position: absolute;
       top: 52%;
@@ -440,7 +422,12 @@
       font-size: 32px;
       opacity: 0;
       transition: opacity 0.2s ease;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+      /* Contorno/bordinha azul royal em volta do emoji e sombra suave */
+      filter: drop-shadow(1px 1px 0 #12364e) 
+              drop-shadow(-1px -1px 0 #12364e) 
+              drop-shadow(1px -1px 0 #12364e) 
+              drop-shadow(-1px 1px 0 #12364e) 
+              drop-shadow(0 2px 4px rgba(0,0,0,0.3));
       pointer-events: none;
     }
 
@@ -448,12 +435,10 @@
       opacity: 1;
     }
 
-    /* Posição rente à borda externa esquerda */
     #bola-esquerda {
       left: 12px;
     }
 
-    /* Posição rente à borda externa direita */
     #bola-direita {
       right: 12px;
     }
@@ -649,27 +634,18 @@
 
   </div>
 
-  <!-- LINHA 1 ABAIXO DO PLACAR: OS 4 BOTÕES DE AÇÕES -->
-  <header class="topo-acoes">
-    <div class="topo-esquerda">
-      <a href="dashboard.html" class="btn-topo-discreto">Central do Adm</a>
-      <button type="button" class="btn-topo-discreto" onclick="toggleTabela()">Abrir Tabela</button>
-    </div>
-    <div class="topo-direita">
-      <button class="btn-topo-discreto btn-fixar-notif" onclick="enviarLembreteResultado()">Fixar (iOS)</button>
-      <button class="btn-topo-discreto" onclick="alternarTelaCheia()" id="btnFullscreen">Tela Cheia (Android)</button>
-    </div>
-  </header>
-
-  <!-- LINHA 2 ABAIXO DO PLACAR: BOTÕES DE FASE (SEMI / FINAIS) + MENU SUSPENSO DE TEMAS -->
-  <div class="container-fases">
+  <!-- TODOS OS 7 CONTROLES JUNTOS LADO A LADO NA MESMA LINHA -->
+  <div class="barra-controles-unificada">
+    <a href="dashboard.html" class="btn-topo-discreto">Central do Adm</a>
+    <button type="button" class="btn-topo-discreto" onclick="toggleTabela()">Abrir Tabela</button>
+    <button class="btn-topo-discreto btn-fixar-notif" onclick="enviarLembreteResultado()">Fixar (iOS)</button>
+    <button class="btn-topo-discreto" onclick="alternarTelaCheia()" id="btnFullscreen">Tela Cheia (Android)</button>
     <button class="btn-fase" id="btn-semi" onclick="alternarFase('semi')">Semifinal</button>
     <button class="btn-fase" id="btn-finais" onclick="alternarFase('finais')">Final</button>
-    
     <select class="seletor-tema-placar" id="seletorTema" onchange="alterarTemaManual()">
-      <option value="padrao">Tema: Padrão</option>
-      <option value="semifinal">Tema: Semifinal (Prata)</option>
-      <option value="final">Tema: Final (Dourado)</option>
+      <option value="padrao">Padrão</option>
+      <option value="semifinal">Prata</option>
+      <option value="final">Dourado</option>
     </select>
   </div>
 
@@ -1012,7 +988,6 @@
         if(selEsq) selEsq.value = placarLocal.corEsquerda || "";
         if(selDir) selDir.value = placarLocal.corDireita || "";
 
-        // Atualiza a visibilidade da bolinha de vôlei no lado correspondente
         if (bolaEsq && bolaDir) {
           if (placarLocal.ultimoPontuador === 'esquerda') {
             bolaEsq.classList.add('ativo');
