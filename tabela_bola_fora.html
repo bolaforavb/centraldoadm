@@ -776,6 +776,15 @@ td { font-size: 1.1rem; font-weight: bold; }
     }
 
     function puxarPlacarParaJogo(idJogo, isMataMata = false) {
+        let jogo = !isMataMata 
+            ? partidas.find(p => String(p.id) === String(idJogo))
+            : semiFinais.find(p => String(p.id) === String(idJogo)) || finais.find(p => String(p.id) === String(idJogo));
+
+        if (!jogo) {
+            mostrarAviso("Aguarde um instante, os dados ainda estão sincronizando...");
+            return;
+        }
+
         if (jogoPinadoId !== String(idJogo)) {
             alternarPin(idJogo);
         }
@@ -789,15 +798,6 @@ td { font-size: 1.1rem; font-weight: bold; }
         }).then((placarDigital) => {
             if (!placarDigital) {
                 mostrarAviso("Nenhum placar digital ativo encontrado no Firebase.");
-                return;
-            }
-
-            let jogo = !isMataMata 
-                ? partidas.find(p => String(p.id) === String(idJogo))
-                : semiFinais.find(p => String(p.id) === String(idJogo)) || finais.find(p => String(p.id) === String(idJogo));
-
-            if (!jogo) {
-                mostrarAviso("Jogo não encontrado.");
                 return;
             }
 
@@ -1052,11 +1052,18 @@ td { font-size: 1.1rem; font-weight: bold; }
         const todosFinalizados = partidas.every(j => j.finalizada === true);
         if (todosFinalizados && semiFinais.length === 0) {
             gerarSemifinais();
-            mostrarAviso("Fase de grupos concluída! Semifinais liberadas.", "info");
-            mudarAba('finais'); // Leva automaticamente para a guia das finais ao concluir os grupos
-        }
+            
+            // Pina automaticamente o primeiro jogo da semifinal e muda para a aba de finais
+            if (semiFinais.length > 0) {
+                jogoPinadoId = String(semiFinais[0].id);
+                rolarParaJogoPinado();
+            }
 
-        avancarProximoPin(idJogo, partidas);
+            mostrarAviso("Fase de grupos concluída! Semifinais liberadas.", "info");
+            mudarAba('finais');
+        } else {
+            avancarProximoPin(idJogo, partidas);
+        }
 
         database.ref('torneio').update({
             partidas: partidas,
@@ -1088,8 +1095,16 @@ td { font-size: 1.1rem; font-weight: bold; }
             const todasSemiFinalizadas = semiFinais.every(j => j.finalizada === true);
             if (todasSemiFinalizadas && finais.length === 0) {
                 gerarFinais();
+                
+                // Pina automaticamente a disputa de 3º lugar assim que as finais são geradas
+                const jogo3Lugar = finais.find(f => f.tipo === '3lugar');
+                if (jogo3Lugar) {
+                    jogoPinadoId = String(jogo3Lugar.id);
+                    rolarParaJogoPinado();
+                }
+            } else {
+                avancarProximoPin(idJogo, semiFinais);
             }
-            avancarProximoPin(idJogo, semiFinais);
         } else {
             avancarProximoPin(idJogo, finais);
         }
