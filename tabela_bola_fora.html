@@ -25,10 +25,15 @@
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
+html {
+    /* Estica a área de rolagem para permitir centralizar o último item na tela */
+    scroll-padding-bottom: 45vh;
+}
+
 body {
     background-color: var(--bege-oficial);
     color: var(--azul-oficial);
-    padding-bottom: 40px;
+    padding-bottom: 45vh; /* Folga interna para o scroll comportar a centralização */
 }
 
 /* ==========================================
@@ -1337,7 +1342,7 @@ td { font-size: 1.1rem; font-weight: bold; }
                 listaHtml += `
                     <li style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed #ddd;">
                         <span style="font-weight: bold;">${j.nome || ''} ${icone}</span>
-                        <button onclick="removerDoTime('${j.id}')" style="background: transparent; border: none; color: #dc3545; font-size: 1.2rem; cursor: pointer; padding: 0 5px;">&times;</button>
+                        <button onclick="removerDoTime('${j.id}')" style="background: transparent; border: none; color: #dc3545; font-size: 1.2rem; cursor: pointer; padding: 0 5px;">×</button>
                     </li>
                 `;
             });
@@ -1498,45 +1503,44 @@ td { font-size: 1.1rem; font-weight: bold; }
         html2pdf().from(relatorio).set(opt).save();
     }
 
-document.addEventListener('DOMContentLoaded', () => {
-  let touchStartY = 0;
+    document.addEventListener('DOMContentLoaded', () => {
+      let touchStartY = 0;
 
-  // Suporte a toque (celulares e tablets)
-  document.addEventListener('touchstart', (e) => {
-    if (e.touches.length === 1) {
-      touchStartY = e.touches.clientY;
-    }
-  }, { passive: true });
+      // Suporte a toque (celulares e tablets)
+      document.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          touchStartY = e.touches.clientY;
+        }
+      }, { passive: true });
 
-  document.addEventListener('touchmove', (e) => {
-    if (e.touches.length !== 1) return;
-    const touchY = e.touches[0].clientY;
-    const deltaY = touchStartY - touchY;
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollHeight = document.documentElement.scrollHeight;
-    const clientHeight = document.documentElement.clientHeight;
+      document.addEventListener('touchmove', (e) => {
+        if (e.touches.length !== 1) return;
+        const touchY = e.touches[0].clientY;
+        const deltaY = touchStartY - touchY;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight;
+        const clientHeight = document.documentElement.clientHeight;
 
-    // Se chegou no final e puxou para baixo, volta para o topo
-    if (scrollTop + clientHeight >= scrollHeight - 2 && deltaY > 0) {
-      e.preventDefault();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }, { passive: false });
+        // Se chegou no final e puxou para baixo, volta para o topo
+        if (scrollTop + clientHeight >= scrollHeight - 2 && deltaY > 0) {
+          e.preventDefault();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }, { passive: false });
 
-  // Suporte a mouse (computadores)
-  document.addEventListener('wheel', (e) => {
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollHeight = document.documentElement.scrollHeight;
-    const clientHeight = document.documentElement.clientHeight;
+      // Suporte a mouse (computadores)
+      document.addEventListener('wheel', (e) => {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight;
+        const clientHeight = document.documentElement.clientHeight;
 
-    // Se chegou no fim da página e rolou o mouse para baixo
-    if (scrollTop + clientHeight >= scrollHeight - 2 && e.deltaY > 0) {
-      e.preventDefault();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }, { passive: false });
-});
-        
+        // Se chegou no fim da página e rolou o mouse para baixo
+        if (scrollTop + clientHeight >= scrollHeight - 2 && e.deltaY > 0) {
+          e.preventDefault();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }, { passive: false });
+    });
     </script>
 </body>
 </html>
