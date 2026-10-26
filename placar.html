@@ -30,28 +30,20 @@
     .topo-acoes {
       width: 100%;
       max-width: 900px;
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr; 
+      display: flex;
+      justify-content: center; 
       align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
       padding: 12px 12px 0 12px;
+      margin-top: 14px;
       margin-bottom: 8px;
     }
 
-    .topo-esquerda {
-      display: flex;
-      justify-content: flex-start;
-      gap: 8px;
-    }
-
-    .topo-centro {
-      display: flex;
-      justify-content: center;
-    }
-
+    .topo-esquerda,
     .topo-direita {
       display: flex;
-      justify-content: flex-end;
-      gap: 6px;
+      gap: 12px;
     }
 
     .btn-topo-discreto {
@@ -85,30 +77,6 @@
       color: #fff;
     }
 
-    .btn-zerar-placar {
-      background-color: #d93025;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 8px 20px;
-      font-size: 11px;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-      transition: background-color 0.2s, transform 0.1s;
-      white-space: nowrap;
-    }
-
-    .btn-zerar-placar:hover {
-      background-color: #b3241c;
-    }
-
-    .btn-zerar-placar:active {
-      transform: scale(0.98);
-    }
-
     /* --- BOTÕES SEMI / FINAIS + SELETOR DE TEMA --- */
     .container-fases {
       width: 100%;
@@ -117,7 +85,7 @@
       justify-content: center;
       align-items: center;
       gap: 12px;
-      margin-top: 28px;
+      margin-top: 10px;
       margin-bottom: 12px;
       padding: 0 12px;
     }
@@ -189,6 +157,7 @@
       position: relative;
       overflow: hidden;
       width: 100%;
+      margin-top: 16px; 
       transition: background 0.4s ease, box-shadow 0.4s ease;
     }
 
@@ -197,13 +166,11 @@
       background: #ffffff !important;
     }
 
-    /* PRATA METÁLICO INTENSO E EVIDENTE */
     .estrutura-placar.tema-semifinal {
       background: linear-gradient(135deg, #a3a8b0 0%, #e6e8eb 45%, #ffffff 50%, #e6e8eb 55%, #8a9099 100%) !important;
       box-shadow: 0 8px 30px rgba(0,0,0,0.45), inset 0 0 15px rgba(255, 255, 255, 0.6) !important;
     }
 
-    /* DOURADO METÁLICO SUAVE E SUAVIZADO */
     .estrutura-placar.tema-final {
       background: linear-gradient(135deg, #b88e28 0%, #f7d468 40%, #fff2a1 50%, #f7d468 60%, #946f1a 100%) !important;
       box-shadow: 0 8px 30px rgba(184, 142, 40, 0.45), inset 0 0 15px rgba(255, 242, 161, 0.5) !important;
@@ -329,6 +296,28 @@
       pointer-events: none;
     }
 
+    .btn-zerar-central {
+      background-color: #12364e;
+      color: #e1d8cd;
+      border: 1.5px solid #e1d8cd;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      font-size: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
+      transition: transform 0.1s, background-color 0.2s;
+      pointer-events: auto;
+    }
+
+    .btn-zerar-central:active {
+      transform: scale(0.90);
+      background-color: #1d4f71;
+    }
+
     .container-apito-isolado {
       position: absolute;
       bottom: 16px; 
@@ -406,6 +395,7 @@
       cursor: pointer;
       min-height: 52vh;
       transition: background-color 0.1s;
+      position: relative;
     }
     
     .area-ponto:active {
@@ -440,6 +430,32 @@
       color: #12364e;
       margin: 0;
       line-height: 1;
+    }
+
+    /* --- BOLA DE VÔLEI COM POSICIONAMENTO ABSOLUTO RENATE ÀS BORDAS EXTERNAS --- */
+    .bola-volei-indicador {
+      position: absolute;
+      top: 52%;
+      transform: translateY(-50%);
+      font-size: 32px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+      pointer-events: none;
+    }
+
+    .bola-volei-indicador.ativo {
+      opacity: 1;
+    }
+
+    /* Posição rente à borda externa esquerda */
+    #bola-esquerda {
+      left: 12px;
+    }
+
+    /* Posição rente à borda externa direita */
+    #bola-direita {
+      right: 12px;
     }
 
     .controles-lado {
@@ -559,22 +575,7 @@
     <p>O placar foi otimizado para o modo horizontal (paisagem).</p>
   </div>
 
-  <header class="topo-acoes">
-    <div class="topo-esquerda">
-      <a href="dashboard.html" class="btn-topo-discreto">Central do Adm</a>
-      <button type="button" class="btn-topo-discreto" onclick="toggleTabela()">Abrir Tabela</button>
-    </div>
-    
-    <div class="topo-centro">
-      <button class="btn-zerar-placar" onclick="zerarPlacar()">Zerar Placar</button>
-    </div>
-    
-    <div class="topo-direita">
-      <button class="btn-topo-discreto btn-fixar-notif" onclick="enviarLembreteResultado()">Fixar (iOS)</button>
-      <button class="btn-topo-discreto" onclick="alternarTelaCheia()" id="btnFullscreen">Tela Cheia (Android)</button>
-    </div>
-  </header>
-
+  <!-- PLACAR PRINCIPAL -->
   <div class="container-placar-global">
     
     <main class="estrutura-placar" id="placar-main">
@@ -594,6 +595,7 @@
       <div class="container-centro-elementos">
         <button class="btn-inverter-lados" onclick="inverterLados()" title="Inverter Cores">⇄</button>
         <img src="https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png" alt="Logo Bola Fora" class="logo-central">
+        <button class="btn-zerar-central" onclick="zerarPlacar()" title="Zerar Placar">🔄</button>
       </div>
 
       <div class="container-apito-isolado">
@@ -605,9 +607,11 @@
                 title="Segure para Apitar">📢</button>
       </div>
       
+      <!-- LADO ESQUERDO -->
       <div class="lado-placar">
         <div class="faixa-base-time" id="faixa-esquerda"></div>
         <div class="area-ponto" onclick="adicionarPonto('esquerda', event)">
+          <span class="bola-volei-indicador" id="bola-esquerda">🏐</span>
           <select class="seletor-cor-time" id="cor-esquerda" onclick="event.stopPropagation()" onchange="mudarCor('esquerda')">
             <option value="" class="op-padrao">Cor</option>
             <option value="Amarelo" class="op-amarelo">Amarelo</option>
@@ -622,9 +626,11 @@
         </div>
       </div>
 
+      <!-- LADO DIREITO -->
       <div class="lado-placar">
         <div class="faixa-base-time" id="faixa-direita"></div>
         <div class="area-ponto" onclick="adicionarPonto('direita', event)">
+          <span class="bola-volei-indicador" id="bola-direita">🏐</span>
           <select class="seletor-cor-time" id="cor-direita" onclick="event.stopPropagation()" onchange="mudarCor('direita')">
             <option value="" class="op-padrao">Cor</option>
             <option value="Amarelo" class="op-amarelo">Amarelo</option>
@@ -643,7 +649,19 @@
 
   </div>
 
-  <!-- Botões de Fase (Semi / Finais) + Menu Suspenso de Temas -->
+  <!-- LINHA 1 ABAIXO DO PLACAR: OS 4 BOTÕES DE AÇÕES -->
+  <header class="topo-acoes">
+    <div class="topo-esquerda">
+      <a href="dashboard.html" class="btn-topo-discreto">Central do Adm</a>
+      <button type="button" class="btn-topo-discreto" onclick="toggleTabela()">Abrir Tabela</button>
+    </div>
+    <div class="topo-direita">
+      <button class="btn-topo-discreto btn-fixar-notif" onclick="enviarLembreteResultado()">Fixar (iOS)</button>
+      <button class="btn-topo-discreto" onclick="alternarTelaCheia()" id="btnFullscreen">Tela Cheia (Android)</button>
+    </div>
+  </header>
+
+  <!-- LINHA 2 ABAIXO DO PLACAR: BOTÕES DE FASE (SEMI / FINAIS) + MENU SUSPENSO DE TEMAS -->
   <div class="container-fases">
     <button class="btn-fase" id="btn-semi" onclick="alternarFase('semi')">Semifinal</button>
     <button class="btn-fase" id="btn-finais" onclick="alternarFase('finais')">Final</button>
@@ -687,7 +705,8 @@
       corEsquerda: "",
       corDireita: "",
       fase: null,
-      tema: "padrao"
+      tema: "padrao",
+      ultimoPontuador: null
     };
 
     let ultimaFaseProcessada = null;
@@ -985,11 +1004,27 @@
         const elemDir = document.getElementById('pts-direita');
         const selEsq = document.getElementById('cor-esquerda');
         const selDir = document.getElementById('cor-direita');
+        const bolaEsq = document.getElementById('bola-esquerda');
+        const bolaDir = document.getElementById('bola-direita');
 
         if(elemEsq) elemEsq.innerText = placarLocal.esquerda || 0;
         if(elemDir) elemDir.innerText = placarLocal.direita || 0;
         if(selEsq) selEsq.value = placarLocal.corEsquerda || "";
         if(selDir) selDir.value = placarLocal.corDireita || "";
+
+        // Atualiza a visibilidade da bolinha de vôlei no lado correspondente
+        if (bolaEsq && bolaDir) {
+          if (placarLocal.ultimoPontuador === 'esquerda') {
+            bolaEsq.classList.add('ativo');
+            bolaDir.classList.remove('ativo');
+          } else if (placarLocal.ultimoPontuador === 'direita') {
+            bolaDir.classList.add('ativo');
+            bolaEsq.classList.remove('ativo');
+          } else {
+            bolaEsq.classList.remove('ativo');
+            bolaDir.classList.remove('ativo');
+          }
+        }
 
         atualizarAparenciaSeletor('esquerda', placarLocal.corEsquerda || "");
         atualizarAparenciaSeletor('direita', placarLocal.corDireita || "");
@@ -997,7 +1032,7 @@
         atualizarVisualFase(placarLocal.fase || null);
         aplicarTemaVisual(placarLocal.tema || 'padrao');
       } else {
-        const estadoInicial = { esquerda: 0, direita: 0, corEsquerda: "", corDireita: "", fase: null, tema: "padrao" };
+        const estadoInicial = { esquerda: 0, direita: 0, corEsquerda: "", corDireita: "", fase: null, tema: "padrao", ultimoPontuador: null };
         placarRef.set(estadoInicial);
       }
     });
@@ -1012,6 +1047,7 @@
       tocarBipPonto();
 
       placarLocal[lado] = (placarLocal[lado] || 0) + 1;
+      placarLocal.ultimoPontuador = lado;
       placarRef.set(placarLocal);
     }
 
@@ -1034,12 +1070,18 @@
       placarLocal.corEsquerda = placarLocal.corDireita;
       placarLocal.corDireita = corEsquerdaTemp;
 
+      if (placarLocal.ultimoPontuador === 'esquerda') {
+        placarLocal.ultimoPontuador = 'direita';
+      } else if (placarLocal.ultimoPontuador === 'direita') {
+        placarLocal.ultimoPontuador = 'esquerda';
+      }
+
       placarRef.set(placarLocal);
     }
 
     function zerarPlacar() {
       if (confirm("Deseja reiniciar a contagem do placar para 0 x 0?")) {
-        placarRef.set({ esquerda: 0, direita: 0, corEsquerda: "", corDireita: "", fase: null, tema: "padrao" });
+        placarRef.set({ esquerda: 0, direita: 0, corEsquerda: "", corDireita: "", fase: null, tema: "padrao", ultimoPontuador: null });
       }
     }
 
