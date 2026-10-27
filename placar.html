@@ -131,7 +131,7 @@
       gap: 12px;
     }
 
-    /* --- ESTRUTURA COM ALTURA MÍNIMA GARANTIDA PARA TABLETS --- */
+    /* --- ESTRUTURA COM ALTURA AUMENTADA EM 30% (min-height: 620px) --- */
     .estrutura-placar {
       display: flex;
       background-color: #ffffff; 
@@ -140,7 +140,7 @@
       position: relative;
       overflow: hidden;
       width: 100%;
-      min-height: 480px; /* Garante excelente proporção e altura em tablets */
+      min-height: 620px; 
       margin-top: 16px; 
       transition: background 0.4s ease, box-shadow 0.4s ease;
     }
@@ -303,16 +303,16 @@
       background-color: #1d4f71;
     }
 
+    /* --- BOTÃO DO APITO ELEVADO E CENTRALIZADO NA MESMA ALTURA DO BOTÃO -1 --- */
     .container-apito-isolado {
       position: absolute;
-      bottom: 16px; 
+      bottom: 37px; /* Mesmo alinhamento vertical dos botões de -1 */
       left: 50%;
       transform: translateX(-50%);
       z-index: 12;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
     }
 
     .btn-apito {
@@ -320,9 +320,9 @@
       color: #e1d8cd;
       border: 2px solid #e1d8cd;
       border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      font-size: 20px;
+      width: 44px; /* Ajustado proporcionalmente para encaixar perfeitamente */
+      height: 44px;
+      font-size: 18px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -349,12 +349,13 @@
       position: relative;
     }
 
+    /* --- FAIXA INFERIOR DE 115px --- */
     .faixa-base-time {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 88.55px;
+      height: 115px;
       background-color: transparent;
       transition: background-color 0.3s;
       z-index: 2;
@@ -378,7 +379,8 @@
       justify-content: center;
       align-items: center;
       cursor: pointer;
-      min-height: 57.2vh;
+      min-height: 100%;
+      flex: 1;
       transition: background-color 0.1s;
       position: relative;
     }
@@ -387,7 +389,7 @@
       background-color: #d9b246;
     }
 
-    /* --- SELETORES DE CORES CENTRALIZADOS VERTICALMENTE COM O RELÓGIO --- */
+    /* --- SELETORES DE CORES --- */
     .seletor-cor-time {
       background: #f7f5f2;
       color: #12364e;
@@ -427,9 +429,10 @@
       line-height: 1;
     }
 
+    /* --- BOLA DE VÔLEI PERFEITAMENTE CENTRALIZADA COM O BOTÃO DE -1 --- */
     .bola-volei-indicador {
       position: absolute;
-      bottom: 28.27px; 
+      bottom: 37px; /* Alinhada exatamente na mesma altura horizontal do botão -1 */
       font-size: 32px;
       line-height: 32px;
       opacity: 0;
@@ -455,12 +458,16 @@
       right: 12px;
     }
 
+    /* --- BOTÕES DE -1 --- */
     .controles-lado {
-      width: 100%;
+      position: absolute;
+      bottom: 37px; /* Altura centralizada na faixa de 115px */
+      left: 0;
+      right: 0;
       display: flex;
       justify-content: center;
-      padding-top: 8px;
-      z-index: 3;
+      z-index: 5;
+      pointer-events: none;
     }
 
     .btn-menos-um {
@@ -468,12 +475,13 @@
       color: #12364e;
       border: 2px solid #12364e;
       border-radius: 10px;
-      padding: 8px 24px;
-      font-size: 18px;
+      padding: 4px 18px;
+      font-size: 16px;
       font-weight: bold;
       cursor: pointer;
+      pointer-events: auto;
       transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.1s;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
     }
 
     .btn-menos-um:active {
