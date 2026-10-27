@@ -209,9 +209,10 @@
       100% { opacity: 1; transform: scale(1.02); }
     }
 
+    /* --- RELÓGIO DE BRASÍLIA NO TOPO --- */
     .container-relogio-isolado {
       position: absolute;
-      top: 4px; 
+      top: 24px; 
       left: 50%;
       transform: translateX(-50%);
       z-index: 12;
@@ -238,7 +239,7 @@
 
     .container-centro-elementos {
       position: absolute;
-      top: 41%; 
+      top: 48%; 
       left: 50%;
       transform: translate(-50%, -50%); 
       z-index: 10;
@@ -351,7 +352,7 @@
       bottom: 0;
       left: 0;
       right: 0;
-      height: 80.5px;
+      height: 88.55px;
       background-color: transparent;
       transition: background-color 0.3s;
       z-index: 2;
@@ -375,7 +376,7 @@
       justify-content: center;
       align-items: center;
       cursor: pointer;
-      min-height: 52vh;
+      min-height: 57.2vh;
       transition: background-color 0.1s;
       position: relative;
     }
@@ -384,6 +385,7 @@
       background-color: #d9b246;
     }
 
+    /* --- SELETORES DE CORES CENTRALIZADOS VERTICALMENTE COM O RELÓGIO (Altura de 68px) --- */
     .seletor-cor-time {
       background: #f7f5f2;
       color: #12364e;
@@ -392,12 +394,21 @@
       padding: 4px 8px;
       font-size: 14px;
       font-weight: bold;
-      margin-bottom: 10px;
+      position: absolute;
+      top: 44px; /* Centralizado verticalmente com o relógio de 68px de altura (24px + 68px/2 - 28px/2) */
       cursor: pointer;
       outline: none;
       z-index: 11;
       transition: background-color 0.3s, color 0.3s;
       height: 28px; 
+    }
+
+    #cor-esquerda {
+      left: 32px;
+    }
+
+    #cor-direita {
+      right: 32px;
     }
 
     .op-amarelo { background-color: #ffeb3b !important; color: #000 !important; }
@@ -414,15 +425,14 @@
       line-height: 1;
     }
 
-    /* --- BOLA DE VÔLEI COM BORDINHA AZUL ROYAL (#12364e) --- */
     .bola-volei-indicador {
       position: absolute;
-      top: 52%;
-      transform: translateY(-50%);
+      bottom: 28.27px; 
       font-size: 32px;
+      line-height: 32px;
       opacity: 0;
       transition: opacity 0.2s ease;
-      /* Contorno/bordinha azul royal em volta do emoji e sombra suave */
+      z-index: 4; 
       filter: drop-shadow(1px 1px 0 #12364e) 
               drop-shadow(-1px -1px 0 #12364e) 
               drop-shadow(1px -1px 0 #12364e) 
@@ -595,15 +605,15 @@
       <!-- LADO ESQUERDO -->
       <div class="lado-placar">
         <div class="faixa-base-time" id="faixa-esquerda"></div>
+        <span class="bola-volei-indicador" id="bola-esquerda">🏐</span>
+        <select class="seletor-cor-time" id="cor-esquerda" onclick="event.stopPropagation()" onchange="mudarCor('esquerda')">
+          <option value="" class="op-padrao">Cor</option>
+          <option value="Amarelo" class="op-amarelo">Amarelo</option>
+          <option value="Azul" class="op-azul">Azul</option>
+          <option value="Roxo" class="op-roxo">Roxo</option>
+          <option value="Rosa" class="op-rosa">Rosa</option>
+        </select>
         <div class="area-ponto" onclick="adicionarPonto('esquerda', event)">
-          <span class="bola-volei-indicador" id="bola-esquerda">🏐</span>
-          <select class="seletor-cor-time" id="cor-esquerda" onclick="event.stopPropagation()" onchange="mudarCor('esquerda')">
-            <option value="" class="op-padrao">Cor</option>
-            <option value="Amarelo" class="op-amarelo">Amarelo</option>
-            <option value="Azul" class="op-azul">Azul</option>
-            <option value="Roxo" class="op-roxo">Roxo</option>
-            <option value="Rosa" class="op-rosa">Rosa</option>
-          </select>
           <div class="numero-pontos" id="pts-esquerda">0</div>
         </div>
         <div class="controles-lado">
@@ -614,15 +624,15 @@
       <!-- LADO DIREITO -->
       <div class="lado-placar">
         <div class="faixa-base-time" id="faixa-direita"></div>
+        <span class="bola-volei-indicador" id="bola-direita">🏐</span>
+        <select class="seletor-cor-time" id="cor-direita" onclick="event.stopPropagation()" onchange="mudarCor('direita')">
+          <option value="" class="op-padrao">Cor</option>
+          <option value="Amarelo" class="op-amarelo">Amarelo</option>
+          <option value="Azul" class="op-azul">Azul</option>
+          <option value="Roxo" class="op-roxo">Roxo</option>
+          <option value="Rosa" class="op-rosa">Rosa</option>
+        </select>
         <div class="area-ponto" onclick="adicionarPonto('direita', event)">
-          <span class="bola-volei-indicador" id="bola-direita">🏐</span>
-          <select class="seletor-cor-time" id="cor-direita" onclick="event.stopPropagation()" onchange="mudarCor('direita')">
-            <option value="" class="op-padrao">Cor</option>
-            <option value="Amarelo" class="op-amarelo">Amarelo</option>
-            <option value="Azul" class="op-azul">Azul</option>
-            <option value="Roxo" class="op-roxo">Roxo</option>
-            <option value="Rosa" class="op-rosa">Rosa</option>
-          </select>
           <div class="numero-pontos" id="pts-direita">0</div>
         </div>
         <div class="controles-lado">
