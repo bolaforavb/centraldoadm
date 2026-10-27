@@ -131,7 +131,7 @@
       gap: 12px;
     }
 
-    /* --- ESTRUTURA COM ALTURA REDUZIDA EM 5% (min-height: 500px) --- */
+    /* --- ESTRUTURA COM ALTURA DE 500PX --- */
     .estrutura-placar {
       display: flex;
       background-color: #ffffff; 
@@ -211,10 +211,10 @@
       100% { opacity: 1; transform: scale(1.02); }
     }
 
-    /* --- RELÓGIO DE BRASÍLIA NO TOPO --- */
+    /* --- RELÓGIO DE BRASÍLIA NO TOPO (AUMENTADO EM 10%) --- */
     .container-relogio-isolado {
       position: absolute;
-      top: 22px; 
+      top: 18px; 
       left: 50%;
       transform: translateX(-50%);
       z-index: 12;
@@ -226,29 +226,29 @@
       color: #ffffff; 
       border: 1.5px solid #e1d8cd; 
       border-radius: 8px;
-      padding: 0 10px; 
-      font-size: 44px; 
+      padding: 0 12px; 
+      font-size: 48px; /* Aumentado aprox 10% */
       font-weight: bold;
-      letter-spacing: 1.2px; 
+      letter-spacing: 1.4px; 
       box-shadow: 0 4px 10px rgba(0,0,0,0.15);
       white-space: nowrap;
       text-align: center;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 64px; 
+      height: 70px; /* Aumentado aprox 10% */
     }
 
     .container-centro-elementos {
       position: absolute;
-      top: 48%; 
+      top: 50%; 
       left: 50%;
       transform: translate(-50%, -50%); 
       z-index: 10;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .btn-inverter-lados {
@@ -256,9 +256,9 @@
       color: #e1d8cd;
       border: 1.5px solid #e1d8cd;
       border-radius: 50%;
-      width: 36px;
-      height: 36px;
-      font-size: 17px;
+      width: 34px;
+      height: 34px;
+      font-size: 16px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -274,8 +274,8 @@
     }
 
     .logo-central {
-      width: 76px;
-      height: 76px;
+      width: 70px;
+      height: 70px;
       object-fit: contain;
       filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));
       pointer-events: none;
@@ -286,9 +286,9 @@
       color: #e1d8cd;
       border: 1.5px solid #e1d8cd;
       border-radius: 50%;
-      width: 36px;
-      height: 36px;
-      font-size: 15px;
+      width: 34px;
+      height: 34px;
+      font-size: 14px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -306,7 +306,7 @@
     /* --- BOTÃO DO APITO (ALINHADO COM OS BOTÕES -1) --- */
     .container-apito-isolado {
       position: absolute;
-      bottom: 35px; 
+      bottom: 28px; 
       left: 50%;
       transform: translateX(-50%);
       z-index: 12;
@@ -320,9 +320,9 @@
       color: #e1d8cd;
       border: 2px solid #e1d8cd;
       border-radius: 50%;
-      width: 42px; 
-      height: 42px;
-      font-size: 17px;
+      width: 40px; 
+      height: 40px;
+      font-size: 16px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -349,13 +349,13 @@
       position: relative;
     }
 
-    /* --- FAIXA INFERIOR PROPORCIONAL (110px) --- */
+    /* --- FAIXA INFERIOR PROPORCIONAL (95px) --- */
     .faixa-base-time {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 110px;
+      height: 95px;
       background-color: transparent;
       transition: background-color 0.3s;
       z-index: 2;
@@ -399,7 +399,7 @@
       font-size: 14px;
       font-weight: bold;
       position: absolute;
-      top: 42px; 
+      top: 36px; 
       cursor: pointer;
       outline: none;
       z-index: 11;
@@ -421,20 +421,21 @@
     .op-rosa { background-color: #e91e63 !important; color: #fff !important; }
     .op-padrao { background-color: #f7f5f2 !important; color: #12364e !important; }
 
+    /* --- NÚMERO DE PONTOS AUMENTADO EM 20% --- */
     .numero-pontos {
-      font-size: clamp(210px, 22vh, 240px);
+      font-size: clamp(250px, 26vh, 290px); /* Aumentado em 20% */
       font-weight: bold;
       color: #12364e;
       margin: 0;
       line-height: 1;
     }
 
-    /* --- BOLA DE VÔLEI CENTRALIZADA NA MESMA ALTURA DO BOTÃO -1 --- */
+    /* --- BOLA DE VÔLEI CENTRALIZADA COM O BOTÃO -1 --- */
     .bola-volei-indicador {
       position: absolute;
-      bottom: 35px; 
-      font-size: 30px;
-      line-height: 30px;
+      bottom: 28px; 
+      font-size: 28px;
+      line-height: 28px;
       opacity: 0;
       transition: opacity 0.2s ease;
       z-index: 4; 
@@ -458,10 +459,10 @@
       right: 12px;
     }
 
-    /* --- BOTÕES DE -1 CENTRALIZADOS NA FAIXA DE 110px --- */
+    /* --- BOTÕES DE -1 CENTRALIZADOS NA FAIXA DE 95px --- */
     .controles-lado {
       position: absolute;
-      bottom: 35px; 
+      bottom: 28px; 
       left: 0;
       right: 0;
       display: flex;
@@ -475,8 +476,8 @@
       color: #12364e;
       border: 2px solid #12364e;
       border-radius: 10px;
-      padding: 4px 18px;
-      font-size: 16px;
+      padding: 3px 16px;
+      font-size: 15px;
       font-weight: bold;
       cursor: pointer;
       pointer-events: auto;
