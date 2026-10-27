@@ -27,7 +27,7 @@
       overflow-y: auto; 
     }
 
-    /* --- BARRA ÚNICA COM OS 7 CONTROLES LADO A LADO --- */
+    /* --- BARRA ÚNICA COM OS CONTROLES LADO A LADO --- */
     .barra-controles-unificada {
       width: 100%;
       max-width: 900px;
@@ -145,7 +145,6 @@
       transition: background 0.4s ease, box-shadow 0.4s ease;
     }
 
-    /* --- TEMAS DE COR DO FUNDO DA ESTRUTURA DO PLACAR --- */
     .estrutura-placar.tema-padrao {
       background: #ffffff !important;
     }
@@ -172,7 +171,6 @@
       z-index: 2;
     }
 
-    /* --- POP-UP SOBREPOSTO AO PLACAR --- */
     .overlay-fase {
       display: none;
       position: absolute;
@@ -211,7 +209,6 @@
       100% { opacity: 1; transform: scale(1.02); }
     }
 
-    /* --- RELÓGIO DE BRASÍLIA NO TOPO (AUMENTADO EM MAIS 20%) --- */
     .container-relogio-isolado {
       position: absolute;
       top: 14px; 
@@ -227,7 +224,7 @@
       border: 1.5px solid #e1d8cd; 
       border-radius: 8px;
       padding: 0 14px; 
-      font-size: 58px; /* Aumentado em mais 20% */
+      font-size: 58px;
       font-weight: bold;
       letter-spacing: 1.6px; 
       box-shadow: 0 4px 10px rgba(0,0,0,0.15);
@@ -236,7 +233,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 82px; /* Aumentado em mais 20% */
+      height: 82px;
     }
 
     .container-centro-elementos {
@@ -303,7 +300,6 @@
       background-color: #1d4f71;
     }
 
-    /* --- BOTÃO DO APITO (ALINHADO COM OS BOTÕES -1) --- */
     .container-apito-isolado {
       position: absolute;
       bottom: 28px; 
@@ -349,7 +345,6 @@
       position: relative;
     }
 
-    /* --- FAIXA INFERIOR DE 95px --- */
     .faixa-base-time {
       position: absolute;
       bottom: 0;
@@ -389,7 +384,6 @@
       background-color: #d9b246;
     }
 
-    /* --- SELETORES DE CORES --- */
     .seletor-cor-time {
       background: #f7f5f2;
       color: #12364e;
@@ -407,13 +401,8 @@
       height: 28px; 
     }
 
-    #cor-esquerda {
-      left: 32px;
-    }
-
-    #cor-direita {
-      right: 32px;
-    }
+    #cor-esquerda { left: 32px; }
+    #cor-direita { right: 32px; }
 
     .op-amarelo { background-color: #ffeb3b !important; color: #000 !important; }
     .op-azul { background-color: #2196f3 !important; color: #fff !important; }
@@ -421,16 +410,14 @@
     .op-rosa { background-color: #e91e63 !important; color: #fff !important; }
     .op-padrao { background-color: #f7f5f2 !important; color: #12364e !important; }
 
-    /* --- NÚMERO DE PONTOS AUMENTADO EM MAIS 30% --- */
     .numero-pontos {
-      font-size: clamp(290px, 32vh, 340px); /* Aumentado em mais 30% */
+      font-size: clamp(290px, 32vh, 340px);
       font-weight: bold;
       color: #12364e;
       margin: 0;
       line-height: 1;
     }
 
-    /* --- BOLA DE VÔLEI CENTRALIZADA COM O BOTÃO -1 --- */
     .bola-volei-indicador {
       position: absolute;
       bottom: 28px; 
@@ -447,19 +434,10 @@
       pointer-events: none;
     }
 
-    .bola-volei-indicador.ativo {
-      opacity: 1;
-    }
+    .bola-volei-indicador.ativo { opacity: 1; }
+    #bola-esquerda { left: 12px; }
+    #bola-direita { right: 12px; }
 
-    #bola-esquerda {
-      left: 12px;
-    }
-
-    #bola-direita {
-      right: 12px;
-    }
-
-    /* --- BOTÕES DE -1 CENTRALIZADOS NA FAIXA DE 95px --- */
     .controles-lado {
       position: absolute;
       bottom: 28px; 
@@ -491,9 +469,7 @@
     }
 
     @media (orientation: portrait) {
-      .aviso-orientacao {
-        display: flex;
-      }
+      .aviso-orientacao { display: flex; }
     }
 
     .aviso-orientacao {
@@ -557,9 +533,7 @@
       transition: transform 0.1s;
     }
 
-    .btn-janela:active {
-      transform: scale(0.85);
-    }
+    .btn-janela:active { transform: scale(0.85); }
 
     .janela-tabela-conteudo {
       width: 100%;
@@ -571,6 +545,138 @@
     .janela-tabela-conteudo.minimizado {
       height: 0px !important;
     }
+
+    /* --- ESTILOS DO MODO CONTROLE COMPACTO VERTICAL (LOCAL) --- */
+    .modo-controle-ativo .container-placar-global:has(#placar-main),
+    .modo-controle-ativo .aviso-orientacao,
+    .modo-controle-ativo a.btn-topo-discreto[href="dashboard.html"],
+    .modo-controle-ativo button#btnFullscreen,
+    .modo-controle-ativo select#seletorTema {
+      display: none !important;
+    }
+
+    .painel-controle-vertical {
+      display: none;
+      width: 100%;
+      max-width: 450px;
+      margin: 20px auto 10px auto;
+      background-color: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      overflow: hidden;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .modo-controle-ativo .painel-controle-vertical {
+      display: flex;
+    }
+
+    .corpo-painel-controle {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      position: relative;
+    }
+
+    .coluna-controle-time {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 12px;
+    }
+
+    .linha-controle-seletor {
+      width: 100%;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .linha-controle-seletor select {
+      width: 100%;
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: bold;
+      border: 1px solid #12364e;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .linha-controle-pontos {
+      font-size: 72px;
+      font-weight: bold;
+      color: #12364e;
+      margin: 10px 0 20px 0;
+      line-height: 1;
+    }
+
+    .linha-controle-botoes {
+      width: 100%;
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-acao-mais, .btn-acao-menos {
+      flex: 1;
+      padding: 14px 0;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 10px;
+      border: 2px solid #12364e;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+
+    .btn-acao-mais {
+      background-color: #2196f3;
+      color: #fff;
+      border-color: #2196f3;
+    }
+
+    .btn-acao-mais:active {
+      transform: scale(0.95);
+      background-color: #1976d2;
+    }
+
+    .btn-acao-menos {
+      background-color: #f7f5f2;
+      color: #12364e;
+    }
+
+    .btn-acao-menos:active {
+      transform: scale(0.95);
+      opacity: 0.8;
+    }
+
+    /* Botão de resetar centralizado no modo controle */
+    .btn-zerar-controle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #12364e;
+      color: #e1d8cd;
+      border: 1.5px solid #e1d8cd;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
+      z-index: 10;
+      transition: transform 0.1s, background-color 0.2s;
+    }
+
+    .btn-zerar-controle:active {
+      transform: translate(-50%, -50%) scale(0.90);
+      background-color: #1d4f71;
+    }
   </style>
 </head>
 <body>
@@ -579,6 +685,54 @@
     <span>🔄📱</span>
     <h2>Por favor, vire o seu aparelho de lado.</h2>
     <p>O placar foi otimizado para o modo horizontal (paisagem).</p>
+  </div>
+
+  <!-- PAINEL DE CONTROLE VERTICAL (MODO CONTROLE LOCAL) -->
+  <div class="container-placar-global">
+    <div class="painel-controle-vertical" id="painelControleVertical">
+      <div class="corpo-painel-controle">
+        
+        <!-- BOTÃO DE RESET CENTRAL NO MODO CONTROLE -->
+        <button class="btn-zerar-controle" onclick="zerarPlacar()" title="Zerar Placar">🔄</button>
+
+        <!-- TIME ESQUERDO -->
+        <div class="coluna-controle-time" id="col-ctrl-esquerda">
+          <div class="linha-controle-seletor">
+            <select id="ctrl-cor-esquerda" onchange="mudarCorLocal('esquerda')">
+              <option value="" class="op-padrao">Cor Esquerda</option>
+              <option value="Amarelo" class="op-amarelo">Amarelo</option>
+              <option value="Azul" class="op-azul">Azul</option>
+              <option value="Roxo" class="op-roxo">Roxo</option>
+              <option value="Rosa" class="op-rosa">Rosa</option>
+            </select>
+          </div>
+          <div class="linha-controle-pontos" id="ctrl-pts-esquerda">0</div>
+          <div class="linha-controle-botoes">
+            <button class="btn-acao-mais" onclick="adicionarPonto('esquerda')">+1</button>
+            <button class="btn-acao-menos" onclick="subtrairPonto('esquerda')">-1</button>
+          </div>
+        </div>
+
+        <!-- TIME DIREITO -->
+        <div class="coluna-controle-time" id="col-ctrl-direita">
+          <div class="linha-controle-seletor">
+            <select id="ctrl-cor-direita" onchange="mudarCorLocal('direita')">
+              <option value="" class="op-padrao">Cor Direita</option>
+              <option value="Amarelo" class="op-amarelo">Amarelo</option>
+              <option value="Azul" class="op-azul">Azul</option>
+              <option value="Roxo" class="op-roxo">Roxo</option>
+              <option value="Rosa" class="op-rosa">Rosa</option>
+            </select>
+          </div>
+          <div class="linha-controle-pontos" id="ctrl-pts-direita">0</div>
+          <div class="linha-controle-botoes">
+            <button class="btn-acao-mais" onclick="adicionarPonto('direita')">+1</button>
+            <button class="btn-acao-menos" onclick="subtrairPonto('direita')">-1</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
 
   <!-- PLACAR PRINCIPAL -->
@@ -655,11 +809,11 @@
 
   </div>
 
-  <!-- TODOS OS 7 CONTROLES JUNTOS LADO A LADO NA MESMA LINHA -->
+  <!-- BARRA DE CONTROLES UNIFICADA -->
   <div class="barra-controles-unificada">
     <a href="dashboard.html" class="btn-topo-discreto">Central do Adm</a>
     <button type="button" class="btn-topo-discreto" onclick="toggleTabela()">Abrir Tabela</button>
-    <button class="btn-topo-discreto btn-fixar-notif" onclick="enviarLembreteResultado()">Fixar (iOS)</button>
+    <button class="btn-topo-discreto btn-fixar-notif" id="btnModoControle" onclick="alternarModoControle()">Modo Controle</button>
     <button class="btn-topo-discreto" onclick="alternarTelaCheia()" id="btnFullscreen">Tela Cheia (Android)</button>
     <button class="btn-fase" id="btn-semi" onclick="alternarFase('semi')">Semifinal</button>
     <button class="btn-fase" id="btn-finais" onclick="alternarFase('finais')">Final</button>
@@ -716,7 +870,6 @@
       "": { bg: "#f7f5f2", text: "#12364e" }
     };
 
-    // --- ENGENHARIA DE ÁUDIO VIA WEB AUDIO API ---
     let audioContext;
     let audioBufferApito;
     let audioBufferSemi;
@@ -819,7 +972,6 @@
       }
     }
 
-    // --- SINCRO DA HORA OFICIAL DE BRASÍLIA COM SEGUNDOS ---
     let diferencaTempoServidor = 0;
 
     function sincronizarRelogio() {
@@ -849,7 +1001,6 @@
     setInterval(atualizarRelogioVisual, 100); 
     setInterval(sincronizarRelogio, 600000); 
 
-    // --- CONTROLES DE EXIBIÇÃO DA JANELA DA TABELA ---
     function toggleTabela() {
       const container = document.getElementById('container-tabela');
       const iframe = document.getElementById('iframe-tabela');
@@ -875,14 +1026,18 @@
       container.style.display = 'none';
     }
 
-    // --- ATUALIZAÇÃO DA APARÊNCIA E RESTRIÇÃO DE OPÇÕES DOS SELECTS ---
     function atualizarAparenciaSeletor(lado, cor) {
       const select = document.getElementById(`cor-${lado}`);
+      const selectCtrl = document.getElementById(`ctrl-cor-${lado}`);
       const estilo = estilosCores[cor] || estilosCores[""];
       
       if (select) {
         select.style.backgroundColor = estilo.bg;
         select.style.color = estilo.text;
+      }
+      if (selectCtrl) {
+        selectCtrl.style.backgroundColor = estilo.bg;
+        selectCtrl.style.color = estilo.text;
       }
 
       const ladoContainer = select ? select.closest('.lado-placar') : null;
@@ -907,30 +1062,32 @@
     }
 
     function atualizarOpcoesDisponiveis() {
-      const selEsq = document.getElementById('cor-esquerda');
-      const selDir = document.getElementById('cor-direita');
-      
       const valEsq = placarLocal.corEsquerda || "";
       const valDir = placarLocal.corDireita || "";
 
-      for (let option of selEsq.options) {
-        if (option.value === "") {
-          option.style.display = "block";
-        } else {
-          option.style.display = (option.value === valDir) ? "none" : "block";
+      [document.getElementById('cor-esquerda'), document.getElementById('ctrl-cor-esquerda')].forEach(sel => {
+        if (!sel) return;
+        for (let option of sel.options) {
+          if (option.value === "") {
+            option.style.display = "block";
+          } else {
+            option.style.display = (option.value === valDir) ? "none" : "block";
+          }
         }
-      }
+      });
 
-      for (let option of selDir.options) {
-        if (option.value === "") {
-          option.style.display = "block";
-        } else {
-          option.style.display = (option.value === valEsq) ? "none" : "block";
+      [document.getElementById('cor-direita'), document.getElementById('ctrl-cor-direita')].forEach(sel => {
+        if (!sel) return;
+        for (let option of sel.options) {
+          if (option.value === "") {
+            option.style.display = "block";
+          } else {
+            option.style.display = (option.value === valEsq) ? "none" : "block";
+          }
         }
-      }
+      });
     }
 
-    // --- CONTROLE DE TEMAS DE COR DO PLACAR ---
     function aplicarTemaVisual(nomeTema) {
       const placarMain = document.getElementById('placar-main');
       const seletorTema = document.getElementById('seletorTema');
@@ -953,45 +1110,40 @@
       }
     }
 
-    // --- ATUALIZAÇÃO VISUAL E SONORA DA FASE (SEMI / FINAIS) ---
     function atualizarVisualFase(fase) {
       const btnSemi = document.getElementById('btn-semi');
       const btnFinais = document.getElementById('btn-finais');
       const overlay = document.getElementById('overlayFase');
       const textoOverlay = document.getElementById('textoOverlay');
 
-      if (btnSemi && btnFinais && overlay && textoOverlay) {
+      if (btnSemi && btnFinais) {
         if (fase === 'semi') {
           btnSemi.classList.add('ativo');
           btnFinais.classList.remove('ativo');
-          textoOverlay.innerHTML = '<span class="linha-fase">SEMI</span><span class="linha-fase">FINAL</span>';
-          overlay.style.display = 'flex';
+          if (textoOverlay) textoOverlay.innerHTML = '<span class="linha-fase">SEMI</span><span class="linha-fase">FINAL</span>';
+          if (overlay) overlay.style.display = 'flex';
 
           if (ultimaFaseProcessada !== 'semi') {
             tocarAudioUnico(audioBufferSemi);
           }
-
         } else if (fase === 'finais') {
           btnFinais.classList.add('ativo');
           btnSemi.classList.remove('ativo');
-          textoOverlay.innerHTML = '<span class="linha-fase">FINAL</span>';
-          overlay.style.display = 'flex';
+          if (textoOverlay) textoOverlay.innerHTML = '<span class="linha-fase">FINAL</span>';
+          if (overlay) overlay.style.display = 'flex';
 
           if (ultimaFaseProcessada !== 'finais') {
             tocarAudioUnico(audioBufferFinal);
           }
-
         } else {
           btnSemi.classList.remove('ativo');
           btnFinais.classList.remove('ativo');
-          overlay.style.display = 'none';
+          if (overlay) overlay.style.display = 'none';
         }
-
         ultimaFaseProcessada = fase;
       }
     }
 
-    // Sincronização em tempo real via Firebase
     placarRef.on('value', (snapshot) => {
       const dadosNuvem = snapshot.val();
       if (dadosNuvem) {
@@ -999,15 +1151,26 @@
         
         const elemEsq = document.getElementById('pts-esquerda');
         const elemDir = document.getElementById('pts-direita');
+        const ctrlElemEsq = document.getElementById('ctrl-pts-esquerda');
+        const ctrlElemDir = document.getElementById('ctrl-pts-direita');
+        
         const selEsq = document.getElementById('cor-esquerda');
         const selDir = document.getElementById('cor-direita');
+        const ctrlSelEsq = document.getElementById('ctrl-cor-esquerda');
+        const ctrlSelDir = document.getElementById('ctrl-cor-direita');
+
         const bolaEsq = document.getElementById('bola-esquerda');
         const bolaDir = document.getElementById('bola-direita');
 
         if(elemEsq) elemEsq.innerText = placarLocal.esquerda || 0;
         if(elemDir) elemDir.innerText = placarLocal.direita || 0;
+        if(ctrlElemEsq) ctrlElemEsq.innerText = placarLocal.esquerda || 0;
+        if(ctrlElemDir) ctrlElemDir.innerText = placarLocal.direita || 0;
+
         if(selEsq) selEsq.value = placarLocal.corEsquerda || "";
         if(selDir) selDir.value = placarLocal.corDireita || "";
+        if(ctrlSelEsq) ctrlSelEsq.value = placarLocal.corEsquerda || "";
+        if(ctrlSelDir) ctrlSelDir.value = placarLocal.corDireita || "";
 
         if (bolaEsq && bolaDir) {
           if (placarLocal.ultimoPontuador === 'esquerda') {
@@ -1060,6 +1223,12 @@
       placarRef.set(placarLocal);
     }
 
+    function mudarCorLocal(lado) {
+      placarLocal.corEsquerda = document.getElementById('ctrl-cor-esquerda').value;
+      placarLocal.corDireita = document.getElementById('ctrl-cor-direita').value;
+      placarRef.set(placarLocal);
+    }
+
     function inverterLados() {
       const corEsquerdaTemp = placarLocal.corEsquerda;
       
@@ -1091,45 +1260,13 @@
       placarRef.set(placarLocal);
     }
 
-    function enviarLembreteResultado() {
-      if (!("Notification" in window)) {
-        alert("Este navegador não suporta notificações de sistema.");
-        return;
-      }
-
-      const timeEsq = placarLocal.corEsquerda || "Time Esquerdo";
-      const timeDir = placarLocal.corDireita || "Time Direito";
-      const pontosEsq = placarLocal.esquerda || 0;
-      const pontosDir = placarLocal.direita || 0;
-
-      const titulo = "Bola Fora - Resultado Guardado 📌";
-      const opcoesNotificacao = {
-        body: `${timeEsq} ${pontosEsq} x ${pontosDir} ${timeDir}`,
-        icon: 'https://i.ibb.co/8LqSRDLB/logo-sem-fundo.png',
-        tag: 'resultado-placar', 
-        requireInteraction: true 
-      };
-
-      if (Notification.permission === "granted") {
-        dispararNotificacao(titulo, opcoesNotificacao);
-      } else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then(permission => {
-          if (permission === "granted") {
-            dispararNotificacao(titulo, opcoesNotificacao);
-          }
-        });
+    function alternarModoControle() {
+      const ativo = document.body.classList.toggle('modo-controle-ativo');
+      const btnModo = document.getElementById('btnModoControle');
+      if (ativo) {
+        btnModo.innerText = "Voltar ao Padrão";
       } else {
-        alert("As notificações estão bloqueadas no seu navegador. Ative-as nas configurações do site para usar o lembrete.");
-      }
-    }
-
-    function dispararNotificacao(titulo, opcoes) {
-      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.ready.then(registration => {
-          registration.showNotification(titulo, opcoes);
-        });
-      } else {
-        new Notification(titulo, opcoes);
+        btnModo.innerText = "Modo Controle";
       }
     }
 
@@ -1140,39 +1277,25 @@
         if (elemento.requestFullscreen) { elemento.requestFullscreen(); } 
         else if (elemento.webkitRequestFullscreen) { elemento.webkitRequestFullscreen(); } 
         else if (elemento.msRequestFullscreen) { elemento.msRequestFullscreen(); }
-        botao.innerText = "🔳 Sair do Fullscreen";
+        if (botao) botao.innerText = "🔳 Sair do Fullscreen";
       } else {
         if (document.exitFullscreen) { document.exitFullscreen(); } 
         else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); } 
         else if (document.msExitFullscreen) { document.msExitFullscreen(); }
-        botao.innerText = "🔲 Tela Cheia";
+        if (botao) botao.innerText = "🔲 Tela Cheia";
       }
     }
 
     function monitorarMudancaTelaCheia() {
       const botao = document.getElementById('btnFullscreen');
       if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
-        botao.innerText = "🔲 Tela Cheia";
+        if (botao) botao.innerText = "🔲 Tela Cheia";
       }
     }
 
     document.addEventListener('fullscreenchange', monitorarMudancaTelaCheia);
     document.addEventListener('webkitfullscreenchange', monitorarMudancaTelaCheia);
     document.addEventListener('msfullscreenchange', monitorarMudancaTelaCheia);
-
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        const code = "self.addEventListener('notificationclick', function(event) { event.notification.close(); });";
-        const blob = new Blob([code], { type: 'application/javascript' });
-        const workerUrl = URL.createObjectURL(blob);
-        
-        navigator.serviceWorker.register(workerUrl).then(reg => {
-          console.log('Service Worker de notificações ativado.');
-        }).catch(err => {
-          console.error('Erro ao registrar Service Worker:', err);
-        });
-      });
-    }
   </script>
 
 </body>
