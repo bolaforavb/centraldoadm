@@ -131,6 +131,7 @@
       gap: 12px;
     }
 
+    /* --- ESTRUTURA COM ALTURA MÍNIMA GARANTIDA PARA TABLETS --- */
     .estrutura-placar {
       display: flex;
       background-color: #ffffff; 
@@ -139,6 +140,7 @@
       position: relative;
       overflow: hidden;
       width: 100%;
+      min-height: 480px; /* Garante excelente proporção e altura em tablets */
       margin-top: 16px; 
       transition: background 0.4s ease, box-shadow 0.4s ease;
     }
@@ -385,7 +387,7 @@
       background-color: #d9b246;
     }
 
-    /* --- SELETORES DE CORES CENTRALIZADOS VERTICALMENTE COM O RELÓGIO (Altura de 68px) --- */
+    /* --- SELETORES DE CORES CENTRALIZADOS VERTICALMENTE COM O RELÓGIO --- */
     .seletor-cor-time {
       background: #f7f5f2;
       color: #12364e;
@@ -395,7 +397,7 @@
       font-size: 14px;
       font-weight: bold;
       position: absolute;
-      top: 44px; /* Centralizado verticalmente com o relógio de 68px de altura (24px + 68px/2 - 28px/2) */
+      top: 44px; 
       cursor: pointer;
       outline: none;
       z-index: 11;
