@@ -1211,6 +1211,10 @@
     }
 
     function subtrairPonto(lado) {
+      if ("vibrate" in navigator) {
+        navigator.vibrate(30);
+      }
+
       if (placarLocal[lado] > 0) {
         placarLocal[lado] -= 1;
         placarRef.set(placarLocal);
@@ -1277,12 +1281,12 @@
         if (elemento.requestFullscreen) { elemento.requestFullscreen(); } 
         else if (elemento.webkitRequestFullscreen) { elemento.webkitRequestFullscreen(); } 
         else if (elemento.msRequestFullscreen) { elemento.msRequestFullscreen(); }
-        if (botao) botao.innerText = "Fechar tela cheia";
+        if (botao) botao.innerText = "Tela Cheia";
       } else {
         if (document.exitFullscreen) { document.exitFullscreen(); } 
         else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); } 
         else if (document.msExitFullscreen) { document.msExitFullscreen(); }
-        if (botao) botao.innerText = "🔲 Tela Cheia";
+        if (botao) botao.innerText = "Tela Cheia";
       }
     }
 
