@@ -80,6 +80,14 @@
       letter-spacing: 0.5px;
     }
 
+    .subtitulo-dia {
+      font-size: 11px;
+      color: #d9b246;
+      font-weight: bold;
+      margin-top: 2px;
+      text-transform: capitalize;
+    }
+
     .btn-toggle-bloco {
       background: none;
       border: none;
@@ -358,6 +366,42 @@
       border-radius: 6px;
     }
 
+    /* Estilos do Bloco Atividades do Dia */
+    .lista-atividades-dia {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .item-atividade-dia {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #f7f5f2;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border-left: 4px solid #d9b246;
+    }
+
+    .info-atividade {
+      font-size: 13px;
+      font-weight: bold;
+      color: #12364e;
+      word-break: break-word;
+    }
+
+    .responsavel-atividade {
+      font-size: 11px;
+      font-weight: bold;
+      background-color: #12364e;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      margin-left: 8px;
+    }
+
     .card-adm {
       background-color: #f7f5f2;
       border-radius: 10px;
@@ -540,6 +584,7 @@
       border-radius: 8px;
       font-size: 12px;
       cursor: grab;
+      flex-wrap: wrap;
     }
     .item-cadastro-atribuicao:active {
       cursor: grabbing;
@@ -548,11 +593,18 @@
       opacity: 0.4;
     }
 
-    .select-responsavel {
-      max-width: 130px;
+    .select-responsavel, .select-dia-semana {
       font-size: 11px;
       padding: 6px;
       flex-shrink: 0;
+    }
+
+    .select-responsavel {
+      max-width: 120px;
+    }
+
+    .select-dia-semana {
+      max-width: 110px;
     }
 
     .mensag-vazia {
@@ -594,6 +646,14 @@
       background-color: #e1d8cd;
       color: #12364e;
     }
+
+    .box-cadastrar-adm {
+      background-color: #f7f5f2;
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 12px;
+      margin-bottom: 12px;
+    }
   </style>
 </head>
 <body>
@@ -604,13 +664,13 @@
 
   <main class="main-container">
     
-    <!-- 1. Cadastrar ADMs -->
+    <!-- 1. Bloco Atividades do Dia -->
     <div class="bloco-card">
-      <div class="titulo-secao">Cadastrar ADMs</div>
-      <form id="form-cadastrar-adm" class="form-inline" style="margin-top: 12px;">
-        <input type="text" id="nome-adm-input" placeholder="Nome do ADM" required>
-        <button type="submit" class="btn-add-tabela">Add</button>
-      </form>
+      <div>
+        <div class="titulo-secao">Atividades do dia</div>
+        <div id="subtitulo-dia-hoje" class="subtitulo-dia"></div>
+      </div>
+      <div id="container-atividades-dia" class="lista-atividades-dia"></div>
     </div>
 
     <!-- 2. Ranking -->
@@ -624,7 +684,7 @@
       <div id="container-ranking" class="lista-ranking"></div>
     </div>
 
-    <!-- 3. Bloco Colapsável: Atribuições e Pontuações -->
+    <!-- 3. Bloco Colapsável: Atribuições e Pontuações (Com formulário de Cadastrar ADMs incorporado) -->
     <div class="bloco-card">
       <div class="header-card-toggle" onclick="alternarMinimizadoPontuacoes()">
         <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
@@ -637,7 +697,17 @@
       </div>
 
       <div id="conteudo-atribuicoes-pontuacoes" class="conteudo-minimizado">
-        <div id="container-pontuacoes" style="margin-top: 12px;"></div>
+        
+        <!-- Formulário Cadastrar ADM Incorporado -->
+        <div class="box-cadastrar-adm">
+          <div class="titulo-secao" style="font-size: 11px; margin-bottom: 8px;">Cadastrar Novo ADM</div>
+          <form id="form-cadastrar-adm" class="form-inline">
+            <input type="text" id="nome-adm-input" placeholder="Nome do ADM" required>
+            <button type="submit" class="btn-add-tabela">Add</button>
+          </form>
+        </div>
+
+        <div id="container-pontuacoes"></div>
       </div>
     </div>
 
@@ -844,6 +914,7 @@
       BD_Acompanhamento.atribuicoes[novoId] = {
         nome: nomeAtribuicao,
         admId: "",
+        diaSemana: "",
         contagem: 0,
         ordem: maxOrdem + 1,
         pontosIndividuais: {}
@@ -879,6 +950,16 @@
       }
 
       salvarDados(`vinculou a atribuição "${atr.nome}" para ${nomeAdmDestino}`);
+    };
+
+    window.atribuirDiaSemanaATarefa = function(idAtribuicao, diaSelecionado) {
+      if (!BD_Acompanhamento.atribuicoes[idAtribuicao]) return;
+
+      const atr = BD_Acompanhamento.atribuicoes[idAtribuicao];
+      atr.diaSemana = diaSelecionado;
+
+      const diaTxt = diaSelecionado ? `para "${diaSelecionado}"` : "para sem dia definido";
+      salvarDados(`definiu o dia da atribuição "${atr.nome}" ${diaTxt}`);
     };
 
     window.alterarContador = function(idAtribuicao, idAdm, delta) {
@@ -1089,10 +1170,50 @@
     };
 
     function renderizarTudo() {
+      renderizarAtividadesDoDia();
       renderizarRanking();
       renderizarPontuacoes();
       renderizarCadastroAtribuicoes();
       renderizarHistorico();
+    }
+
+    function renderizarAtividadesDoDia() {
+      const container = document.getElementById('container-atividades-dia');
+      const subtituloDiv = document.getElementById('subtitulo-dia-hoje');
+      container.innerHTML = '';
+
+      const diasSemanaMapa = ['DOMINGO', 'SEGUNDA-FEIRA', 'TERÇA-FEIRA', 'QUARTA-FEIRA', 'QUINTA-FEIRA', 'SEXTA-FEIRA', 'SÁBADO'];
+      const hojeIndex = new Date().getDay();
+      const diaHojeNome = diasSemanaMapa[hojeIndex];
+
+      subtituloDiv.textContent = `HOJE É ${diaHojeNome}`;
+
+      let atribsDoDia = Object.values(BD_Acompanhamento.atribuicoes || {})
+        .filter(atr => atr.diaSemana === diaHojeNome);
+
+      if (atribsDoDia.length === 0) {
+        container.innerHTML = `<div class="mensag-vazia" style="text-align: left;">Nenhuma atividade agendada para hoje.</div>`;
+        return;
+      }
+
+      atribsDoDia.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+
+      atribsDoDia.forEach(atr => {
+        let nomeResponsavel = "Sem responsável";
+        if (atr.admId === "todos") {
+          nomeResponsavel = "Todos os ADMs";
+        } else if (atr.admId && BD_Acompanhamento.adms[atr.admId]) {
+          nomeResponsavel = BD_Acompanhamento.adms[atr.admId].nome;
+        }
+
+        const div = document.createElement('div');
+        div.className = 'item-atividade-dia';
+        div.innerHTML = `
+          <span class="info-atividade">${atr.nome}</span>
+          <span class="responsavel-atividade">${nomeResponsavel}</span>
+        `;
+        container.appendChild(div);
+      });
     }
 
     function renderizarHistorico() {
@@ -1294,25 +1415,36 @@
       let admsEntries = Object.entries(BD_Acompanhamento.adms || {});
       admsEntries.sort((a, b) => a[1].nome.localeCompare(b[1].nome));
 
+      const diasSemanaOpcoes = ["SEGUNDA-FEIRA", "TERÇA-FEIRA", "QUARTA-FEIRA", "QUINTA-FEIRA", "SEXTA-FEIRA"];
+
       atribsEntries.forEach(([idAtr, atr]) => {
         const item = document.createElement('div');
         item.className = 'item-cadastro-atribuicao';
         item.setAttribute('draggable', 'true');
         item.setAttribute('data-id', idAtr);
 
-        let optionsHtml = `
-          <option value="">Selecionar ADM...</option>
+        let optionsAdmHtml = `
+          <option value="">ADM...</option>
           <option value="todos" ${atr.admId === 'todos' ? 'selected' : ''}>Todos</option>
         `;
         admsEntries.forEach(([idAdm, adm]) => {
           const selected = atr.admId === idAdm ? 'selected' : '';
-          optionsHtml += `<option value="${idAdm}" ${selected}>${adm.nome}</option>`;
+          optionsAdmHtml += `<option value="${idAdm}" ${selected}>${adm.nome}</option>`;
+        });
+
+        let optionsDiaHtml = `<option value="">Dia...</option>`;
+        diasSemanaOpcoes.forEach(dia => {
+          const selected = atr.diaSemana === dia ? 'selected' : '';
+          optionsDiaHtml += `<option value="${dia}" ${selected}>${dia.replace('-feira', '')}</option>`;
         });
 
         item.innerHTML = `
           <span class="drag-handle" title="Arraste para reordenar">☰</span>
           <select class="select-responsavel" onchange="atribuirAdmATarefa('${idAtr}', this.value)">
-            ${optionsHtml}
+            ${optionsAdmHtml}
+          </select>
+          <select class="select-dia-semana" onchange="atribuirDiaSemanaATarefa('${idAtr}', this.value)">
+            ${optionsDiaHtml}
           </select>
           <span class="texto-atribuicao" title="${atr.nome}">${atr.nome}</span>
           <div class="acoes-atribuicao">
@@ -1423,7 +1555,7 @@
       const novaOrdemIds = [];
       container.querySelectorAll('.item-atribuicao-adm').forEach(item => {
         const id = item.getAttribute('data-id');
-        if (id && !novaOrmdIds.includes(id)) {
+        if (id && !novaOrdemIds.includes(id)) {
           novaOrdemIds.push(id);
         }
       });
