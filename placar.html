@@ -651,7 +651,7 @@
       opacity: 0.8;
     }
 
-    /* Container dos botões centrais no modo controle (Deslocados 20% para baixo -> top: 70%) */
+    /* Container dos botões centrais no modo controle */
     .botoes-centrais-controle {
       position: absolute;
       top: 60%;
@@ -1381,9 +1381,13 @@
       const containerDir = document.getElementById('botoes-integrantes-direita');
       if (!containerEsq || !containerDir) return;
 
-      // Time Esquerdo
+      // Time Esquerdo (ordenado alfabeticamente)
       const corEsq = placarLocal.corEsquerda;
-      const jogadoresEsq = corEsq ? elencoGlobal.filter(j => j.time === corEsq && j.presente) : [];
+      const jogadoresEsq = corEsq 
+        ? elencoGlobal
+            .filter(j => j.time === corEsq && j.presente)
+            .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR', { sensitivity: 'base' }))
+        : [];
       
       let htmlEsq = "";
       for (let i = 0; i < 4; i++) {
@@ -1397,9 +1401,13 @@
       }
       containerEsq.innerHTML = htmlEsq;
 
-      // Time Direito
+      // Time Direito (ordenado alfabeticamente)
       const corDir = placarLocal.corDireita;
-      const jogadoresDir = corDir ? elencoGlobal.filter(j => j.time === corDir && j.presente) : [];
+      const jogadoresDir = corDir 
+        ? elencoGlobal
+            .filter(j => j.time === corDir && j.presente)
+            .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR', { sensitivity: 'base' }))
+        : [];
 
       let htmlDir = "";
       for (let i = 0; i < 4; i++) {
@@ -1608,7 +1616,6 @@
       } else {
         placarLocal.fase = tipo;
         placarLocal.tema = (tipo === 'semi') ? 'semifinal' : 'final';
-        // Zera o placar automaticamente ao ativar semifinal ou final
         placarLocal.esquerda = 0;
         placarLocal.direita = 0;
         placarLocal.ultimoPontuador = null;
