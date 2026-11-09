@@ -584,21 +584,21 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 16px 12px;
+      padding: 12px 8px;
     }
 
     .linha-controle-seletor {
       width: 100%;
-      margin-bottom: 16px;
+      margin-bottom: 10px;
       display: flex;
       justify-content: center;
     }
 
     .linha-controle-seletor select {
       width: 100%;
-      padding: 8px;
-      border-radius: 8px;
-      font-size: 14px;
+      padding: 6px;
+      border-radius: 6px;
+      font-size: 13px;
       font-weight: bold;
       border: 1px solid #12364e;
       outline: none;
@@ -606,25 +606,25 @@
     }
 
     .linha-controle-pontos {
-      font-size: 72px;
+      font-size: 64px;
       font-weight: bold;
       color: #12364e;
-      margin: 10px 0 20px 0;
+      margin: 8px 0 14px 0;
       line-height: 1;
     }
 
     .linha-controle-botoes {
       width: 100%;
       display: flex;
-      gap: 8px;
+      gap: 6px;
     }
 
     .btn-acao-mais, .btn-acao-menos {
       flex: 1;
-      padding: 14px 0;
-      font-size: 18px;
+      padding: 12px 0;
+      font-size: 16px;
       font-weight: bold;
-      border-radius: 10px;
+      border-radius: 8px;
       border: 2px solid #12364e;
       cursor: pointer;
       transition: transform 0.1s, opacity 0.2s;
@@ -651,12 +651,20 @@
       opacity: 0.8;
     }
 
-    /* Botão de resetar centralizado no modo controle */
-    .btn-zerar-controle {
+    /* Container dos botões centrais no modo controle (Deslocados 20% para baixo -> top: 70%) */
+    .botoes-centrais-controle {
       position: absolute;
-      top: 50%;
+      top: 60%;
       left: 50%;
       transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .btn-inverter-controle, .btn-zerar-controle {
       background-color: #12364e;
       color: #e1d8cd;
       border: 1.5px solid #e1d8cd;
@@ -669,13 +677,159 @@
       align-items: center;
       cursor: pointer;
       box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
-      z-index: 10;
       transition: transform 0.1s, background-color 0.2s;
     }
 
-    .btn-zerar-controle:active {
-      transform: translate(-50%, -50%) scale(0.90);
+    .btn-inverter-controle:active {
+      transform: scale(0.90);
       background-color: #1d4f71;
+    }
+
+    .btn-zerar-controle:active {
+      transform: scale(0.90);
+      background-color: #1d4f71;
+    }
+
+    /* --- ESTILOS DOS BOTÕES INDIVIDUAIS DOS JOGADORES (COMPACTOS LADO A LADO) --- */
+    .secao-integrantes-time {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 8px;
+      padding: 6px;
+      background-color: #f0f4f8;
+      border: 1.5px dashed #b0c4de;
+      border-radius: 8px;
+    }
+
+    .titulo-secao-integrantes {
+      font-size: 10px;
+      font-weight: bold;
+      color: #12364e;
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 1px;
+    }
+
+    .grid-botoes-integrantes {
+      display: flex;
+      flex-direction: row;
+      gap: 3px;
+      justify-content: space-between;
+    }
+
+    .btn-jogador-individual {
+      flex: 1;
+      background-color: #ffffff;
+      color: #12364e;
+      border: 1px solid #12364e;
+      border-radius: 5px;
+      padding: 6px 1px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: background-color 0.2s, color 0.2s, transform 0.1s;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .btn-jogador-individual:active {
+      transform: scale(0.95);
+      background-color: #d9b246;
+      color: #12364e;
+    }
+
+    .btn-jogador-individual.vazio {
+      background-color: #e9ecef;
+      color: #adb5bd;
+      border-color: #ced4da;
+      cursor: not-allowed;
+      font-style: italic;
+    }
+
+    /* --- BLOCO DO RANKING DE PONTUADORES --- */
+    .painel-ranking {
+      display: none;
+      width: 100%;
+      max-width: 450px;
+      margin: 0 auto 12px auto;
+      background-color: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      overflow: hidden;
+      flex-direction: column;
+    }
+
+    .modo-controle-ativo .painel-ranking {
+      display: flex;
+    }
+
+    .ranking-header {
+      background-color: #12364e;
+      color: #e1d8cd;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      font-size: 13px;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .ranking-conteudo {
+      display: none;
+      flex-direction: column;
+      padding: 12px;
+      max-height: 220px;
+      overflow-y: auto;
+      gap: 6px;
+    }
+
+    .ranking-conteudo.aberto {
+      display: flex;
+    }
+
+    .ranking-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 10px;
+      background-color: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .ranking-vazio {
+      text-align: center;
+      color: #6c757d;
+      font-size: 12px;
+      padding: 10px;
+      font-style: italic;
+    }
+
+    .btn-zerar-ranking {
+      margin-top: 8px;
+      background-color: #dc3545;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 8px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: background-color 0.2s;
+    }
+
+    .btn-zerar-ranking:active {
+      background-color: #bd2130;
     }
   </style>
 </head>
@@ -692,8 +846,11 @@
     <div class="painel-controle-vertical" id="painelControleVertical">
       <div class="corpo-painel-controle">
         
-        <!-- BOTÃO DE RESET CENTRAL NO MODO CONTROLE -->
-        <button class="btn-zerar-controle" onclick="zerarPlacar()" title="Zerar Placar">🔄</button>
+        <!-- BOTÕES CENTRAIS NO MODO CONTROLE (INVERTER E ZERAR) -->
+        <div class="botoes-centrais-controle">
+          <button class="btn-inverter-controle" onclick="inverterLados()" title="Inverter Cores">⇄</button>
+          <button class="btn-zerar-controle" onclick="zerarPlacar()" title="Zerar Placar">🔄</button>
+        </div>
 
         <!-- TIME ESQUERDO -->
         <div class="coluna-controle-time" id="col-ctrl-esquerda">
@@ -706,6 +863,18 @@
               <option value="Rosa" class="op-rosa">Rosa</option>
             </select>
           </div>
+
+          <!-- 4 Botões Individuais Lado a Lado (Esq) -->
+          <div class="secao-integrantes-time">
+            <div class="titulo-secao-integrantes">Integrantes (Esq)</div>
+            <div class="grid-botoes-integrantes" id="botoes-integrantes-esquerda">
+              <button class="btn-jogador-individual vazio">-</button>
+              <button class="btn-jogador-individual vazio">-</button>
+              <button class="btn-jogador-individual vazio">-</button>
+              <button class="btn-jogador-individual vazio">-</button>
+            </div>
+          </div>
+
           <div class="linha-controle-pontos" id="ctrl-pts-esquerda">0</div>
           <div class="linha-controle-botoes">
             <button class="btn-acao-mais" onclick="adicionarPonto('esquerda')">+1</button>
@@ -724,6 +893,18 @@
               <option value="Rosa" class="op-rosa">Rosa</option>
             </select>
           </div>
+
+          <!-- 4 Botões Individuais Lado a Lado (Dir) -->
+          <div class="secao-integrantes-time">
+            <div class="titulo-secao-integrantes">Integrantes (Dir)</div>
+            <div class="grid-botoes-integrantes" id="botoes-integrantes-direita">
+              <button class="btn-jogador-individual vazio">-</button>
+              <button class="btn-jogador-individual vazio">-</button>
+              <button class="btn-jogador-individual vazio">-</button>
+              <button class="btn-jogador-individual vazio">-</button>
+            </div>
+          </div>
+
           <div class="linha-controle-pontos" id="ctrl-pts-direita">0</div>
           <div class="linha-controle-botoes">
             <button class="btn-acao-mais" onclick="adicionarPonto('direita')">+1</button>
@@ -731,6 +912,22 @@
           </div>
         </div>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOCO DO RANKING DE PONTUADORES -->
+  <div class="container-placar-global" style="padding-top: 0;">
+    <div class="painel-ranking" id="painelRanking">
+      <div class="ranking-header" onclick="toggleRanking()">
+        <span>🏆 Ranking de Pontuadores</span>
+        <span id="iconeToggleRanking">▼</span>
+      </div>
+      <div class="ranking-conteudo" id="rankingConteudo">
+        <div id="listaRanking" style="display: flex; flex-direction: column; gap: 6px;">
+          <div class="ranking-vazio">Nenhum ponto registrado para jogadores ainda.</div>
+        </div>
+        <button class="btn-zerar-ranking" onclick="zerarRanking()">Zerar Ranking</button>
       </div>
     </div>
   </div>
@@ -849,6 +1046,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const placarRef = db.ref('placar_digital');
+    const torneioRef = db.ref('torneio');
 
     let placarLocal = {
       esquerda: 0,
@@ -857,10 +1055,14 @@
       corDireita: "",
       fase: null,
       tema: "padrao",
-      ultimoPontuador: null
+      ultimoPontuador: null,
+      ranking: {},
+      dataRanking: ""
     };
 
+    let elencoGlobal = [];
     let ultimaFaseProcessada = null;
+    let diferencaTempoServidor = 0;
 
     const estilosCores = {
       "Amarelo": { bg: "#ffeb3b", text: "#000" },
@@ -972,7 +1174,13 @@
       }
     }
 
-    let diferencaTempoServidor = 0;
+    function obterDataAtualBrasil() {
+      const agoraCorrigido = new Date(Date.now() + diferencaTempoServidor);
+      const ano = agoraCorrigido.getFullYear();
+      const mes = String(agoraCorrigido.getMonth() + 1).padStart(2, '0');
+      const dia = String(agoraCorrigido.getDate()).padStart(2, '0');
+      return `${ano}-${mes}-${dia}`;
+    }
 
     function sincronizarRelogio() {
       fetch('https://worldtimeapi.org/api/timezone/America/Sao_Paulo')
@@ -981,6 +1189,7 @@
           const horaServidor = new Date(data.datetime).getTime();
           const horaLocal = Date.now();
           diferencaTempoServidor = horaServidor - horaLocal;
+          verificarViradaDeDia();
         })
         .catch(err => console.error("Erro ao sincronizar com o horário de Brasília:", err));
     }
@@ -1000,6 +1209,18 @@
     sincronizarRelogio();
     setInterval(atualizarRelogioVisual, 100); 
     setInterval(sincronizarRelogio, 600000); 
+
+    function verificarViradaDeDia() {
+      const hojeStr = obterDataAtualBrasil();
+      if (placarLocal.dataRanking && placarLocal.dataRanking !== hojeStr) {
+        placarLocal.ranking = {};
+        placarLocal.dataRanking = hojeStr;
+        placarRef.set(placarLocal);
+      } else if (!placarLocal.dataRanking) {
+        placarLocal.dataRanking = hojeStr;
+        placarRef.set(placarLocal);
+      }
+    }
 
     function toggleTabela() {
       const container = document.getElementById('container-tabela');
@@ -1024,6 +1245,17 @@
     function fecharTabela() {
       const container = document.getElementById('container-tabela');
       container.style.display = 'none';
+    }
+
+    function toggleRanking() {
+      const conteudo = document.getElementById('rankingConteudo');
+      const icone = document.getElementById('iconeToggleRanking');
+      conteudo.classList.toggle('aberto');
+      if (conteudo.classList.contains('aberto')) {
+        icone.innerText = "▲";
+      } else {
+        icone.innerText = "▼";
+      }
     }
 
     function atualizarAparenciaSeletor(lado, cor) {
@@ -1144,11 +1376,92 @@
       }
     }
 
+    function atualizarBotoesIntegrantes() {
+      const containerEsq = document.getElementById('botoes-integrantes-esquerda');
+      const containerDir = document.getElementById('botoes-integrantes-direita');
+      if (!containerEsq || !containerDir) return;
+
+      // Time Esquerdo
+      const corEsq = placarLocal.corEsquerda;
+      const jogadoresEsq = corEsq ? elencoGlobal.filter(j => j.time === corEsq && j.presente) : [];
+      
+      let htmlEsq = "";
+      for (let i = 0; i < 4; i++) {
+        let jogador = jogadoresEsq[i];
+        if (jogador) {
+          let nomeAbreviado = (jogador.nome || '').trim().substring(0, 3).toUpperCase();
+          htmlEsq += `<button class="btn-jogador-individual" title="${jogador.nome}" onclick="adicionarPontoComJogador('esquerda', '${jogador.nome.replace(/'/g, "\\'")}')">${nomeAbreviado}</button>`;
+        } else {
+          htmlEsq += `<button class="btn-jogador-individual vazio" disabled>-</button>`;
+        }
+      }
+      containerEsq.innerHTML = htmlEsq;
+
+      // Time Direito
+      const corDir = placarLocal.corDireita;
+      const jogadoresDir = corDir ? elencoGlobal.filter(j => j.time === corDir && j.presente) : [];
+
+      let htmlDir = "";
+      for (let i = 0; i < 4; i++) {
+        let jogador = jogadoresDir[i];
+        if (jogador) {
+          let nomeAbreviado = (jogador.nome || '').trim().substring(0, 3).toUpperCase();
+          htmlDir += `<button class="btn-jogador-individual" title="${jogador.nome}" onclick="adicionarPontoComJogador('direita', '${jogador.nome.replace(/'/g, "\\'")}')">${nomeAbreviado}</button>`;
+        } else {
+          htmlDir += `<button class="btn-jogador-individual vazio" disabled>-</button>`;
+        }
+      }
+      containerDir.innerHTML = htmlDir;
+    }
+
+    function atualizarRankingVisual() {
+      const listaRanking = document.getElementById('listaRanking');
+      if (!listaRanking) return;
+
+      const rankingObj = placarLocal.ranking || {};
+      const entradas = Object.entries(rankingObj);
+
+      if (entradas.length === 0) {
+        listaRanking.innerHTML = `<div class="ranking-vazio">Nenhum ponto registrado para jogadores ainda.</div>`;
+        return;
+      }
+
+      entradas.sort((a, b) => b[1] - a[1]);
+
+      let html = "";
+      entradas.forEach(([nome, pts], index) => {
+        let posicao = `${index + 1}º`;
+        html += `
+          <div class="ranking-item">
+            <span>${posicao} - ${nome}</span>
+            <span style="color: #2196f3; font-weight: bold;">${pts} pt${pts > 1 ? 's' : ''}</span>
+          </div>
+        `;
+      });
+      listaRanking.innerHTML = html;
+    }
+
+    torneioRef.on('value', (snapshot) => {
+      const dados = snapshot.val();
+      if (dados && dados.elenco) {
+        if (Array.isArray(dados.elenco)) {
+          elencoGlobal = dados.elenco.filter(item => item !== null && typeof item === 'object');
+        } else {
+          elencoGlobal = Object.values(dados.elenco).filter(item => item !== null && typeof item === 'object');
+        }
+      } else {
+        elencoGlobal = [];
+      }
+      atualizarBotoesIntegrantes();
+    });
+
     placarRef.on('value', (snapshot) => {
       const dadosNuvem = snapshot.val();
       if (dadosNuvem) {
         placarLocal = dadosNuvem;
         
+        verificarViradaDeDia();
+
         const elemEsq = document.getElementById('pts-esquerda');
         const elemDir = document.getElementById('pts-direita');
         const ctrlElemEsq = document.getElementById('ctrl-pts-esquerda');
@@ -1190,8 +1503,10 @@
         atualizarOpcoesDisponiveis();
         atualizarVisualFase(placarLocal.fase || null);
         aplicarTemaVisual(placarLocal.tema || 'padrao');
+        atualizarBotoesIntegrantes();
+        atualizarRankingVisual();
       } else {
-        const estadoInicial = { esquerda: 0, direita: 0, corEsquerda: "", corDireita: "", fase: null, tema: "padrao", ultimoPontuador: null };
+        const estadoInicial = { esquerda: 0, direita: 0, corEsquerda: "", corDireita: "", fase: null, tema: "padrao", ultimoPontuador: null, ranking: {}, dataRanking: obterDataAtualBrasil() };
         placarRef.set(estadoInicial);
       }
     });
@@ -1207,6 +1522,25 @@
 
       placarLocal[lado] = (placarLocal[lado] || 0) + 1;
       placarLocal.ultimoPontuador = lado;
+      placarRef.set(placarLocal);
+    }
+
+    function adicionarPontoComJogador(lado, nomeJogador) {
+      if ("vibrate" in navigator) {
+        navigator.vibrate(50);
+      }
+
+      tocarBipPonto();
+
+      placarLocal[lado] = (placarLocal[lado] || 0) + 1;
+      placarLocal.ultimoPontuador = lado;
+
+      if (!placarLocal.ranking) {
+        placarLocal.ranking = {};
+      }
+      placarLocal.ranking[nomeJogador] = (placarLocal.ranking[nomeJogador] || 0) + 1;
+      placarLocal.dataRanking = obterDataAtualBrasil();
+
       placarRef.set(placarLocal);
     }
 
@@ -1250,7 +1584,21 @@
 
     function zerarPlacar() {
       if (confirm("Deseja reiniciar a contagem do placar para 0 x 0?")) {
-        placarRef.set({ esquerda: 0, direita: 0, corEsquerda: "", corDireita: "", fase: null, tema: "padrao", ultimoPontuador: null });
+        placarLocal.esquerda = 0;
+        placarLocal.direita = 0;
+        placarLocal.corEsquerda = "";
+        placarLocal.corDireita = "";
+        placarLocal.fase = null;
+        placarLocal.tema = "padrao";
+        placarLocal.ultimoPontuador = null;
+        placarRef.set(placarLocal);
+      }
+    }
+
+    function zerarRanking() {
+      if (confirm("Deseja zerar todo o ranking de pontuadores dos jogadores?")) {
+        placarLocal.ranking = {};
+        placarRef.set(placarLocal);
       }
     }
 
@@ -1260,6 +1608,10 @@
       } else {
         placarLocal.fase = tipo;
         placarLocal.tema = (tipo === 'semi') ? 'semifinal' : 'final';
+        // Zera o placar automaticamente ao ativar semifinal ou final
+        placarLocal.esquerda = 0;
+        placarLocal.direita = 0;
+        placarLocal.ultimoPontuador = null;
       }
       placarRef.set(placarLocal);
     }
