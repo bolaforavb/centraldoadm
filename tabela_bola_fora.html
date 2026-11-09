@@ -34,7 +34,7 @@ body {
     background-color: var(--bege-oficial);
     color: var(--azul-oficial);
     padding-bottom: 45vh;
-    position: relative; /* Necessário para posicionamento absoluto do tooltip */
+    position: relative;
 }
 
 /* ==========================================
@@ -177,7 +177,7 @@ h2 {
 }
 
 /* ==========================================
-   TOOLTIP DO TIME (CLEAN E ACOMPANHA SCROLL)
+   TOOLTIP DO TIME
    ========================================== */
 .time-info-container {
     display: inline-flex;
@@ -202,7 +202,6 @@ h2 {
     transform: scale(1.2);
 }
 
-/* Janelinha Flutuante Global (Posicionamento absoluto para seguir o scroll) */
 .time-tooltip-global {
     display: none;
     width: max-content;
@@ -309,7 +308,7 @@ h2 {
 }
 
 /* ==========================================
-   NOVOS BOTÕES FLUTUANTES DE AÇÃO
+   BOTÕES FLUTUANTES DE AÇÃO
    ========================================== */
 .acoes-soltas {
     display: grid;
@@ -335,19 +334,13 @@ h2 {
     transform: scale(0.95);
 }
 
-.btn-puxar { 
-    background-color: #1a5276; 
-}
+.btn-puxar { background-color: #1a5276; }
 .btn-puxar:hover { background-color: var(--azul-oficial); }
 
-.btn-salvar-placar { 
-    background-color: #adb5bd;
-}
+.btn-salvar-placar { background-color: #adb5bd; }
 .btn-salvar-placar:hover { background-color: #0a1f2d; }
 
-.btn-editar { 
-    background-color: #FFC107; 
-}
+.btn-editar { background-color: #FFC107; }
 .btn-editar:hover { background-color: var(--amarelo-oficial); }
 
 /* ==========================================
@@ -376,7 +369,7 @@ th { font-size: 0.9rem; text-transform: uppercase; }
 td { font-size: 1.1rem; font-weight: bold; }
 
 /* ==========================================
-   TOAST NOTIFICATION & UTILS
+   TOAST & CADASTROS
    ========================================== */
 .toast {
     visibility: hidden;
@@ -645,8 +638,6 @@ td { font-size: 1.1rem; font-weight: bold; }
     </main>
 
     <div id="toast" class="toast"></div>
-
-    <!-- Tooltip Global Dinâmico -->
     <div id="tooltip-global" class="time-tooltip-global"></div>
 
     <!-- Firebase SDKs -->
@@ -666,78 +657,58 @@ td { font-size: 1.1rem; font-weight: bold; }
     const database = firebase.database();
     const auth = firebase.auth ? firebase.auth() : null;
 
-    const times = ['Amarelo', 'Rosa', 'Azul', 'Roxo'];
+    const times = ['Amarelo', 'Azul', 'Roxo', 'Rosa'];
     let partidas = [];
     let semiFinais = [];
     let finais = [];
     let elenco = [];
     let idEmEdicao = null;
     let jogoPinadoId = null;
-    let timeTooltipAtivo = null; // Controla qual time está aberto no tooltip
+    let timeTooltipAtivo = null;
 
     function registrarAcaoNoHistorico(descricaoAcao) {
         let nomeUsuario = "Desconhecido";
-        
         if (auth && auth.currentUser) {
             let bruto = auth.currentUser.email || auth.currentUser.uid || "Desconhecido";
             nomeUsuario = bruto.split('@')[0];
         }
-
         const dataFormatada = new Date().toLocaleString('pt-BR');
-
         const novaAlteracao = {
             usuario: nomeUsuario,
             acao: `(Elenco & Times) ${descricaoAcao}`,
             data: dataFormatada
         };
-
         database.ref('acompanhamento_adms').once('value').then((snapshot) => {
             let dadosAtuais = snapshot.val() || { adms: {}, atribuicoes: {}, historico: [] };
             let historicoAtual = dadosAtuais.historico || [];
-
             historicoAtual.unshift(novaAlteracao);
-
-            if (historicoAtual.length > 50) {
-                historicoAtual = historicoAtual.slice(0, 50);
-            }
-
+            if (historicoAtual.length > 50) historicoAtual = historicoAtual.slice(0, 50);
             dadosAtuais.historico = historicoAtual;
             database.ref('acompanhamento_adms').set(dadosAtuais);
-        }).catch((error) => {
-            console.error("Erro ao gravar histórico no Firebase:", error);
-        });
+        }).catch((error) => console.error("Erro ao gravar histórico no Firebase:", error));
     }
 
     document.addEventListener('DOMContentLoaded', () => {
         const inputNovoNome = document.getElementById('novo-nome');
         const selectNovoTipo = document.getElementById('novo-tipo');
-        
         [inputNovoNome, selectNovoTipo].forEach(elemento => {
             if (elemento) {
                 elemento.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        adicionarJogador();
-                    }
+                    if (e.key === 'Enter') { e.preventDefault(); adicionarJogador(); }
                 });
             }
         });
 
         const inputBuscaJogador = document.getElementById('busca-jogador-input');
         const selectEscolhaTime = document.getElementById('escolha-time');
-        
         [inputBuscaJogador, selectEscolhaTime].forEach(elemento => {
             if (elemento) {
                 elemento.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        escalarJogador();
-                    }
+                    if (e.key === 'Enter') { e.preventDefault(); escalarJogador(); }
                 });
             }
         });
 
-        // Fecha o tooltip global ao clicar em qualquer outro lugar fora dele ou do botão 'i'
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.time-info-container') && !e.target.closest('#tooltip-global')) {
                 fecharTooltipGlobal();
@@ -778,23 +749,19 @@ td { font-size: 1.1rem; font-weight: bold; }
     function escutarBancoDeDados() {
         database.ref('torneio').on('value', (snapshot) => {
             const dados = snapshot.val();
-            
             if (dados) {
                 let partidasNuvem = normalizarArrayFirebase(dados.partidas);
                 partidas = partidasNuvem.length === 0 ? [] : partidasNuvem;
-                
-                if (partidas.length === 0) {
-                    gerarPartidasIniciais();
-                }
+                if (partidas.length === 0) gerarPartidasIniciais();
                 
                 semiFinais = normalizarArrayFirebase(dados.semiFinais);
                 finais = normalizarArrayFirebase(dados.finais);
                 elenco = normalizarArrayFirebase(dados.elenco); 
                 
-                try { renderizarJogos(); } catch(e) { console.error("Erro Jogos:", e); }
-                try { atualizarClassificacao(); } catch(e) { console.error("Erro Classificação:", e); }
-                try { renderizarMataMata(); } catch(e) { console.error("Erro Mata-Mata:", e); }
-                try { renderizarElenco(); } catch(e) { console.error("Erro Elenco:", e); }
+                try { renderizarJogos(); } catch(e) {}
+                try { atualizarClassificacao(); } catch(e) {}
+                try { renderizarMataMata(); } catch(e) {}
+                try { renderizarElenco(); } catch(e) {}
             } else {
                 gerarPartidasIniciais();
             }
@@ -806,8 +773,6 @@ td { font-size: 1.1rem; font-weight: bold; }
     function mostrarTooltipGlobal(event, nomeTime) {
         event.stopPropagation();
         const tooltipGlobal = document.getElementById('tooltip-global');
-        
-        // Se clicar no mesmo time que já está aberto, fecha-o
         if (timeTooltipAtivo === nomeTime && tooltipGlobal.classList.contains('ativo')) {
             fecharTooltipGlobal();
             return;
@@ -816,27 +781,20 @@ td { font-size: 1.1rem; font-weight: bold; }
         timeTooltipAtivo = nomeTime;
         const botao = event.currentTarget;
         const rect = botao.getBoundingClientRect();
-
         const jogadoresDoTime = elenco.filter(j => j.time === nomeTime && j.presente);
         let listaJogosHtml = jogadoresDoTime.length === 0 
             ? '<li>Nenhum jogador escalado</li>' 
             : jogadoresDoTime.map(j => `<li>${j.nome} ${j.tipo === 'mensalista' ? '⭐️' : ''}</li>`).join('');
 
         tooltipGlobal.innerHTML = `<ul>${listaJogosHtml}</ul>`;
-        
-        // Exibe temporariamente para cálculo exato de largura
         tooltipGlobal.style.display = 'block';
         tooltipGlobal.classList.add('ativo');
         const tooltipWidth = tooltipGlobal.offsetWidth;
 
-        // Posicionamento absoluto utilizando window.scrollY e window.scrollX para acompanhar o scroll perfeitamente
         let posX = rect.left + window.scrollX + (rect.width / 2) - (tooltipWidth / 2);
         let posY = rect.top + window.scrollY - (jogadoresDoTime.length * 22 + 18); 
 
-        if (rect.top < 130) {
-            posY = rect.bottom + window.scrollY + 8;
-        }
-
+        if (rect.top < 130) posY = rect.bottom + window.scrollY + 8;
         if (posX < 10) posX = 10;
         if (posX + tooltipWidth > window.innerWidth) posX = window.innerWidth - tooltipWidth - 10;
 
@@ -846,7 +804,6 @@ td { font-size: 1.1rem; font-weight: bold; }
 
     function gerarHtmlHeaderTime(nomeTime) {
         if (!nomeTime) return 'TIME';
-
         return `
             <div class="time-info-container">
                 <span>${nomeTime}</span>
@@ -856,52 +813,31 @@ td { font-size: 1.1rem; font-weight: bold; }
     }
 
     function alternarPin(idJogo) {
-        if (jogoPinadoId === String(idJogo)) {
-            jogoPinadoId = null;
-        } else {
-            jogoPinadoId = String(idJogo);
-            rolarParaJogoPinado();
-        }
-        
+        jogoPinadoId = (jogoPinadoId === String(idJogo)) ? null : String(idJogo);
         renderizarJogos();
         renderizarMataMata();
+        if (jogoPinadoId) rolarParaJogoPinado();
     }
 
     function rolarParaJogoPinado() {
         if (!jogoPinadoId) return;
         setTimeout(() => {
             const cardPinado = document.querySelector(`.jogo-card.pinado`);
-            if (cardPinado) {
-                cardPinado.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+            if (cardPinado) cardPinado.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 100);
     }
 
     function avancarProximoPin(idJogoAtual, listaPartidas) {
         if (!listaPartidas || listaPartidas.length === 0) return;
-
         const idxAtual = listaPartidas.findIndex(p => String(p.id) === String(idJogoAtual));
         let proximoJogo = null;
-
         if (idxAtual !== -1) {
             for (let i = idxAtual + 1; i < listaPartidas.length; i++) {
-                if (!listaPartidas[i].finalizada) {
-                    proximoJogo = listaPartidas[i];
-                    break;
-                }
+                if (!listaPartidas[i].finalizada) { proximoJogo = listaPartidas[i]; break; }
             }
         }
-
-        if (!proximoJogo) {
-            proximoJogo = listaPartidas.find(p => !p.finalizada);
-        }
-
-        if (proximoJogo) {
-            jogoPinadoId = String(proximoJogo.id);
-        } else {
-            jogoPinadoId = null;
-        }
-
+        if (!proximoJogo) proximoJogo = listaPartidas.find(p => !p.finalizada);
+        jogoPinadoId = proximoJogo ? String(proximoJogo.id) : null;
         renderizarJogos();
         renderizarMataMata();
         rolarParaJogoPinado();
@@ -912,54 +848,34 @@ td { font-size: 1.1rem; font-weight: bold; }
             ? partidas.find(p => String(p.id) === String(idJogo))
             : semiFinais.find(p => String(p.id) === String(idJogo)) || finais.find(p => String(p.id) === String(idJogo));
 
-        if (!jogo) {
-            mostrarAviso("Aguarde um instante, os dados ainda estão sincronizando...");
-            return;
-        }
-
-        if (jogoPinadoId !== String(idJogo)) {
-            alternarPin(idJogo);
-        }
+        if (!jogo) { mostrarAviso("Aguarde um instante, os dados ainda estão sincronizando..."); return; }
+        if (jogoPinadoId !== String(idJogo)) alternarPin(idJogo);
 
         database.ref('placar_digital').once('value').then((snapshot) => {
             let placarDigital = snapshot.val();
-            if (!placarDigital) {
-                return database.ref('placar').once('value').then(snapAlt => snapAlt.val());
-            }
+            if (!placarDigital) return database.ref('placar').once('value').then(snapAlt => snapAlt.val());
             return placarDigital;
         }).then((placarDigital) => {
-            if (!placarDigital) {
-                mostrarAviso("Nenhum placar digital ativo encontrado no Firebase.");
-                return;
-            }
-
+            if (!placarDigital) { mostrarAviso("Nenhum placar digital ativo encontrado."); return; }
             const corEsq = placarDigital.corEsquerda;
             const corDir = placarDigital.corDireita;
-            const ptsEsq = placarDigital.esquerda !== undefined ? placarDigital.esquerda : 0;
-            const ptsDir = placarDigital.direita !== undefined ? placarDigital.direita : 0;
-
+            const ptsEsq = placarDigital.esquerda ?? 0;
+            const ptsDir = placarDigital.direita ?? 0;
             let inputA = document.getElementById(`placarA-${idJogo}`);
             let inputB = document.getElementById(`placarB-${idJogo}`);
-
             if (!inputA || !inputB) return;
 
             if (jogo.timeA === corEsq && jogo.timeB === corDir) {
-                inputA.value = ptsEsq;
-                inputB.value = ptsDir;
+                inputA.value = ptsEsq; inputB.value = ptsDir;
                 mostrarAviso("Placar puxado com sucesso!", "sucesso");
             } else if (jogo.timeA === corDir && jogo.timeB === corEsq) {
-                inputA.value = ptsDir;
-                inputB.value = ptsEsq;
-                mostrarAviso("Placar puxado (lados invertidos ajustados automaticamente).", "sucesso");
+                inputA.value = ptsDir; inputB.value = ptsEsq;
+                mostrarAviso("Placar puxado (lados invertidos ajustados).", "sucesso");
             } else {
-                inputA.value = ptsEsq;
-                inputB.value = ptsDir;
-                mostrarAviso("Atenção: As cores do placar digital diferem deste jogo.", "info");
+                inputA.value = ptsEsq; inputB.value = ptsDir;
+                mostrarAviso("Atenção: As cores do placar diferem deste jogo.", "info");
             }
-        }).catch(err => {
-            console.error("Erro ao puxar placar:", err);
-            mostrarAviso("Erro ao se conectar com o banco de dados.");
-        });
+        }).catch(err => mostrarAviso("Erro ao se conectar com o banco."));
     }
 
     function editarPlacar(idJogo, isMataMata = false, fase = '') {
@@ -969,13 +885,9 @@ td { font-size: 1.1rem; font-weight: bold; }
 
         if (jogo) {
             jogo.finalizada = false;
-            if (!isMataMata) {
-                database.ref('torneio').update({ partidas: partidas });
-            } else if (fase === 'semi') {
-                database.ref('torneio').update({ semiFinais: semiFinais });
-            } else {
-                database.ref('torneio').update({ finais: finais });
-            }
+            if (!isMataMata) database.ref('torneio').update({ partidas });
+            else if (fase === 'semi') database.ref('torneio').update({ semiFinais });
+            else database.ref('torneio').update({ finais });
             mostrarAviso("Placar liberado para edição.", "info");
         }
     }
@@ -986,25 +898,18 @@ td { font-size: 1.1rem; font-weight: bold; }
         listaJogos.innerHTML = '';
 
         partidas.forEach(jogo => {
-            let vencedorStr = '-';
-            if (jogo.finalizada) {
-                vencedorStr = jogo.pontosA > jogo.pontosB ? jogo.timeA : jogo.timeB;
-            }
-
+            let vencedorStr = jogo.finalizada ? (jogo.pontosA > jogo.pontosB ? jogo.timeA : jogo.timeB) : '-';
             let ptsA = jogo.pontosA ?? '';
             let ptsB = jogo.pontosB ?? '';
             let isPinado = jogoPinadoId === String(jogo.id);
 
             const divJogo = document.createElement('div');
             divJogo.className = 'jogo-wrapper';
-            
             divJogo.innerHTML = `
                 <div class="jogo-card ${isPinado ? 'pinado' : ''}">
                     <div class="jogo-grid">
                         <div class="header-cell">${gerarHtmlHeaderTime(jogo.timeA)}</div>
-                        <div class="header-cell vazia">
-                            <button type="button" class="btn-pin" onclick="alternarPin('${jogo.id}')" title="Fixar Jogo">📌</button>
-                        </div>
+                        <div class="header-cell vazia"><button type="button" class="btn-pin" onclick="alternarPin('${jogo.id}')" title="Fixar Jogo">📌</button></div>
                         <div class="header-cell">${gerarHtmlHeaderTime(jogo.timeB)}</div>
                         <div class="header-cell vencedor-header">VENCEDOR</div>
 
@@ -1048,13 +953,8 @@ td { font-size: 1.1rem; font-weight: bold; }
         }
 
         divMataMata.innerHTML = '<h3 style="margin-bottom: 15px; color: var(--azul-oficial); text-align: center;">SEMIFINAIS</h3>';
-
         semiFinais.forEach(jogo => {
-            let vencedorStr = '-';
-            if (jogo.finalizada) {
-                vencedorStr = jogo.pontosA > jogo.pontosB ? jogo.timeA : jogo.timeB;
-            }
-
+            let vencedorStr = jogo.finalizada ? (jogo.pontosA > jogo.pontosB ? jogo.timeA : jogo.timeB) : '-';
             let ptsA = jogo.pontosA ?? '';
             let ptsB = jogo.pontosB ?? '';
             let isPinado = jogoPinadoId === String(jogo.id);
@@ -1064,9 +964,7 @@ td { font-size: 1.1rem; font-weight: bold; }
                     <div class="jogo-card ${isPinado ? 'pinado' : ''}">
                         <div class="jogo-grid">
                             <div class="header-cell">${gerarHtmlHeaderTime(jogo.timeA)}</div>
-                            <div class="header-cell vazia">
-                                <button type="button" class="btn-pin" onclick="alternarPin('${jogo.id}')" title="Fixar Jogo">📌</button>
-                            </div>
+                            <div class="header-cell vazia"><button type="button" class="btn-pin" onclick="alternarPin('${jogo.id}')" title="Fixar Jogo">📌</button></div>
                             <div class="header-cell">${gerarHtmlHeaderTime(jogo.timeB)}</div>
                             <div class="header-cell vencedor-header">VENCEDOR</div>
 
@@ -1102,10 +1000,7 @@ td { font-size: 1.1rem; font-weight: bold; }
         if (finais.length > 0) {
             divMataMata.innerHTML += '<h3 style="margin-top: 25px; margin-bottom: 15px; color: var(--azul-oficial); text-align: center;">FINAIS</h3>';
             finais.forEach(jogo => {
-                let vencedorStr = '-';
-                if (jogo.finalizada) {
-                    vencedorStr = jogo.pontosA > jogo.pontosB ? jogo.timeA : jogo.timeB;
-                }
+                let vencedorStr = jogo.finalizada ? (jogo.pontosA > jogo.pontosB ? jogo.timeA : jogo.timeB) : '-';
                 let tituloJogo = jogo.tipo === '3lugar' ? 'DISPUTA 3º LUGAR' : 'GRANDE FINAL';
                 let ptsA = jogo.pontosA ?? '';
                 let ptsB = jogo.pontosB ?? '';
@@ -1117,9 +1012,7 @@ td { font-size: 1.1rem; font-weight: bold; }
                         <div class="jogo-card ${isPinado ? 'pinado' : ''}">
                             <div class="jogo-grid">
                                 <div class="header-cell">${gerarHtmlHeaderTime(jogo.timeA)}</div>
-                                <div class="header-cell vazia">
-                                    <button type="button" class="btn-pin" onclick="alternarPin('${jogo.id}')" title="Fixar Jogo">📌</button>
-                                </div>
+                                <div class="header-cell vazia"><button type="button" class="btn-pin" onclick="alternarPin('${jogo.id}')" title="Fixar Jogo">📌</button></div>
                                 <div class="header-cell">${gerarHtmlHeaderTime(jogo.timeB)}</div>
                                 <div class="header-cell vencedor-header">VENCEDOR</div>
 
@@ -1175,31 +1068,18 @@ td { font-size: 1.1rem; font-weight: bold; }
         if (!validacao.valido) return mostrarAviso(validacao.erro);
 
         const jogo = partidas.find(p => String(p.id) === String(idJogo));
-        if(jogo) {
-            jogo.pontosA = pontosA;
-            jogo.pontosB = pontosB;
-            jogo.finalizada = true;
-        }
+        if (jogo) { jogo.pontosA = pontosA; jogo.pontosB = pontosB; jogo.finalizada = true; }
 
-        const todosFinalizados = partidas.every(j => j.finalizada === true);
-        if (todosFinalizados && semiFinais.length === 0) {
+        if (partidas.every(j => j.finalizada === true) && semiFinais.length === 0) {
             gerarSemifinais();
-            
-            if (semiFinais.length > 0) {
-                jogoPinadoId = String(semiFinais[0].id);
-                rolarParaJogoPinado();
-            }
-
+            if (semiFinais.length > 0) { jogoPinadoId = String(semiFinais[0].id); rolarParaJogoPinado(); }
             mostrarAviso("Fase de grupos concluída! Semifinais liberadas.", "info");
             mudarAba('finais');
         } else {
             avancarProximoPin(idJogo, partidas);
         }
 
-        database.ref('torneio').update({
-            partidas: partidas,
-            semiFinais: semiFinais.length > 0 ? semiFinais : null
-        });
+        database.ref('torneio').update({ partidas, semiFinais: semiFinais.length > 0 ? semiFinais : null });
     }
 
     function salvarMataMata(idJogo, fase) {
@@ -1216,22 +1096,13 @@ td { font-size: 1.1rem; font-weight: bold; }
             ? semiFinais.find(p => String(p.id) === String(idJogo)) 
             : finais.find(p => String(p.id) === String(idJogo));
             
-        if(jogo) {
-            jogo.pontosA = pontosA;
-            jogo.pontosB = pontosB;
-            jogo.finalizada = true;
-        }
+        if (jogo) { jogo.pontosA = pontosA; jogo.pontosB = pontosB; jogo.finalizada = true; }
 
         if (fase === 'semi') {
-            const todasSemiFinalizadas = semiFinais.every(j => j.finalizada === true);
-            if (todasSemiFinalizadas && finais.length === 0) {
+            if (semiFinais.every(j => j.finalizada === true) && finais.length === 0) {
                 gerarFinais();
-                
                 const jogo3Lugar = finais.find(f => f.tipo === '3lugar');
-                if (jogo3Lugar) {
-                    jogoPinadoId = String(jogo3Lugar.id);
-                    rolarParaJogoPinado();
-                }
+                if (jogo3Lugar) { jogoPinadoId = String(jogo3Lugar.id); rolarParaJogoPinado(); }
             } else {
                 avancarProximoPin(idJogo, semiFinais);
             }
@@ -1239,20 +1110,13 @@ td { font-size: 1.1rem; font-weight: bold; }
             avancarProximoPin(idJogo, finais);
         }
 
-        database.ref('torneio').update({
-            semiFinais: semiFinais.length > 0 ? semiFinais : null,
-            finais: finais.length > 0 ? finais : null
-        });
-
-        if (fase === 'final') {
-            verificarTorneioConcluido();
-        }
+        database.ref('torneio').update({ semiFinais: semiFinais.length > 0 ? semiFinais : null, finais: finais.length > 0 ? finais : null });
+        if (fase === 'final') verificarTorneioConcluido();
     }
 
     function atualizarClassificacao() {
         let tabela = {};
         times.forEach(time => tabela[time] = 0);
-
         partidas.forEach(jogo => {
             if (jogo.finalizada) {
                 if (jogo.pontosA > jogo.pontosB) tabela[jogo.timeA]++;
@@ -1261,13 +1125,9 @@ td { font-size: 1.1rem; font-weight: bold; }
         });
 
         let ranking = Object.keys(tabela).map(time => ({ nome: time, vitorias: tabela[time] }));
-
         ranking.sort((a, b) => {
             if (b.vitorias !== a.vitorias) return b.vitorias - a.vitorias;
-            const jogoDireto = partidas.find(p => 
-                (p.timeA === a.nome && p.timeB === b.nome) || 
-                (p.timeA === b.nome && p.timeB === a.nome)
-            );
+            const jogoDireto = partidas.find(p => (p.timeA === a.nome && p.timeB === b.nome) || (p.timeA === b.nome && p.timeB === a.nome));
             if (jogoDireto && jogoDireto.finalizada) {
                 const vencedorDireto = jogoDireto.pontosA > jogoDireto.pontosB ? jogoDireto.timeA : jogoDireto.timeB;
                 if (vencedorDireto === a.nome) return -1;
@@ -1279,15 +1139,8 @@ td { font-size: 1.1rem; font-weight: bold; }
         const corpoTabela = document.getElementById('corpo-tabela');
         if (!corpoTabela) return;
         corpoTabela.innerHTML = '';
-
         ranking.forEach((time, index) => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${index + 1}º</td>
-                <td>${time.nome}</td>
-                <td>${time.vitorias}</td>
-            `;
-            corpoTabela.appendChild(tr);
+            corpoTabela.innerHTML += `<tr><td>${index + 1}º</td><td>${time.nome}</td><td>${time.vitorias}</td></tr>`;
         });
     }
 
@@ -1300,7 +1153,6 @@ td { font-size: 1.1rem; font-weight: bold; }
                 else tabela[jogo.timeB]++;
             }
         });
-
         let rankingFinal = Object.keys(tabela).map(time => ({ nome: time, vitorias: tabela[time] }));
         rankingFinal.sort((a, b) => {
             if (b.vitorias !== a.vitorias) return b.vitorias - a.vitorias;
@@ -1311,7 +1163,6 @@ td { font-size: 1.1rem; font-weight: bold; }
             }
             return 0;
         });
-
         semiFinais = [
             { id: 'semi1', timeA: rankingFinal[0].nome, timeB: rankingFinal[3].nome, pontosA: null, pontosB: null, finalizada: false },
             { id: 'semi2', timeA: rankingFinal[1].nome, timeB: rankingFinal[2].nome, pontosA: null, pontosB: null, finalizada: false }
@@ -1331,11 +1182,10 @@ td { font-size: 1.1rem; font-weight: bold; }
     }
 
     function verificarTorneioConcluido() {
-        const todasFinalizadas = finais.every(jogo => jogo.finalizada === true);
-        if (todasFinalizadas) {
+        if (finais.every(jogo => jogo.finalizada === true)) {
             const jogoFinal = finais.find(f => f.tipo === '1lugar');
             const campeao = jogoFinal.pontosA > jogoFinal.pontosB ? jogoFinal.timeA : jogoFinal.timeB;
-            setTimeout(() => { mostrarAviso(`🏆 O Time ${campeao} é o CAMPEÃO! 🏆`, "sucesso"); }, 300);
+            setTimeout(() => mostrarAviso(`🏆 O Time ${campeao} é o CAMPEÃO! 🏆`, "sucesso"), 300);
         }
     }
 
@@ -1343,12 +1193,11 @@ td { font-size: 1.1rem; font-weight: bold; }
         const vencedor = Math.max(pontosA, pontosB);
         const perdedor = Math.min(pontosA, pontosB);
         const diferenca = vencedor - perdedor;
-
         if (vencedor < 15) return { valido: false, erro: "O set precisa ter pelo menos 15 pontos." };
         if (vencedor === 15 && perdedor <= 13) return { valido: true, erro: null };
         if (vencedor > 15) {
             if (diferenca === 2) return { valido: true, erro: null };
-            else return { valido: false, erro: "Acima de 14x14, a vitória exige exatos 2 pontos de diferença." };
+            return { valido: false, erro: "Acima de 14x14, a vitória exige exatos 2 pontos de diferença." };
         }
         return { valido: false, erro: "Placar inválido." };
     }
@@ -1363,36 +1212,29 @@ td { font-size: 1.1rem; font-weight: bold; }
     function mostrarAviso(mensagem, tipo = 'erro') {
         const toast = document.getElementById('toast');
         toast.textContent = mensagem;
-
         toast.className = 'toast';
         if (tipo === 'info') toast.classList.add('info');
         if (tipo === 'sucesso') toast.classList.add('sucesso');
-
         toast.classList.add('show');
-        setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
     function resetarTorneio() {
-        const confirmar = confirm("🚨 ATENÇÃO: Isso vai zerar os placares e esvaziar os times. Os jogadores cadastrados NÃO serão apagados. Deseja continuar?");
-        
-        if (confirmar) {
+        if (confirm("🚨 ATENÇÃO: Isso vai zerar os placares e esvaziar os times. Os jogadores cadastrados NÃO serão apagados. Deseja continuar?")) {
             database.ref('torneio/partidas').remove();
             database.ref('torneio/semiFinais').remove();
             database.ref('torneio/finais').remove();
             
-            if (elenco.length > 0) {
-                elenco.forEach(j => {
-                    j.presente = false;
-                    j.time = 'Sem Time';
-                });
-                salvarElencoNuvem();
-            }
-            
-            partidas = [];
-            semiFinais = [];
-            finais = [];
-            jogoPinadoId = null;
-            
+            // Mantém os nomes cadastrados mas reseta presença e time
+            database.ref('torneio/elenco').once('value').then(snapshot => {
+                let elencoAtual = normalizarArrayFirebase(snapshot.val());
+                if (elencoAtual.length > 0) {
+                    elencoAtual.forEach(j => { j.presente = false; j.time = 'Sem Time'; });
+                    database.ref('torneio').update({ elenco: elencoAtual });
+                }
+            });
+
+            partidas = []; semiFinais = []; finais = []; jogoPinadoId = null;
             mudarAba('elenco');
             registrarAcaoNoHistorico("iniciou um novo torneio (resetou placares e times)");
             mostrarAviso("Novo torneio iniciado! Os cadastros foram mantidos.", "sucesso");
@@ -1403,50 +1245,37 @@ td { font-size: 1.1rem; font-weight: bold; }
         const nomeInput = document.getElementById('novo-nome');
         const tipoInput = document.getElementById('novo-tipo');
         const nomeCadastrar = nomeInput.value.trim();
-        
         if (nomeCadastrar === '') return mostrarAviso("Digite o nome do jogador.");
 
-        const jogadorExistente = elenco.find(j => (j.nome || '').toLowerCase() === nomeCadastrar.toLowerCase());
+        database.ref('torneio/elenco').once('value').then(snapshot => {
+            let elencoAtual = normalizarArrayFirebase(snapshot.val());
+            const jogadorExistente = elencoAtual.find(j => (j.nome || '').toLowerCase() === nomeCadastrar.toLowerCase());
 
-        if (idEmEdicao !== null) {
-            if (jogadorExistente && jogadorExistente.id !== idEmEdicao) {
-                return mostrarAviso("Este nome já está cadastrado em outro jogador!");
+            if (idEmEdicao !== null) {
+                if (jogadorExistente && jogadorExistente.id !== idEmEdicao) {
+                    mostrarAviso("Este nome já está cadastrado em outro jogador!");
+                    return;
+                }
+                const jogador = elencoAtual.find(j => j.id === idEmEdicao);
+                if (jogador) { jogador.nome = nomeCadastrar; jogador.tipo = tipoInput.value; }
+                idEmEdicao = null;
+                const btnSalvar = document.querySelector('.card-cadastro .btn-salvar');
+                btnSalvar.textContent = "Salvar no Sistema";
+                btnSalvar.style.backgroundColor = ""; btnSalvar.style.color = "";
+                registrarAcaoNoHistorico(`atualizou o cadastro de "${nomeCadastrar}"`);
+                mostrarAviso("Cadastro atualizado com sucesso!", "sucesso");
+            } else {
+                if (jogadorExistente) {
+                    mostrarAviso("Este nome já está cadastrado!");
+                    return;
+                }
+                elencoAtual.push({ id: Date.now().toString(), nome: nomeCadastrar, tipo: tipoInput.value, presente: false, time: 'Sem Time' });
+                registrarAcaoNoHistorico(`cadastrou "${nomeCadastrar}" (${tipoInput.value})`);
+                mostrarAviso("Jogador cadastrado com sucesso!", "sucesso");
             }
-            
-            const jogador = elenco.find(j => j.id === idEmEdicao);
-            if (jogador) {
-                jogador.nome = nomeCadastrar;
-                jogador.tipo = tipoInput.value;
-            }
-            
-            idEmEdicao = null;
-            const btnSalvar = document.querySelector('.card-cadastro .btn-salvar');
-            btnSalvar.textContent = "Salvar no Sistema";
-            btnSalvar.style.backgroundColor = ""; 
-            btnSalvar.style.color = "";
-            
-            registrarAcaoNoHistorico(`atualizou o cadastro do(a) jogador(a) "${nomeCadastrar}"`);
-            mostrarAviso("Cadastro atualizado com sucesso!", "sucesso");
-
-        } else {
-            if (jogadorExistente) {
-                return mostrarAviso("Este nome já está cadastrado! Use um sobrenome ou apelido para diferenciar.");
-            }
-
-            const novoJogador = {
-                id: Date.now().toString(),
-                nome: nomeCadastrar,
-                tipo: tipoInput.value,
-                presente: false,
-                time: 'Sem Time'
-            };
-            elenco.push(novoJogador);
-            registrarAcaoNoHistorico(`cadastrou o(a) novo(a) jogador(a) "${nomeCadastrar}" (${tipoInput.value})`);
-            mostrarAviso("Jogador cadastrado com sucesso!", "sucesso");
-        }
-
-        nomeInput.value = ''; 
-        salvarElencoNuvem();
+            nomeInput.value = '';
+            database.ref('torneio').update({ elenco: elencoAtual });
+        });
     }
 
     function editarJogador(id) {
@@ -1455,100 +1284,84 @@ td { font-size: 1.1rem; font-weight: bold; }
             document.getElementById('novo-nome').value = jogador.nome;
             document.getElementById('novo-tipo').value = jogador.tipo;
             idEmEdicao = id;
-            
             const btnSalvar = document.querySelector('.card-cadastro .btn-salvar');
             btnSalvar.textContent = "Salvar Edição";
-            btnSalvar.style.backgroundColor = "#ffc107"; 
-            btnSalvar.style.color = "#000";
-            
+            btnSalvar.style.backgroundColor = "#ffc107"; btnSalvar.style.color = "#000";
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-    }
-
-    function identificarJogadorPorNome(nome) {
-        return elenco.find(j => (j.nome || '').toLowerCase() === nome.toLowerCase());
     }
 
     function escalarJogador() {
         const inputJogador = document.getElementById('busca-jogador-input');
         const nomeJogador = inputJogador.value.trim();
         const timeEscolhido = document.getElementById('escolha-time').value;
-
         if (!nomeJogador) return mostrarAviso("Digite ou selecione um jogador!");
 
-        const jogador = identificarJogadorPorNome(nomeJogador);
-        if (!jogador) {
-            return mostrarAviso("Jogador não encontrado! Verifique a grafia ou cadastre-o primeiro.");
-        }
-        
-        if (jogador.presente && jogador.time !== 'Sem Time') {
-            return mostrarAviso("Este jogador já está escalado em um time!");
-        }
+        database.ref('torneio/elenco').once('value').then(snapshot => {
+            let elencoAtual = normalizarArrayFirebase(snapshot.val());
+            const jogador = elencoAtual.find(j => (j.nome || '').toLowerCase() === nomeJogador.toLowerCase());
+            
+            if (!jogador) { mostrarAviso("Jogador não encontrado!"); return; }
+            if (jogador.presente && jogador.time !== 'Sem Time') { mostrarAviso("Este jogador já está escalado!"); return; }
 
-        const totalNoTime = elenco.filter(j => j.time === timeEscolhido && j.presente).length;
-        if (totalNoTime >= 4) {
-            return mostrarAviso(`O Time ${timeEscolhido} já está completo (máximo 4 jogadores)!`);
-        }
+            if (elencoAtual.filter(j => j.time === timeEscolhido && j.presente).length >= 4) {
+                mostrarAviso(`O Time ${timeEscolhido} já está completo (4 jogadores)!`);
+                return;
+            }
 
-        jogador.presente = true;
-        jogador.time = timeEscolhido;
-        inputJogador.value = '';
-        
-        salvarElencoNuvem();
-        registrarAcaoNoHistorico(`escalou "${jogador.nome}" no Time ${timeEscolhido}`);
-        mostrarAviso(`${jogador.nome} escalado no time ${timeEscolhido}!`, "sucesso");
+            jogador.presente = true;
+            jogador.time = timeEscolhido;
+            inputJogador.value = '';
+            database.ref('torneio').update({ elenco: elencoAtual });
+            registrarAcaoNoHistorico(`escalou "${jogador.nome}" no Time ${timeEscolhido}`);
+            mostrarAviso(`${jogador.nome} escalado no time ${timeEscolhido}!`, "sucesso");
+        });
     }
 
     function removerDoTime(id) {
-        const jogador = elenco.find(j => j.id === id);
-        if (jogador) {
-            let nomeAntigo = jogador.nome;
-            let timeAntigo = jogador.time;
-            jogador.presente = false;
-            jogador.time = 'Sem Time';
-            salvarElencoNuvem();
-            registrarAcaoNoHistorico(`removeu "${nomeAntigo}" do Time ${timeAntigo}`);
-        }
+        database.ref('torneio/elenco').once('value').then(snapshot => {
+            let elencoAtual = normalizarArrayFirebase(snapshot.val());
+            const jogador = elencoAtual.find(j => j.id === id);
+            if (jogador) {
+                let nomeAntigo = jogador.nome, timeAntigo = jogador.time;
+                jogador.presente = false;
+                jogador.time = 'Sem Time';
+                database.ref('torneio').update({ elenco: elencoAtual });
+                registrarAcaoNoHistorico(`removeu "${nomeAntigo}" do Time ${timeAntigo}`);
+            }
+        });
     }
 
     function removerJogador(id) {
-        const jogador = elenco.find(j => j.id === id);
-        if(confirm("Tem certeza que deseja excluir este jogador do banco de dados permanentemente?")) {
-            let nomeRemovido = jogador ? jogador.nome : id;
-            elenco = elenco.filter(j => j.id !== id);
-            salvarElencoNuvem();
-            registrarAcaoNoHistorico(`excluiu permanentemente o(a) jogador(a) "${nomeRemovido}" do sistema`);
+        if (confirm("Tem certeza que deseja excluir este jogador do sistema permanentemente?")) {
+            database.ref('torneio/elenco').once('value').then(snapshot => {
+                let elencoAtual = normalizarArrayFirebase(snapshot.val());
+                const jogador = elencoAtual.find(j => j.id === id);
+                let nomeRemovido = jogador ? jogador.nome : id;
+                elencoAtual = elencoAtual.filter(j => j.id !== id);
+                database.ref('torneio').update({ elenco: elencoAtual.length > 0 ? elencoAtual : null });
+                registrarAcaoNoHistorico(`excluiu permanentemente "${nomeRemovido}"`);
+            });
         }
-    }
-
-    function salvarElencoNuvem() {
-        database.ref('torneio').update({ 
-            elenco: elenco.length > 0 ? elenco : null 
-        });
     }
 
     function renderizarElenco() {
         const datalistBusca = document.getElementById('lista-jogadores-disponiveis');
         const timesDiv = document.getElementById('times-formados');
         const corpoTabela = document.getElementById('corpo-tabela-elenco');
-        
         if (!datalistBusca || !timesDiv || !corpoTabela) return;
-        
+
         datalistBusca.innerHTML = '';
         let disponiveis = elenco.filter(j => j.time === 'Sem Time' || !j.presente);
         disponiveis.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
-
-        disponiveis.forEach(j => {
-            datalistBusca.innerHTML += `<option value="${j.nome || ''}"></option>`;
-        });
+        disponiveis.forEach(j => datalistBusca.innerHTML += `<option value="${j.nome || ''}"></option>`);
 
         timesDiv.innerHTML = '';
+        let coresBorda = { 'Amarelo': '#ffc107', 'Roxo': '#6f42c1', 'Azul': '#007bff', 'Rosa': '#e83e8c' };
+        
         times.forEach(nomeTime => {
             const jogadoresDoTime = elenco.filter(j => j.time === nomeTime && j.presente);
-            let coresBorda = { 'Amarelo': '#ffc107', 'Rosa': '#e83e8c', 'Azul': '#007bff', 'Roxo': '#6f42c1' };
-            
             let listaHtml = jogadoresDoTime.length === 0 ? '<li style="color: #999; text-align:center; margin-top: 10px;">Vazio</li>' : '';
-            
             jogadoresDoTime.forEach(j => {
                 let icone = j.tipo === 'mensalista' ? '⭐️' : '';
                 listaHtml += `
@@ -1562,16 +1375,13 @@ td { font-size: 1.1rem; font-weight: bold; }
             timesDiv.innerHTML += `
                 <div class="time-container" style="border-top: 4px solid ${coresBorda[nomeTime]}">
                     <div class="time-header" style="color: ${coresBorda[nomeTime]}; text-transform: uppercase;">${nomeTime} (${jogadoresDoTime.length}/4)</div>
-                    <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem;">
-                        ${listaHtml}
-                    </ul>
+                    <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem;">${listaHtml}</ul>
                 </div>
             `;
         });
 
         corpoTabela.innerHTML = '';
         let elencoOrdenado = [...elenco].sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
-
         elencoOrdenado.forEach(j => {
             let tagClass = j.tipo === 'mensalista' ? 'background: #ffd700; color: #856404;' : 'background: #17a2b8; color: #fff;';
             let texto = j.tipo === 'mensalista' ? 'Mensalista' : 'Diarista';
@@ -1593,21 +1403,13 @@ td { font-size: 1.1rem; font-weight: bold; }
         relatorio.style.padding = '30px';
         relatorio.style.fontFamily = 'Arial, sans-serif';
         relatorio.style.color = '#333';
-
-        const dataHoje = new Date().toLocaleDateString('pt-BR', { 
-            day: '2-digit', 
-            month: '2-digit', 
-            year: 'numeric' 
-        });
+        const dataHoje = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
         let htmlConteudo = `
             <div style="text-align: center; border-bottom: 2px solid #002d57; padding-bottom: 15px; margin-bottom: 25px;">
                 <h1 style="color: #002d57; margin: 0; font-size: 24px; text-transform: uppercase;">Relatório Oficial do Torneio</h1>
                 <p style="margin: 5px 0 0 0; font-weight: bold; color: #666;">Grupo Bola Fora — Rodada de ${dataHoje}</p>
             </div>
-        `;
-
-        htmlConteudo += `
             <h2 style="color: #002d57; font-size: 16px; border-left: 4px solid #ffc107; padding-left: 8px; margin-bottom: 10px;">CLASSIFICAÇÃO FINAL DA RODADA DE GRUPOS</h2>
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 14px;">
                 <thead>
@@ -1624,131 +1426,48 @@ td { font-size: 1.1rem; font-weight: bold; }
         if (linhasClassificacao.length > 0) {
             linhasClassificacao.forEach(linha => {
                 const colunas = linha.querySelectorAll('td');
-                htmlConteudo += `
-                    <tr style="border-bottom: 1px solid #ddd;">
-                        <td style="padding: 8px; font-weight: bold;">${colunas[0].textContent}</td>
-                        <td style="padding: 8px;">${colunas[1].textContent}</td>
-                        <td style="padding: 8px;">${colunas[2].textContent}</td>
-                    </tr>
-                `;
+                htmlConteudo += `<tr style="border-bottom: 1px solid #ddd;"><td style="padding: 8px; font-weight: bold;">${colunas[0].textContent}</td><td style="padding: 8px;">${colunas[1].textContent}</td><td style="padding: 8px;">${colunas[2].textContent}</td></tr>`;
             });
         } else {
-            htmlConteudo += `<tr><td colspan="3" style="padding: 8px; text-align:center; color:#999;">Nenhum jogo computado nesta rodada.</td></tr>`;
+            htmlConteudo += `<tr><td colspan="3" style="padding: 8px; text-align:center; color:#999;">Nenhum jogo computado.</td></tr>`;
         }
         htmlConteudo += `</tbody></table>`;
 
-        htmlConteudo += `
-            <h2 style="color: #002d57; font-size: 16px; border-left: 4px solid #ffc107; padding-left: 8px; margin-bottom: 15px;">INTEGRANTES DAS EQUIPES</h2>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; font-size: 13px;">
-        `;
-
+        htmlConteudo += `<h2 style="color: #002d57; font-size: 16px; border-left: 4px solid #ffc107; padding-left: 8px; margin-bottom: 15px;">INTEGRANTES DAS EQUIPES</h2><div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; font-size: 13px;">`;
+        let coresBordaPdf = { 'Amarelo': '#ffc107', 'Roxo': '#6f42c1', 'Azul': '#007bff', 'Rosa': '#e83e8c' };
         times.forEach(nomeTime => {
             const jogadoresDoTime = elenco.filter(j => j.time === nomeTime && j.presente);
-            let corTime = { 'Amarelo': '#ffc107', 'Rosa': '#e83e8c', 'Azul': '#007bff', 'Roxo': '#6f42c1' }[nomeTime];
-            
-            let jogadoresHtml = jogadoresDoTime.length === 0 
-                ? '<li style="color:#999; list-style:none; padding-left:0;">Nenhum jogador</li>' 
-                : jogadoresDoTime.map(j => `<li>${j.nome || ''} ${j.tipo === 'mensalista' ? '(⭐️)' : ''}</li>`).join('');
-
-            htmlConteudo += `
-                <div style="border: 1px solid #ddd; border-top: 4px solid ${corTime}; padding: 10px; border-radius: 4px; background-color: #fbfbfb;">
-                    <div style="font-weight: bold; color: ${corTime}; margin-bottom: 5px; text-transform: uppercase;">TIME ${nomeTime}</div>
-                    <ul style="padding-left: 15px; margin: 0; line-height: 1.4;">
-                        ${jogadoresHtml}
-                    </ul>
-                </div>
-            `;
+            let corTime = coresBordaPdf[nomeTime];
+            let jogadoresHtml = jogadoresDoTime.length === 0 ? '<li style="color:#999; list-style:none; padding-left:0;">Nenhum jogador</li>' : jogadoresDoTime.map(j => `<li>${j.nome || ''} ${j.tipo === 'mensalista' ? '(⭐️)' : ''}</li>`).join('');
+            htmlConteudo += `<div style="border: 1px solid #ddd; border-top: 4px solid ${corTime}; padding: 10px; border-radius: 4px; background-color: #fbfbfb;"><div style="font-weight: bold; color: ${corTime}; margin-bottom: 5px; text-transform: uppercase;">TIME ${nomeTime}</div><ul style="padding-left: 15px; margin: 0; line-height: 1.4;">${jogadoresHtml}</ul></div>`;
         });
         htmlConteudo += `</div>`;
 
-        htmlConteudo += `
-            <div class="html2pdf__page-break"></div>
-
-            <h2 style="color: #002d57; font-size: 16px; border-left: 4px solid #ffc107; padding-left: 8px; margin-bottom: 10px; margin-top: 15px;">PLACARES DAS PARTIDAS</h2>
-            <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px;">
-                <thead>
-                    <tr style="background-color: #f2f2f2; text-align: left; border-bottom: 2px solid #ccc;">
-                        <th style="padding: 6px;">Confronto</th>
-                        <th style="padding: 6px; text-align: center; width: 25%;">Placar</th>
-                        <th style="padding: 6px; text-align: center; width: 30%;">Vencedor</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
+        htmlConteudo += `<div class="html2pdf__page-break"></div><h2 style="color: #002d57; font-size: 16px; border-left: 4px solid #ffc107; padding-left: 8px; margin-bottom: 10px; margin-top: 15px;">PLACARES DAS PARTIDAS</h2><table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px;"><thead><tr style="background-color: #f2f2f2; text-align: left; border-bottom: 2px solid #ccc;"><th style="padding: 6px;">Confronto</th><th style="padding: 6px; text-align: center; width: 25%;">Placar</th><th style="padding: 6px; text-align: center; width: 30%;">Vencedor</th></tr></thead><tbody>`;
 
         const todosOsJogos = [...partidas, ...semiFinais, ...finais];
-        
         if (todosOsJogos.length > 0 && todosOsJogos.some(j => j.finalizada)) {
             todosOsJogos.forEach(jogo => {
                 if (jogo.finalizada) {
                     const vencedor = jogo.pontosA > jogo.pontosB ? jogo.timeA : jogo.timeB;
-                    let sufixoFase = '';
-                    if(jogo.id.toString().includes('semi')) sufixoFase = ' (Semi)';
-                    if(jogo.id.toString().includes('3lugar')) sufixoFase = ' (3º Lugar)';
-                    if(jogo.id.toString().includes('1lugar')) sufixoFase = ' (Grande Final)';
-
-                    htmlConteudo += `
-                        <tr style="border-bottom: 1px solid #eee;">
-                            <td style="padding: 6px;">${jogo.timeA} x ${jogo.timeB}${sufixoFase}</td>
-                            <td style="padding: 6px; text-align: center; font-weight: bold;">${jogo.pontosA} x ${jogo.pontosB}</td>
-                            <td style="padding: 6px; text-align: center; color: #28a745; font-weight: bold;">${vencedor}</td>
-                        </tr>
-                    `;
+                    let sufixoFase = jogo.id.toString().includes('semi') ? ' (Semi)' : (jogo.id.toString().includes('3lugar') ? ' (3º Lugar)' : (jogo.id.toString().includes('1lugar') ? ' (Grande Final)' : ''));
+                    htmlConteudo += `<tr style="border-bottom: 1px solid #eee;"><td style="padding: 6px;">${jogo.timeA} x ${jogo.timeB}${sufixoFase}</td><td style="padding: 6px; text-align: center; font-weight: bold;">${jogo.pontosA} x ${jogo.pontosB}</td><td style="padding: 6px; text-align: center; color: #28a745; font-weight: bold;">${vencedor}</td></tr>`;
                 }
             });
         } else {
-            htmlConteudo += `<tr><td colspan="3" style="padding: 6px; text-align:center; color:#999;">Nenhuma partida finalizada ainda.</td></tr>`;
+            htmlConteudo += `<tr><td colspan="3" style="padding: 6px; text-align:center; color:#999;">Nenhuma partida finalizada.</td></tr>`;
         }
-        
         htmlConteudo += `</tbody></table>`;
-
         relatorio.innerHTML = htmlConteudo;
 
-        const opt = {
-            margin:       10,
-            filename:     `relatorio_bola_fora_${dataHoje.replace(/\//g, '-')}.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        html2pdf().from(relatorio).set(opt).save();
+        html2pdf().from(relatorio).set({
+            margin: 10,
+            filename: `relatorio_bola_fora_${dataHoje.replace(/\//g, '-')}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        }).save();
     }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      let touchStartY = 0;
-
-      document.addEventListener('touchstart', (e) => {
-        if (e.touches.length === 1) {
-          touchStartY = e.touches.clientY;
-        }
-      }, { passive: true });
-
-      document.addEventListener('touchmove', (e) => {
-        if (e.touches.length !== 1) return;
-        const touchY = e.touches[0].clientY;
-        const deltaY = touchStartY - touchY;
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const scrollHeight = document.documentElement.scrollHeight;
-        const clientHeight = document.documentElement.clientHeight;
-
-        if (scrollTop + clientHeight >= scrollHeight - 2 && deltaY > 0) {
-          e.preventDefault();
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-      }, { passive: false });
-
-      document.addEventListener('wheel', (e) => {
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const scrollHeight = document.documentElement.scrollHeight;
-        const clientHeight = document.documentElement.clientHeight;
-
-        if (scrollTop + clientHeight >= scrollHeight - 2 && e.deltaY > 0) {
-          e.preventDefault();
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-      }, { passive: false });
-    });
     </script>
 </body>
 </html>
