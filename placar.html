@@ -1665,7 +1665,7 @@
       listaRanking.innerHTML = html;
     }
 
-    /* --- LÓGICA DO RODÍZIO DE SAQUE COM BLOQUEIO E CADEADO --- */
+    /* --- LÓGICA DO RODÍZIO DE SAQUE CORRIGIDA (BASEADA NA POSIÇÃO DO CARD) --- */
     function atualizarRodizioSaque() {
       const corEsq = placarLocal.corEsquerda;
       const corDir = placarLocal.corDireita;
@@ -1690,7 +1690,7 @@
       if (corEsq !== corAnteriorEsquerdaRodizio) {
         corAnteriorEsquerdaRodizio = corEsq;
         indiceSaqueAtualEsq = 0;
-        rodizioBloqueadoEsq = false; // Reseta bloqueio ao trocar cor
+        rodizioBloqueadoEsq = false;
         preencherColunaRodizio('esquerda', corEsq);
       } else {
         atualizarContadoresEValoresRodizio('esquerda');
@@ -1699,7 +1699,7 @@
       if (corDir !== corAnteriorDireitaRodizio) {
         corAnteriorDireitaRodizio = corDir;
         indiceSaqueAtualDir = 0;
-        rodizioBloqueadoDir = false; // Reseta bloqueio ao trocar cor
+        rodizioBloqueadoDir = false;
         preencherColunaRodizio('direita', corDir);
       } else {
         atualizarContadoresEValoresRodizio('direita');
@@ -1746,8 +1746,8 @@
         let setaAtiva = (lado === 'esquerda' && index === indiceSaqueAtualEsq) || (lado === 'direita' && index === indiceSaqueAtualDir);
 
         html += `
-          <div class="wrapper-jogador-rodizio" data-nome="${j.nome}" data-index="${index}">
-            <div class="item-rodizio-jogador" draggable="true" title="${j.nome}" onclick="clicarAtletaRodizio(this, '${lado}', ${index}, '${j.nome.replace(/'/g, "\\'")}')">
+          <div class="wrapper-jogador-rodizio" data-nome="${j.nome}">
+            <div class="item-rodizio-jogador" draggable="true" title="${j.nome}" onclick="clicarAtletaRodizio(this, '${lado}', '${j.nome.replace(/'/g, "\\'")}')">
               ${nome3Letras} (<span class="pts-atleta">${pts}</span>)
             </div>
             <div class="indicador-saque-seta ${setaAtiva ? 'ativo' : ''}">▲</div>
@@ -1767,7 +1767,6 @@
 
       wrappers.forEach((wrapper, index) => {
         const nome = wrapper.getAttribute('data-nome');
-        wrapper.setAttribute('data-index', index);
         const spanPts = wrapper.querySelector('.pts-atleta');
         const seta = wrapper.querySelector('.indicador-saque-seta');
 
@@ -1788,13 +1787,21 @@
       atualizarEstadoBloqueioVisual(lado);
     }
 
-    function clicarAtletaRodizio(elementoBotao, lado, indexClicado, nomeJogador) {
-      const indiceAtual = (lado === 'esquerda') ? indiceSaqueAtualEsq : indiceSaqueAtualDir;
+    function clicarAtletaRodizio(elementoBotao, lado, nomeJogador) {
+      const container = document.getElementById(`lista-rodizio-${lado}`);
+      if (!container) return;
+      
+      // Obtém o wrapper do elemento clicado e descobre o índice visual atual no DOM
+      const wrapperClicado = elementoBotao.closest('.wrapper-jogador-rodizio');
+      const wrappers = [...container.querySelectorAll('.wrapper-jogador-rodizio')];
+      const indexClicadoVisual = wrappers.indexOf(wrapperClicado);
+      const indiceAtualSetar = (lado === 'esquerda') ? indiceSaqueAtualEsq : indiceSaqueAtualDir;
 
-      if (indexClicado === indiceAtual) {
+      // Validação: Só permite pontuar se clicou no atleta que está NA POSIÇÃO DA SETINHA atual
+      if (indexClicadoVisual === indiceAtualSetar) {
         if ("vibrate" in navigator) navigator.vibrate(40);
         
-        // Ativa o bloqueio e o cadeado vermelho permanente ao efetuar o primeiro clique/saque
+        // Bloqueia reordenações futuras
         if (lado === 'esquerda') {
           rodizioBloqueadoEsq = true;
         } else {
@@ -1803,10 +1810,7 @@
 
         rodizioContadoresLocais[nomeJogador] = (rodizioContadoresLocais[nomeJogador] || 0) + 1;
 
-        const container = document.getElementById(`lista-rodizio-${lado}`);
-        const wrappers = container.querySelectorAll('.wrapper-jogador-rodizio');
         const total = wrappers.length;
-
         if (total > 0) {
           if (lado === 'esquerda') {
             indiceSaqueAtualEsq = (indiceSaqueAtualEsq + 1) % total;
@@ -1838,7 +1842,7 @@
         item.addEventListener('dragstart', (e) => {
           const bloqueado = (lado === 'esquerda') ? rodizioBloqueadoEsq : rodizioBloqueadoDir;
           if (bloqueado) {
-            e.preventDefault(); // Impede o arraste se estiver bloqueado
+            e.preventDefault();
             return;
           }
           if (wrapper) wrapper.classList.add('dragging');
@@ -2068,7 +2072,6 @@
         placarLocal.tema = "padrao";
         placarLocal.ultimoPontuador = null;
         
-        // Zera contadores, setas e desbloqueia o rodízio
         rodizioContadoresLocais = {};
         indiceSaqueAtualEsq = 0;
         indiceSaqueAtualDir = 0;
