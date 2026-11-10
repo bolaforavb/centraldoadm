@@ -812,6 +812,7 @@
       font-size: 12px;
       padding: 10px;
       font-style: italic;
+      width: 100%;
     }
 
     .btn-zerar-ranking {
@@ -830,6 +831,174 @@
 
     .btn-zerar-ranking:active {
       background-color: #bd2130;
+    }
+
+    /* --- BLOCO DO RODÍZIO DE SAQUE (COMPACTO, CONTADOR E SETINHA DE SAQUE) --- */
+    .painel-rodizio {
+      display: none;
+      width: 100%;
+      max-width: 450px;
+      margin: 0 auto 12px auto;
+      background-color: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      overflow: hidden;
+      flex-direction: column;
+    }
+
+    .modo-controle-ativo .painel-rodizio {
+      display: flex;
+    }
+
+    .rodizio-header {
+      background-color: #12364e;
+      color: #e1d8cd;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      font-size: 13px;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .rodizio-conteudo {
+      display: none;
+      flex-direction: row;
+      padding: 8px;
+      gap: 6px;
+    }
+
+    .rodizio-conteudo.aberto {
+      display: flex;
+    }
+
+    .coluna-rodizio {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background-color: #f8f9fa;
+      padding: 6px;
+      border-radius: 8px;
+      border: 1px solid #dee2e6;
+      min-height: 60px;
+      position: relative;
+    }
+
+    /* Indicador de Cadeado Vermelho na Borda Inferior Externa da Coluna */
+    .cadeado-bloqueio {
+      position: absolute;
+      bottom: -4px;
+      right: 6px;
+      font-size: 12px;
+      display: none;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+      z-index: 5;
+    }
+
+    .coluna-rodizio.bloqueado .cadeado-bloqueio {
+      display: block;
+    }
+
+    .coluna-rodizio.bloqueado {
+      border-color: #ff1744;
+      background-color: #fff5f5;
+    }
+
+    .coluna-rodizio-titulo {
+      font-size: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+      text-align: center;
+      padding: 3px 2px;
+      border-radius: 4px;
+      color: #12364e;
+      background-color: #e9ecef;
+      margin-bottom: 2px;
+    }
+
+    .lista-rodizio-drag {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: flex-start;
+      min-height: 48px;
+    }
+
+    .wrapper-jogador-rodizio {
+      flex: 1 1 calc(25% - 4px);
+      min-width: 42px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .item-rodizio-jogador {
+      width: 100%;
+      background-color: #ffffff;
+      border: 1px solid #12364e;
+      border-radius: 5px;
+      padding: 5px 1px;
+      font-size: 10px;
+      font-weight: bold;
+      color: #12364e;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      text-transform: uppercase;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      transition: background-color 0.2s, transform 0.15s, box-shadow 0.15s;
+      touch-action: none;
+      white-space: nowrap;
+    }
+
+    .item-rodizio-jogador:active {
+      cursor: grabbing;
+    }
+
+    /* Efeito de piscar em vermelho caso clique fora da vez do saque */
+    @keyframes piscarVermelho {
+      0% { background-color: #ff1744; color: #ffffff; border-color: #d50000; }
+      50% { background-color: #ffffff; color: #12364e; border-color: #12364e; }
+      100% { background-color: #ff1744; color: #ffffff; border-color: #d50000; }
+    }
+
+    .item-rodizio-jogador.erro-saque {
+      animation: piscarVermelho 0.3s ease 2;
+    }
+
+    .wrapper-jogador-rodizio.dragging {
+      opacity: 0.5;
+    }
+
+    .wrapper-jogador-rodizio.dragging .item-rodizio-jogador {
+      background-color: #d9b246;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+    }
+
+    /* Indicador da Seta do Saque */
+    .indicador-saque-seta {
+      font-size: 11px;
+      line-height: 1;
+      color: #2196f3;
+      visibility: hidden;
+      margin-top: -1px;
+    }
+
+    .indicador-saque-seta.ativo {
+      visibility: visible;
+      animation: bounceSeta 0.8s infinite alternate ease-in-out;
+    }
+
+    @keyframes bounceSeta {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-2px); }
     }
   </style>
 </head>
@@ -928,6 +1097,34 @@
           <div class="ranking-vazio">Nenhum ponto registrado para jogadores ainda.</div>
         </div>
         <button class="btn-zerar-ranking" onclick="zerarRanking()">Zerar Ranking</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOCO DO RODÍZIO DE SAQUE (COMPACTO, CONTADOR E SETINHA DE SAQUE) -->
+  <div class="container-placar-global" style="padding-top: 0;">
+    <div class="painel-rodizio" id="painelRodizio">
+      <div class="rodizio-header" onclick="toggleRodizio()">
+        <span>🏐 Rodízio de Saque</span>
+        <span id="iconeToggleRodizio">▼</span>
+      </div>
+      <div class="rodizio-conteudo" id="rodizioConteudo">
+        <!-- Coluna Esquerda -->
+        <div class="coluna-rodizio" id="coluna-rodizio-esquerda">
+          <div class="coluna-rodizio-titulo" id="titulo-rodizio-esquerda">Esq</div>
+          <div class="lista-rodizio-drag" id="lista-rodizio-esquerda">
+            <div class="ranking-vazio">Selecione a cor</div>
+          </div>
+          <div class="cadeado-bloqueio" title="Rodízio bloqueado após o primeiro saque">🔒</div>
+        </div>
+        <!-- Coluna Direita -->
+        <div class="coluna-rodizio" id="coluna-rodizio-direita">
+          <div class="coluna-rodizio-titulo" id="titulo-rodizio-direita">Dir</div>
+          <div class="lista-rodizio-drag" id="lista-rodizio-direita">
+            <div class="ranking-vazio">Selecione a cor</div>
+          </div>
+          <div class="cadeado-bloqueio" title="Rodízio bloqueado após o primeiro saque">🔒</div>
+        </div>
       </div>
     </div>
   </div>
@@ -1063,6 +1260,16 @@
     let elencoGlobal = [];
     let ultimaFaseProcessada = null;
     let diferencaTempoServidor = 0;
+
+    let corAnteriorEsquerdaRodizio = null;
+    let corAnteriorDireitaRodizio = null;
+    let indiceSaqueAtualEsq = 0;
+    let indiceSaqueAtualDir = 0;
+    let rodizioContadoresLocais = {};
+    
+    // Estados de bloqueio do rodízio por lado
+    let rodizioBloqueadoEsq = false;
+    let rodizioBloqueadoDir = false;
 
     const estilosCores = {
       "Amarelo": { bg: "#ffeb3b", text: "#000" },
@@ -1258,6 +1465,17 @@
       }
     }
 
+    function toggleRodizio() {
+      const conteudo = document.getElementById('rodizioConteudo');
+      const icone = document.getElementById('iconeToggleRodizio');
+      conteudo.classList.toggle('aberto');
+      if (conteudo.classList.contains('aberto')) {
+        icone.innerText = "▲";
+      } else {
+        icone.innerText = "▼";
+      }
+    }
+
     function atualizarAparenciaSeletor(lado, cor) {
       const select = document.getElementById(`cor-${lado}`);
       const selectCtrl = document.getElementById(`ctrl-cor-${lado}`);
@@ -1381,7 +1599,6 @@
       const containerDir = document.getElementById('botoes-integrantes-direita');
       if (!containerEsq || !containerDir) return;
 
-      // Time Esquerdo (ordenado alfabeticamente)
       const corEsq = placarLocal.corEsquerda;
       const jogadoresEsq = corEsq 
         ? elencoGlobal
@@ -1401,7 +1618,6 @@
       }
       containerEsq.innerHTML = htmlEsq;
 
-      // Time Direito (ordenado alfabeticamente)
       const corDir = placarLocal.corDireita;
       const jogadoresDir = corDir 
         ? elencoGlobal
@@ -1449,6 +1665,254 @@
       listaRanking.innerHTML = html;
     }
 
+    /* --- LÓGICA DO RODÍZIO DE SAQUE COM BLOQUEIO E CADEADO --- */
+    function atualizarRodizioSaque() {
+      const corEsq = placarLocal.corEsquerda;
+      const corDir = placarLocal.corDireita;
+
+      const tituloEsq = document.getElementById('titulo-rodizio-esquerda');
+      const tituloDir = document.getElementById('titulo-rodizio-direita');
+
+      if (tituloEsq) {
+        tituloEsq.innerText = corEsq ? `${corEsq}` : "Esq";
+        const estiloEsq = estilosCores[corEsq] || { bg: "#e9ecef", text: "#12364e" };
+        tituloEsq.style.backgroundColor = estiloEsq.bg;
+        tituloEsq.style.color = estiloEsq.text;
+      }
+
+      if (tituloDir) {
+        tituloDir.innerText = corDir ? `${corDir}` : "Dir";
+        const estiloDir = estilosCores[corDir] || { bg: "#e9ecef", text: "#12364e" };
+        tituloDir.style.backgroundColor = estiloDir.bg;
+        tituloDir.style.color = estiloDir.text;
+      }
+
+      if (corEsq !== corAnteriorEsquerdaRodizio) {
+        corAnteriorEsquerdaRodizio = corEsq;
+        indiceSaqueAtualEsq = 0;
+        rodizioBloqueadoEsq = false; // Reseta bloqueio ao trocar cor
+        preencherColunaRodizio('esquerda', corEsq);
+      } else {
+        atualizarContadoresEValoresRodizio('esquerda');
+      }
+
+      if (corDir !== corAnteriorDireitaRodizio) {
+        corAnteriorDireitaRodizio = corDir;
+        indiceSaqueAtualDir = 0;
+        rodizioBloqueadoDir = false; // Reseta bloqueio ao trocar cor
+        preencherColunaRodizio('direita', corDir);
+      } else {
+        atualizarContadoresEValoresRodizio('direita');
+      }
+
+      atualizarEstadoBloqueioVisual('esquerda');
+      atualizarEstadoBloqueioVisual('direita');
+    }
+
+    function atualizarEstadoBloqueioVisual(lado) {
+      const coluna = document.getElementById(`coluna-rodizio-${lado}`);
+      const bloqueado = (lado === 'esquerda') ? rodizioBloqueadoEsq : rodizioBloqueadoDir;
+      if (!coluna) return;
+
+      if (bloqueado) {
+        coluna.classList.add('bloqueado');
+      } else {
+        coluna.classList.remove('bloqueado');
+      }
+    }
+
+    function preencherColunaRodizio(lado, cor) {
+      const container = document.getElementById(`lista-rodizio-${lado}`);
+      if (!container) return;
+
+      if (!cor) {
+        container.innerHTML = `<div class="ranking-vazio">Selecione a cor</div>`;
+        return;
+      }
+
+      const jogadores = elencoGlobal
+        .filter(j => j.time === cor && j.presente)
+        .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR', { sensitivity: 'base' }));
+
+      if (jogadores.length === 0) {
+        container.innerHTML = `<div class="ranking-vazio">Sem integrantes</div>`;
+        return;
+      }
+
+      let html = "";
+      jogadores.forEach((j, index) => {
+        let nome3Letras = (j.nome || '').trim().substring(0, 3).toUpperCase();
+        let pts = rodizioContadoresLocais[j.nome] || 0;
+        let setaAtiva = (lado === 'esquerda' && index === indiceSaqueAtualEsq) || (lado === 'direita' && index === indiceSaqueAtualDir);
+
+        html += `
+          <div class="wrapper-jogador-rodizio" data-nome="${j.nome}" data-index="${index}">
+            <div class="item-rodizio-jogador" draggable="true" title="${j.nome}" onclick="clicarAtletaRodizio(this, '${lado}', ${index}, '${j.nome.replace(/'/g, "\\'")}')">
+              ${nome3Letras} (<span class="pts-atleta">${pts}</span>)
+            </div>
+            <div class="indicador-saque-seta ${setaAtiva ? 'ativo' : ''}">▲</div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+
+      configurarDragAndDrop(container, lado);
+    }
+
+    function atualizarContadoresEValoresRodizio(lado) {
+      const container = document.getElementById(`lista-rodizio-${lado}`);
+      if (!container) return;
+
+      const wrappers = container.querySelectorAll('.wrapper-jogador-rodizio');
+
+      wrappers.forEach((wrapper, index) => {
+        const nome = wrapper.getAttribute('data-nome');
+        wrapper.setAttribute('data-index', index);
+        const spanPts = wrapper.querySelector('.pts-atleta');
+        const seta = wrapper.querySelector('.indicador-saque-seta');
+
+        if (spanPts) {
+          spanPts.innerText = rodizioContadoresLocais[nome] || 0;
+        }
+
+        if (seta) {
+          let setaAtiva = (lado === 'esquerda' && index === indiceSaqueAtualEsq) || (lado === 'direita' && index === indiceSaqueAtualDir);
+          if (setaAtiva) {
+            seta.classList.add('ativo');
+          } else {
+            seta.classList.remove('ativo');
+          }
+        }
+      });
+
+      atualizarEstadoBloqueioVisual(lado);
+    }
+
+    function clicarAtletaRodizio(elementoBotao, lado, indexClicado, nomeJogador) {
+      const indiceAtual = (lado === 'esquerda') ? indiceSaqueAtualEsq : indiceSaqueAtualDir;
+
+      if (indexClicado === indiceAtual) {
+        if ("vibrate" in navigator) navigator.vibrate(40);
+        
+        // Ativa o bloqueio e o cadeado vermelho permanente ao efetuar o primeiro clique/saque
+        if (lado === 'esquerda') {
+          rodizioBloqueadoEsq = true;
+        } else {
+          rodizioBloqueadoDir = true;
+        }
+
+        rodizioContadoresLocais[nomeJogador] = (rodizioContadoresLocais[nomeJogador] || 0) + 1;
+
+        const container = document.getElementById(`lista-rodizio-${lado}`);
+        const wrappers = container.querySelectorAll('.wrapper-jogador-rodizio');
+        const total = wrappers.length;
+
+        if (total > 0) {
+          if (lado === 'esquerda') {
+            indiceSaqueAtualEsq = (indiceSaqueAtualEsq + 1) % total;
+          } else {
+            indiceSaqueAtualDir = (indiceSaqueAtualDir + 1) % total;
+          }
+        }
+
+        atualizarContadoresEValoresRodizio(lado);
+      } else {
+        if ("vibrate" in navigator) navigator.vibrate([30, 50, 30]);
+        
+        elementoBotao.classList.remove('erro-saque');
+        void elementoBotao.offsetWidth;
+        elementoBotao.classList.add('erro-saque');
+        
+        setTimeout(() => {
+          elementoBotao.classList.remove('erro-saque');
+        }, 600);
+      }
+    }
+
+    function configurarDragAndDrop(container, lado) {
+      const items = container.querySelectorAll('.item-rodizio-jogador');
+
+      items.forEach(item => {
+        const wrapper = item.closest('.wrapper-jogador-rodizio');
+
+        item.addEventListener('dragstart', (e) => {
+          const bloqueado = (lado === 'esquerda') ? rodizioBloqueadoEsq : rodizioBloqueadoDir;
+          if (bloqueado) {
+            e.preventDefault(); // Impede o arraste se estiver bloqueado
+            return;
+          }
+          if (wrapper) wrapper.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+        });
+
+        item.addEventListener('dragend', () => {
+          if (wrapper) wrapper.classList.remove('dragging');
+          atualizarContadoresEValoresRodizio(lado);
+        });
+
+        item.addEventListener('touchstart', (e) => {
+          const bloqueado = (lado === 'esquerda') ? rodizioBloqueadoEsq : rodizioBloqueadoDir;
+          if (bloqueado) return;
+          if (wrapper) wrapper.classList.add('dragging');
+        }, { passive: true });
+
+        item.addEventListener('touchend', () => {
+          if (wrapper) wrapper.classList.remove('dragging');
+          atualizarContadoresEValoresRodizio(lado);
+        });
+
+        item.addEventListener('touchmove', (e) => {
+          const bloqueado = (lado === 'esquerda') ? rodizioBloqueadoEsq : rodizioBloqueadoDir;
+          if (bloqueado) return;
+
+          const touchLocation = e.touches[0];
+          const target = document.elementFromPoint(touchLocation.clientX, touchLocation.clientY);
+          const afterElement = getDragAfterElementHorizontal(container, touchLocation.clientX, touchLocation.clientY);
+          const draggingWrapper = container.querySelector('.wrapper-jogador-rodizio.dragging');
+          if (draggingWrapper && container.contains(target)) {
+            if (afterElement == null) {
+              container.appendChild(draggingWrapper);
+            } else {
+              container.insertBefore(draggingWrapper, afterElement);
+            }
+          }
+        }, { passive: true });
+      });
+
+      container.addEventListener('dragover', (e) => {
+        const bloqueado = (lado === 'esquerda') ? rodizioBloqueadoEsq : rodizioBloqueadoDir;
+        if (bloqueado) return;
+
+        e.preventDefault();
+        const afterElement = getDragAfterElementHorizontal(container, e.clientX, e.clientY);
+        const draggingWrapper = container.querySelector('.wrapper-jogador-rodizio.dragging');
+        if (draggingWrapper) {
+          if (afterElement == null) {
+            container.appendChild(draggingWrapper);
+          } else {
+            container.insertBefore(draggingWrapper, afterElement);
+          }
+        }
+      });
+    }
+
+    function getDragAfterElementHorizontal(container, x, y) {
+      const draggableElements = [...container.querySelectorAll('.wrapper-jogador-rodizio:not(.dragging)')];
+
+      return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offsetX = x - box.left - box.width / 2;
+        const offsetY = y - box.top - box.height / 2;
+        const distance = Math.hypot(offsetX, offsetY);
+
+        if (offsetX < 0 && distance < closest.distance) {
+          return { distance: distance, element: child };
+        } else {
+          return closest;
+        }
+      }, { distance: Number.POSITIVE_INFINITY }).element;
+    }
+
     torneioRef.on('value', (snapshot) => {
       const dados = snapshot.val();
       if (dados && dados.elenco) {
@@ -1461,6 +1925,9 @@
         elencoGlobal = [];
       }
       atualizarBotoesIntegrantes();
+      corAnteriorEsquerdaRodizio = null;
+      corAnteriorDireitaRodizio = null;
+      atualizarRodizioSaque();
     });
 
     placarRef.on('value', (snapshot) => {
@@ -1513,6 +1980,7 @@
         aplicarTemaVisual(placarLocal.tema || 'padrao');
         atualizarBotoesIntegrantes();
         atualizarRankingVisual();
+        atualizarRodizioSaque();
       } else {
         const estadoInicial = { esquerda: 0, direita: 0, corEsquerda: "", corDireita: "", fase: null, tema: "padrao", ultimoPontuador: null, ranking: {}, dataRanking: obterDataAtualBrasil() };
         placarRef.set(estadoInicial);
@@ -1599,6 +2067,14 @@
         placarLocal.fase = null;
         placarLocal.tema = "padrao";
         placarLocal.ultimoPontuador = null;
+        
+        // Zera contadores, setas e desbloqueia o rodízio
+        rodizioContadoresLocais = {};
+        indiceSaqueAtualEsq = 0;
+        indiceSaqueAtualDir = 0;
+        rodizioBloqueadoEsq = false;
+        rodizioBloqueadoDir = false;
+
         placarRef.set(placarLocal);
       }
     }
@@ -1619,6 +2095,12 @@
         placarLocal.esquerda = 0;
         placarLocal.direita = 0;
         placarLocal.ultimoPontuador = null;
+
+        rodizioContadoresLocais = {};
+        indiceSaqueAtualEsq = 0;
+        indiceSaqueAtualDir = 0;
+        rodizioBloqueadoEsq = false;
+        rodizioBloqueadoDir = false;
       }
       placarRef.set(placarLocal);
     }
