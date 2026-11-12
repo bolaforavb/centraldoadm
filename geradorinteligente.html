@@ -510,6 +510,9 @@
       align-items: center;
       cursor: grab;
       user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      touch-action: none;
       transition: background-color 0.2s, opacity 0.2s;
     }
 
@@ -1098,7 +1101,7 @@
 
       Object.entries(dadosDia).forEach(([nome, dados]) => {
         if (dados.flagado === true) {
-          let nivel = dados.nivel !== undefined ? dados.nivel : 1.0;
+          let nivel = dados.nivel !== undefined ? Number(dados.nivel) : 1.0;
           let isAdm = dados.adm === true;
           
           let listaIniciais = [];
@@ -1109,13 +1112,10 @@
           if (dados.recepcao) listaIniciais.push('R');
           if (dados.saque) listaIniciais.push('S');
 
-          let scoreTotal = nivel + (listaIniciais.length * 0.05);
-
           selecionados.push({ 
             nome, 
             nivel, 
             isAdm, 
-            scoreTotal, 
             fundamentos: listaIniciais,
             habObj: {
               M: dados.movimentacao ? 1 : 0,
@@ -1134,92 +1134,177 @@
         return;
       }
 
-      // Algoritmo de Múltiplas Simulações: Gera várias distribuições e escolhe a melhor
-      // onde a prioridade é a média de nível mais próxima possível entre os times,
-      // e o segundo plano equilibra as quantidades de cada habilidade por time.
-      let melhorConfig = null;
-      let menorDesvioGlobal = Infinity;
+      const chavesTimes = ['amarelo', 'azul', 'rosa', 'roxo'];
+      const habilidadesKeys = ['M', 'A', 'B', 'L', 'R', 'S'];
 
-      for (let tentativa = 0; tentativa < 150; tentativa++) {
-        let listaTimes = [
-          { chave: 'amarelo', membros: [], somaScore: 0, somaNivel: 0, habTotais: {M:0, A:0, B:0, L:0, R:0, S:0} },
-          { chave: 'azul', membros: [], somaScore: 0, somaNivel: 0, habTotais: {M:0, A:0, B:0, L:0, R:0, S:0} },
-          { chave: 'rosa', membros: [], somaScore: 0, somaNivel: 0, habTotais: {M:0, A:0, B:0, L:0, R:0, S:0} },
-          { chave: 'roxo', membros: [], somaScore: 0, somaNivel: 0, habTotais: {M:0, A:0, B:0, L:0, R:0, S:0} }
+      // Total de jogadores disponíveis por habilidade para verificar cobertura possível
+      let totalPorHabilidade = { M: 0, A: 0, B: 0, L: 0, R: 0, S: 0 };
+      selecionados.forEach(j => {
+        habilidadesKeys.forEach(h => {
+          totalPorHabilidade[h] += j.habObj[h];
+        });
+      });
+
+      const adms = selecionados.filter(j => j.isAdm);
+      const naoAdms = selecionados.filter(j => !j.isAdm);
+
+      // Função de custo hierárquica estrita:
+      // 1º: Separação de ADMs (máximo equilíbrio de ADMs entre os 4 times)
+      // 2º: Médias de nível estritamente o mais próximas possível (amplitude + variância de nível)
+      // 3º: Cobertura de todas as habilidades possíveis em todos os times + equilíbrio de quantidade
+      function avaliarConfiguracao(timesMatriz) {
+        let somasNivel = [0, 0, 0, 0];
+        let contAdm = [0, 0, 0, 0];
+        let habPorTime = [
+          { M: 0, A: 0, B: 0, L: 0, R: 0, S: 0 },
+          { M: 0, A: 0, B: 0, L: 0, R: 0, S: 0 },
+          { M: 0, A: 0, B: 0, L: 0, R: 0, S: 0 },
+          { M: 0, A: 0, B: 0, L: 0, R: 0, S: 0 }
         ];
 
-        let adms = selecionados.filter(j => j.isAdm);
-        let naoAdms = selecionados.filter(j => !j.isAdm);
+        for (let t = 0; t < 4; t++) {
+          for (let p = 0; p < 4; p++) {
+            const jog = timesMatriz[t][p];
+            somasNivel[t] += jog.nivel;
+            if (jog.isAdm) contAdm[t]++;
+            habilidadesKeys.forEach(h => {
+              habPorTime[t][h] += jog.habObj[h];
+            });
+          }
+        }
 
-        adms.sort((a, b) => b.scoreTotal - a.scoreTotal);
-        naoAdms.sort((a, b) => b.scoreTotal - a.scoreTotal);
-        naoAdms.sort(() => Math.random() - 0.15); // introduz variação controlada para explorar combinações
+        // 1. Penalidade de ADMs (Prioridade Absoluta)
+        const maxAdm = Math.max(...contAdm);
+        const minAdm = Math.min(...contAdm);
+        const desvioAdm = (maxAdm - minAdm) > 1 ? (maxAdm - minAdm) * 1000000 : 0;
 
-        listaTimes.sort(() => Math.random() - 0.5);
+        // 2. Penalidade de Médias de Nível (Prioridade 2 - Estrita)
+        const medias = somasNivel.map(s => s / 4);
+        const amplitudeMedia = Math.max(...medias) - Math.min(...medias);
+        const mediaGeral = (somasNivel[0] + somasNivel[1] + somasNivel[2] + somasNivel[3]) / 16;
+        const varianciaMedia = medias.reduce((acc, m) => acc + Math.pow(m - mediaGeral, 2), 0);
+        const custoNivel = (amplitudeMedia * 25000) + (varianciaMedia * 15000);
 
-        // Aloca ADMs em times diferentes
-        adms.forEach((adm, index) => {
-          let timeAlvo = listaTimes[index % 4];
-          timeAlvo.membros.push(adm);
-          timeAlvo.somaScore += adm.scoreTotal;
-          timeAlvo.somaNivel += adm.nivel;
-          for(let h in adm.habObj) timeAlvo.habTotais[h] += adm.habObj[h];
-        });
+        // 3. Penalidade de Habilidades (Prioridade 3)
+        // Garante que cada time tenha pelo menos 1 jogador de cada habilidade possível
+        // (até o limite máximo de times que podem ser cobertos pelo total disponível, max 4)
+        let timesSemHabilidade = 0;
+        let desvioQtdHabilidade = 0;
 
-        // Aloca os demais jogadores priorizando o balanceamento de nível (média) e secundariamente equilibrando habilidades
-        naoAdms.forEach(jogador => {
-          listaTimes.sort((a, b) => {
-            if (a.membros.length >= 4) return 1;
-            if (b.membros.length >= 4) return -1;
-            // Critério principal: menor soma de nível/score atual
-            let diffScore = a.somaScore - b.somaScore;
-            if (Math.abs(diffScore) > 0.3) return diffScore;
-            
-            // Critério secundário de segundo plano: escolher o time que possui menos daquele tipo de habilidade principal do jogador
-            let habPesoA = jogador.fundamentos.reduce((acc, f) => acc + a.habTotais[f], 0);
-            let habPesoB = jogador.fundamentos.reduce((acc, f) => acc + b.habTotais[f], 0);
-            return habPesoA - habPesoB;
-          });
+        habilidadesKeys.forEach(h => {
+          const totalDisp = totalPorHabilidade[h];
+          const timesCobertos = habPorTime.filter(ht => ht[h] >= 1).length;
+          const coberturaIdeal = Math.min(4, totalDisp);
 
-          let timeDisponivel = listaTimes.find(t => t.membros.length < 4);
-          if (timeDisponivel) {
-            timeDisponivel.membros.push(jogador);
-            timeDisponivel.somaScore += jogador.scoreTotal;
-            timeDisponivel.somaNivel += jogador.nivel;
-            for(let h in jogador.habObj) timeDisponivel.habTotais[h] += jogador.habObj[h];
+          if (timesCobertos < coberturaIdeal) {
+            timesSemHabilidade += (coberturaIdeal - timesCobertos);
+          }
+
+          const mediaH = totalDisp / 4;
+          for (let t = 0; t < 4; t++) {
+            desvioQtdHabilidade += Math.abs(habPorTime[t][h] - mediaH);
           }
         });
 
-        // Calcula a métrica de desvio (qualidade do equilíbrio de médias e de habilidades)
-        let medias = listaTimes.map(t => t.somaNivel / 4);
-        let mediaGeral = medias.reduce((a,b)=>a+b, 0) / 4;
-        let desvioMedias = medias.reduce((acc, m) => acc + Math.pow(m - mediaGeral, 2), 0);
-        
-        // Desvio de habilidades entre os times
-        let desvioHab = 0;
-        ['M', 'A', 'B', 'L', 'R', 'S'].forEach(h => {
-          let vals = listaTimes.map(t => t.habTotais[h]);
-          let mediaH = vals.reduce((a,b)=>a+b,0)/4;
-          desvioHab += vals.reduce((acc, v) => acc + Math.abs(v - mediaH), 0);
+        const custoHabilidades = (timesSemHabilidade * 100) + (desvioQtdHabilidade * 5);
+
+        return desvioAdm + custoNivel + custoHabilidades;
+      }
+
+      function embaralhar(arr) {
+        const copia = [...arr];
+        for (let i = copia.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [copia[i], copia[j]] = [copia[j], copia[i]];
+        }
+        return copia;
+      }
+
+      let melhorMatriz = null;
+      let menorCustoGlobal = Infinity;
+
+      // 300 reinícios aleatórios com busca local exaustiva por trocas (Hill Climbing)
+      for (let tentativa = 0; tentativa < 300; tentativa++) {
+        let timesMatriz = [[], [], [], []];
+
+        // Distribui ADMs primeiro em times distintos (embaralhando a ordem dos times)
+        let admsEmb = embaralhar(adms);
+        let ordemTimesAdm = embaralhar([0, 1, 2, 3]);
+        admsEmb.forEach((adm, idx) => {
+          let tIdx = ordemTimesAdm[idx % 4];
+          timesMatriz[tIdx].push(adm);
         });
 
-        // Função de custo total (peso maior nas médias, peso menor complementar nas habilidades)
-        let custoTotal = desvioMedias * 10 + desvioHab;
+        // Preenche as vagas restantes com os não-ADMs
+        let naoAdmsEmb = embaralhar(naoAdms);
+        let ptr = 0;
+        for (let t = 0; t < 4; t++) {
+          while (timesMatriz[t].length < 4 && ptr < naoAdmsEmb.length) {
+            timesMatriz[t].push(naoAdmsEmb[ptr++]);
+          }
+        }
 
-        if (custoTotal < menorDesvioGlobal) {
-          menorDesvioGlobal = custoTotal;
-          // Organiza o objeto final de times
-          let objTemp = {};
-          listaTimes.forEach(t => {
-            t.membros.sort((a, b) => b.nivel - a.nivel);
-            objTemp[t.chave] = t.membros;
-          });
-          melhorConfig = objTemp;
+        let custoAtual = avaliarConfiguracao(timesMatriz);
+        let melhorou = true;
+
+        // Refinamento por trocas par-a-par respeitando a separação de ADMs
+        while (melhorou) {
+          melhorou = false;
+          for (let t1 = 0; t1 < 4; t1++) {
+            for (let t2 = t1 + 1; t2 < 4; t2++) {
+              for (let p1 = 0; p1 < 4; p1++) {
+                for (let p2 = 0; p2 < 4; p2++) {
+                  const jog1 = timesMatriz[t1][p1];
+                  const jog2 = timesMatriz[t2][p2];
+
+                  // Só permite troca entre jogadores do mesmo grupo (ADM com ADM, ou não-ADM com não-ADM)
+                  // para preservar estritamente a separação de ADMs
+                  if (jog1.isAdm !== jog2.isAdm) continue;
+
+                  // Executa troca temporária
+                  timesMatriz[t1][p1] = jog2;
+                  timesMatriz[t2][p2] = jog1;
+
+                  const novoCusto = avaliarConfiguracao(timesMatriz);
+                  if (novoCusto < custoAtual - 1e-9) {
+                    custoAtual = novoCusto;
+                    melhorou = true;
+                  } else {
+                    // Desfaz troca
+                    timesMatriz[t1][p1] = jog1;
+                    timesMatriz[t2][p2] = jog2;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        if (custoAtual < menorCustoGlobal) {
+          menorCustoGlobal = custoAtual;
+          melhorMatriz = timesMatriz.map(time => [...time]);
         }
       }
 
-      estadoControle[dia].ultimosTimes = melhorConfig;
-      renderizarTimes(dia, melhorConfig);
+      // Embaralha qual cor fica com qual grupo para manter variedade visual entre cliques
+      const coresEmbaralhadas = embaralhar(chavesTimes);
+      let melhorConfig = {};
+
+      for (let i = 0; i < 4; i++) {
+        let membrosOrdenados = melhorMatriz[i].sort((a, b) => b.nivel - a.nivel);
+        melhorConfig[coresEmbaralhadas[i]] = membrosOrdenados;
+      }
+
+      // Mantém a ordem padrão das chaves no objeto final (amarelo, azul, rosa, roxo)
+      let configOrdenadaPorCor = {
+        amarelo: melhorConfig.amarelo,
+        azul: melhorConfig.azul,
+        rosa: melhorConfig.rosa,
+        roxo: melhorConfig.roxo
+      };
+
+      estadoControle[dia].ultimosTimes = configOrdenadaPorCor;
+      renderizarTimes(dia, configOrdenadaPorCor);
       registrarAcaoNoHistorico(`gerou os times balanceados de ${dia === 'terca' ? 'Terça-feira' : 'Sexta-feira'}`);
     }
 
@@ -1263,13 +1348,19 @@
 
           html += `
             <li class="membro-time-item" 
+                data-dia="${dia}"
+                data-time="${chave}"
+                data-indice="${index}"
                 draggable="true" 
                 ondragstart="iniciarArrasto(event, '${dia}', '${chave}', ${index})"
+                ondragend="finalizarArrasto(event)"
                 ondragover="permitirSoltar(event)"
                 ondragenter="entrarArrasto(event)"
                 ondragleave="sairArrasto(event)"
                 ondrop="soltarJogador(event, '${dia}', '${chave}', ${index})"
-                ontouchstart="configurarToqueMobile(event, '${dia}', '${chave}', ${index})">
+                ontouchstart="iniciarToqueMobile(event, '${dia}', '${chave}', ${index})"
+                ontouchmove="moverToqueMobile(event)"
+                ontouchend="finalizarToqueMobile(event)">
               <span>${m.nome}${iconeAdm}</span>
               <div class="membro-detalhes-dir">
                 ${htmlFundamentos}
@@ -1297,11 +1388,34 @@
     }
 
     let dadosArrastados = null;
+    let itemAlvoToqueAtual = null;
+
+    function executarTrocaJogadores(diaOrigem, chaveOrigem, indiceOrigem, diaDestino, chaveDestino, indiceDestino) {
+      if (diaOrigem !== diaDestino) return;
+      if (chaveOrigem === chaveDestino && indiceOrigem === indiceDestino) return;
+
+      let times = estadoControle[diaDestino].ultimosTimes;
+      if (!times) return;
+
+      let jogadorOrigem = times[chaveOrigem][indiceOrigem];
+      times[chaveOrigem][indiceOrigem] = times[chaveDestino][indiceDestino];
+      times[chaveDestino][indiceDestino] = jogadorOrigem;
+
+      times[chaveOrigem].sort((a, b) => b.nivel - a.nivel);
+      times[chaveDestino].sort((a, b) => b.nivel - a.nivel);
+
+      renderizarTimes(diaDestino, times);
+    }
 
     function iniciarArrasto(e, dia, chaveTime, indice) {
       dadosArrastados = { dia, chaveTime, indice };
       e.target.classList.add('arrastando');
       e.dataTransfer.setData('text/plain', JSON.stringify(dadosArrastados));
+    }
+
+    function finalizarArrasto(e) {
+      e.target.classList.remove('arrastando');
+      document.querySelectorAll('.membro-time-item.drag-over').forEach(el => el.classList.remove('drag-over'));
     }
 
     function permitirSoltar(e) {
@@ -1327,25 +1441,59 @@
       if (!dadosArrastados) return;
 
       const { dia: diaOrigem, chaveTime: chaveOrigem, indice: indiceOrigem } = dadosArrastados;
-
-      if (diaOrigem !== diaDestino) return;
-
-      let times = estadoControle[diaDestino].ultimosTimes;
-      if (!times) return;
-
-      let jogadorOrigem = times[chaveOrigem][indiceOrigem];
-      times[chaveOrigem][indiceOrigem] = times[chaveDestino][indiceDestino];
-      times[chaveDestino][indiceDestino] = jogadorOrigem;
-
-      times[chaveOrigem].sort((a, b) => b.nivel - a.nivel);
-      times[chaveDestino].sort((a, b) => b.nivel - a.nivel);
-
-      renderizarTimes(diaDestino, times);
+      executarTrocaJogadores(diaOrigem, chaveOrigem, indiceOrigem, diaDestino, chaveDestino, indiceDestino);
       dadosArrastados = null;
     }
 
-    function configurarToqueMobile(e, dia, chaveTime, indice) {
+    function iniciarToqueMobile(e, dia, chaveTime, indice) {
       dadosArrastados = { dia, chaveTime, indice };
+      const item = e.target.closest('.membro-time-item');
+      if (item) item.classList.add('arrastando');
+    }
+
+    function moverToqueMobile(e) {
+      if (!dadosArrastados) return;
+      e.preventDefault();
+
+      const toque = e.touches[0];
+      const elementoSobDedo = document.elementFromPoint(toque.clientX, toque.clientY);
+      const itemAlvo = elementoSobDedo ? elementoSobDedo.closest('.membro-time-item') : null;
+
+      if (itemAlvoToqueAtual && itemAlvoToqueAtual !== itemAlvo) {
+        itemAlvoToqueAtual.classList.remove('drag-over');
+      }
+
+      if (itemAlvo && itemAlvo.dataset.dia === dadosArrastados.dia) {
+        itemAlvo.classList.add('drag-over');
+        itemAlvoToqueAtual = itemAlvo;
+      } else {
+        itemAlvoToqueAtual = null;
+      }
+    }
+
+    function finalizarToqueMobile(e) {
+      document.querySelectorAll('.membro-time-item.arrastando').forEach(el => el.classList.remove('arrastando'));
+      document.querySelectorAll('.membro-time-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+      if (!dadosArrastados) return;
+
+      if (itemAlvoToqueAtual) {
+        const diaDestino = itemAlvoToqueAtual.dataset.dia;
+        const chaveDestino = itemAlvoToqueAtual.dataset.time;
+        const indiceDestino = parseInt(itemAlvoToqueAtual.dataset.indice, 10);
+
+        executarTrocaJogadores(
+          dadosArrastados.dia,
+          dadosArrastados.chaveTime,
+          dadosArrastados.indice,
+          diaDestino,
+          chaveDestino,
+          indiceDestino
+        );
+      }
+
+      dadosArrastados = null;
+      itemAlvoToqueAtual = null;
     }
 
     function compartilharWhatsApp(dia) {
