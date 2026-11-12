@@ -1254,7 +1254,8 @@
       tema: "padrao",
       ultimoPontuador: null,
       ranking: {},
-      dataRanking: ""
+      dataRanking: "",
+      ordensRodizio: {} // Salva a ordem customizada por time (ex: { "Amarelo": ["NomeA", "NomeB", ...] })
     };
 
     let elencoGlobal = [];
@@ -1665,7 +1666,7 @@
       listaRanking.innerHTML = html;
     }
 
-    /* --- LÓGICA DO RODÍZIO DE SAQUE CORRIGIDA (BASEADA NA POSIÇÃO DO CARD) --- */
+    /* --- LÓGICA DO RODÍZIO DE SAQUE COM PERSISTÊNCIA DA ORDEM --- */
     function atualizarRodizioSaque() {
       const corEsq = placarLocal.corEsquerda;
       const corDir = placarLocal.corDireita;
@@ -1730,17 +1731,41 @@
         return;
       }
 
-      const jogadores = elencoGlobal
-        .filter(j => j.time === cor && j.presente)
-        .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR', { sensitivity: 'base' }));
+      let jogadoresPresentes = elencoGlobal.filter(j => j.time === cor && j.presente);
 
-      if (jogadores.length === 0) {
+      if (jogadoresPresentes.length === 0) {
         container.innerHTML = `<div class="ranking-vazio">Sem integrantes</div>`;
         return;
       }
 
+      // Se já existe uma ordem salva no Firebase para este time, ordena com base nela
+      if (!placarLocal.ordensRodizio) {
+        placarLocal.ordensRodizio = {};
+      }
+
+      let ordemSalva = placarLocal.ordensRodizio[cor];
+      let jogadoresOrdenados = [];
+
+      if (ordemSalva && Array.isArray(ordemSalva)) {
+        // Filtra e ordena mantendo a preferência salva
+        let mapaJogadores = new Map(jogadoresPresentes.map(j => [j.nome, j]));
+        ordemSalva.forEach(nome => {
+          if (mapaJogadores.has(nome)) {
+            jogadoresOrdenados.push(mapaJogadores.get(nome));
+            mapaJogadores.delete(nome);
+          }
+        });
+        // Adiciona eventuais novos jogadores que entraram depois em ordem alfabética ao final
+        let restantes = Array.from(mapaJogadores.values()).sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR', { sensitivity: 'base' }));
+        jogadoresOrdenados.push(...restantes);
+      } else {
+        // Ordem padrão inicial alfabética
+        jogadoresOrdenados = jogadoresPresentes.sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR', { sensitivity: 'base' }));
+        placarLocal.ordensRodizio[cor] = jogadoresOrdenados.map(j => j.nome);
+      }
+
       let html = "";
-      jogadores.forEach((j, index) => {
+      jogadoresOrdenados.forEach((j, index) => {
         let nome3Letras = (j.nome || '').trim().substring(0, 3).toUpperCase();
         let pts = rodizioContadoresLocais[j.nome] || 0;
         let setaAtiva = (lado === 'esquerda' && index === indiceSaqueAtualEsq) || (lado === 'direita' && index === indiceSaqueAtualDir);
@@ -1756,7 +1781,7 @@
       });
       container.innerHTML = html;
 
-      configurarDragAndDrop(container, lado);
+      configurarDragAndDrop(container, lado, cor);
     }
 
     function atualizarContadoresEValoresRodizio(lado) {
@@ -1787,21 +1812,34 @@
       atualizarEstadoBloqueioVisual(lado);
     }
 
+    function salvarOrdemAtualRodizio(container, cor) {
+      if (!cor) return;
+      const wrappers = container.querySelectorAll('.wrapper-jogador-rodizio');
+      let novaOrdem = [];
+      wrappers.forEach(w => {
+        let nome = w.getAttribute('data-nome');
+        if (nome) novaOrdem.push(nome);
+      });
+
+      if (!placarLocal.ordensRodizio) {
+        placarLocal.ordensRodizio = {};
+      }
+      placarLocal.ordensRodizio[cor] = novaOrdem;
+      placarRef.set(placarLocal);
+    }
+
     function clicarAtletaRodizio(elementoBotao, lado, nomeJogador) {
       const container = document.getElementById(`lista-rodizio-${lado}`);
       if (!container) return;
       
-      // Obtém o wrapper do elemento clicado e descobre o índice visual atual no DOM
       const wrapperClicado = elementoBotao.closest('.wrapper-jogador-rodizio');
       const wrappers = [...container.querySelectorAll('.wrapper-jogador-rodizio')];
       const indexClicadoVisual = wrappers.indexOf(wrapperClicado);
       const indiceAtualSetar = (lado === 'esquerda') ? indiceSaqueAtualEsq : indiceSaqueAtualDir;
 
-      // Validação: Só permite pontuar se clicou no atleta que está NA POSIÇÃO DA SETINHA atual
       if (indexClicadoVisual === indiceAtualSetar) {
         if ("vibrate" in navigator) navigator.vibrate(40);
         
-        // Bloqueia reordenações futuras
         if (lado === 'esquerda') {
           rodizioBloqueadoEsq = true;
         } else {
@@ -1833,7 +1871,7 @@
       }
     }
 
-    function configurarDragAndDrop(container, lado) {
+    function configurarDragAndDrop(container, lado, cor) {
       const items = container.querySelectorAll('.item-rodizio-jogador');
 
       items.forEach(item => {
@@ -1851,6 +1889,7 @@
 
         item.addEventListener('dragend', () => {
           if (wrapper) wrapper.classList.remove('dragging');
+          salvarOrdemAtualRodizio(container, cor);
           atualizarContadoresEValoresRodizio(lado);
         });
 
@@ -1862,6 +1901,7 @@
 
         item.addEventListener('touchend', () => {
           if (wrapper) wrapper.classList.remove('dragging');
+          salvarOrdemAtualRodizio(container, cor);
           atualizarContadoresEValoresRodizio(lado);
         });
 
@@ -1879,6 +1919,7 @@
             } else {
               container.insertBefore(draggingWrapper, afterElement);
             }
+            salvarOrdemAtualRodizio(container, cor);
           }
         }, { passive: true });
       });
@@ -1896,6 +1937,7 @@
           } else {
             container.insertBefore(draggingWrapper, afterElement);
           }
+          salvarOrdemAtualRodizio(container, cor);
         }
       });
     }
@@ -1986,7 +2028,7 @@
         atualizarRankingVisual();
         atualizarRodizioSaque();
       } else {
-        const estadoInicial = { esquerda: 0, direita: 0, corEsquerda: "", corDireita: "", fase: null, tema: "padrao", ultimoPontuador: null, ranking: {}, dataRanking: obterDataAtualBrasil() };
+        const estadoInicial = { esquerda: 0, direita: 0, corEsquerda: "", corDireita: "", fase: null, tema: "padrao", ultimoPontuador: null, ranking: {}, dataRanking: obterDataAtualBrasil(), ordensRodizio: {} };
         placarRef.set(estadoInicial);
       }
     });
@@ -2083,8 +2125,9 @@
     }
 
     function zerarRanking() {
-      if (confirm("Deseja zerar todo o ranking de pontuadores dos jogadores?")) {
+      if (confirm("Deseja zerar todo o ranking de pontuadores e resetar as ordens de rodízio salvas?")) {
         placarLocal.ranking = {};
+        placarLocal.ordensRodizio = {}; // Reseta também as ordens salvas por time para o padrão alfabético
         placarRef.set(placarLocal);
       }
     }
