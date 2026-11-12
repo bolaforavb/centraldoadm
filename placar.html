@@ -418,6 +418,7 @@
       line-height: 1;
     }
 
+    /* Bolinha do Placar Principal */
     .bola-volei-indicador {
       position: absolute;
       bottom: 28px; 
@@ -437,6 +438,27 @@
     .bola-volei-indicador.ativo { opacity: 1; }
     #bola-esquerda { left: 12px; }
     #bola-direita { right: 12px; }
+
+    /* --- BOLINHA EXCLUSIVA DO MODO CONTROLE (10px e bottom 95px) --- */
+    .bola-volei-controle {
+      position: absolute;
+      bottom: 95px; 
+      font-size: 10px; 
+      line-height: 10px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      z-index: 5;
+      filter: drop-shadow(1px 1px 0 #12364e) 
+              drop-shadow(-1px -1px 0 #12364e) 
+              drop-shadow(1px -1px 0 #12364e) 
+              drop-shadow(-1px 1px 0 #12364e) 
+              drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+      pointer-events: none;
+    }
+
+    .bola-volei-controle.ativo { opacity: 1; }
+    #bola-ctrl-esquerda { left: 8px; }
+    #bola-ctrl-direita { right: 8px; }
 
     .controles-lado {
       position: absolute;
@@ -585,6 +607,7 @@
       flex-direction: column;
       align-items: center;
       padding: 12px 8px;
+      position: relative;
     }
 
     .linha-controle-seletor {
@@ -860,7 +883,26 @@
       font-weight: bold;
       font-size: 13px;
       text-transform: uppercase;
+    }
+
+    .rodizio-header-acoes {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-reset-rodizio-topo {
+      background: transparent;
+      border: none;
+      color: #e1d8cd;
+      font-size: 13px;
       cursor: pointer;
+      padding: 2px;
+      transition: transform 0.1s;
+    }
+
+    .btn-reset-rodizio-topo:active {
+      transform: scale(0.85);
     }
 
     .rodizio-conteudo {
@@ -1023,6 +1065,7 @@
 
         <!-- TIME ESQUERDO -->
         <div class="coluna-controle-time" id="col-ctrl-esquerda">
+          <span class="bola-volei-controle" id="bola-ctrl-esquerda">🏐</span>
           <div class="linha-controle-seletor">
             <select id="ctrl-cor-esquerda" onchange="mudarCorLocal('esquerda')">
               <option value="" class="op-padrao">Cor Esquerda</option>
@@ -1053,6 +1096,7 @@
 
         <!-- TIME DIREITO -->
         <div class="coluna-controle-time" id="col-ctrl-direita">
+          <span class="bola-volei-controle" id="bola-ctrl-direita">🏐</span>
           <div class="linha-controle-seletor">
             <select id="ctrl-cor-direita" onchange="mudarCorLocal('direita')">
               <option value="" class="op-padrao">Cor Direita</option>
@@ -1104,9 +1148,12 @@
   <!-- BLOCO DO RODÍZIO DE SAQUE (COMPACTO, CONTADOR E SETINHA DE SAQUE) -->
   <div class="container-placar-global" style="padding-top: 0;">
     <div class="painel-rodizio" id="painelRodizio">
-      <div class="rodizio-header" onclick="toggleRodizio()">
-        <span>🏐 Rodízio de Saque</span>
-        <span id="iconeToggleRodizio">▼</span>
+      <div class="rodizio-header">
+        <span onclick="toggleRodizio()" style="cursor: pointer; flex: 1;">🏐 Rodízio de Saque</span>
+        <div class="rodizio-header-acoes">
+          <button class="btn-reset-rodizio-topo" onclick="zerarOrdemRodizio()" title="Resetar Ordem do Rodízio">🔄</button>
+          <span id="iconeToggleRodizio" onclick="toggleRodizio()" style="cursor: pointer;">▼</span>
+        </div>
       </div>
       <div class="rodizio-conteudo" id="rodizioConteudo">
         <!-- Coluna Esquerda -->
@@ -1255,20 +1302,17 @@
       ultimoPontuador: null,
       ranking: {},
       dataRanking: "",
-      ordensRodizio: {} // Salva a ordem customizada por time (ex: { "Amarelo": ["NomeA", "NomeB", ...] })
+      ordensRodizio: {}
     };
 
     let elencoGlobal = [];
     let ultimaFaseProcessada = null;
     let diferencaTempoServidor = 0;
 
-    let corAnteriorEsquerdaRodizio = null;
-    let corAnteriorDireitaRodizio = null;
     let indiceSaqueAtualEsq = 0;
     let indiceSaqueAtualDir = 0;
     let rodizioContadoresLocais = {};
     
-    // Estados de bloqueio do rodízio por lado
     let rodizioBloqueadoEsq = false;
     let rodizioBloqueadoDir = false;
 
@@ -1477,6 +1521,13 @@
       }
     }
 
+    function zerarOrdemRodizio() {
+      if (confirm("Deseja resetar a ordem personalizada do rodízio de saque para a ordem alfabética padrão?")) {
+        placarLocal.ordensRodizio = {};
+        placarRef.set(placarLocal);
+      }
+    }
+
     function atualizarAparenciaSeletor(lado, cor) {
       const select = document.getElementById(`cor-${lado}`);
       const selectCtrl = document.getElementById(`ctrl-cor-${lado}`);
@@ -1666,7 +1717,7 @@
       listaRanking.innerHTML = html;
     }
 
-    /* --- LÓGICA DO RODÍZIO DE SAQUE COM PERSISTÊNCIA DA ORDEM --- */
+    /* --- LÓGICA DO RODÍZIO DE SAQUE COM PERSISTÊNCIA INDEPENDENTE --- */
     function atualizarRodizioSaque() {
       const corEsq = placarLocal.corEsquerda;
       const corDir = placarLocal.corDireita;
@@ -1688,41 +1739,16 @@
         tituloDir.style.color = estiloDir.text;
       }
 
-      if (corEsq !== corAnteriorEsquerdaRodizio) {
-        corAnteriorEsquerdaRodizio = corEsq;
-        indiceSaqueAtualEsq = 0;
-        rodizioBloqueadoEsq = false;
-        preencherColunaRodizio('esquerda', corEsq);
-      } else {
-        atualizarContadoresEValoresRodizio('esquerda');
-      }
+      preencherColunaRodizioSeNecessario('esquerda', corEsq);
+      preencherColunaRodizioSeNecessario('direita', corDir);
 
-      if (corDir !== corAnteriorDireitaRodizio) {
-        corAnteriorDireitaRodizio = corDir;
-        indiceSaqueAtualDir = 0;
-        rodizioBloqueadoDir = false;
-        preencherColunaRodizio('direita', corDir);
-      } else {
-        atualizarContadoresEValoresRodizio('direita');
-      }
-
+      atualizarContadoresEValoresRodizio('esquerda');
+      atualizarContadoresEValoresRodizio('direita');
       atualizarEstadoBloqueioVisual('esquerda');
       atualizarEstadoBloqueioVisual('direita');
     }
 
-    function atualizarEstadoBloqueioVisual(lado) {
-      const coluna = document.getElementById(`coluna-rodizio-${lado}`);
-      const bloqueado = (lado === 'esquerda') ? rodizioBloqueadoEsq : rodizioBloqueadoDir;
-      if (!coluna) return;
-
-      if (bloqueado) {
-        coluna.classList.add('bloqueado');
-      } else {
-        coluna.classList.remove('bloqueado');
-      }
-    }
-
-    function preencherColunaRodizio(lado, cor) {
+    function preencherColunaRodizioSeNecessario(lado, cor) {
       const container = document.getElementById(`lista-rodizio-${lado}`);
       if (!container) return;
 
@@ -1732,13 +1758,11 @@
       }
 
       let jogadoresPresentes = elencoGlobal.filter(j => j.time === cor && j.presente);
-
       if (jogadoresPresentes.length === 0) {
         container.innerHTML = `<div class="ranking-vazio">Sem integrantes</div>`;
         return;
       }
 
-      // Se já existe uma ordem salva no Firebase para este time, ordena com base nela
       if (!placarLocal.ordensRodizio) {
         placarLocal.ordensRodizio = {};
       }
@@ -1747,7 +1771,6 @@
       let jogadoresOrdenados = [];
 
       if (ordemSalva && Array.isArray(ordemSalva)) {
-        // Filtra e ordena mantendo a preferência salva
         let mapaJogadores = new Map(jogadoresPresentes.map(j => [j.nome, j]));
         ordemSalva.forEach(nome => {
           if (mapaJogadores.has(nome)) {
@@ -1755,33 +1778,41 @@
             mapaJogadores.delete(nome);
           }
         });
-        // Adiciona eventuais novos jogadores que entraram depois em ordem alfabética ao final
         let restantes = Array.from(mapaJogadores.values()).sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR', { sensitivity: 'base' }));
         jogadoresOrdenados.push(...restantes);
       } else {
-        // Ordem padrão inicial alfabética
         jogadoresOrdenados = jogadoresPresentes.sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR', { sensitivity: 'base' }));
         placarLocal.ordensRodizio[cor] = jogadoresOrdenados.map(j => j.nome);
       }
 
-      let html = "";
-      jogadoresOrdenados.forEach((j, index) => {
-        let nome3Letras = (j.nome || '').trim().substring(0, 3).toUpperCase();
-        let pts = rodizioContadoresLocais[j.nome] || 0;
-        let setaAtiva = (lado === 'esquerda' && index === indiceSaqueAtualEsq) || (lado === 'direita' && index === indiceSaqueAtualDir);
+      const wrappersAtuais = [...container.querySelectorAll('.wrapper-jogador-rodizio')];
+      const nomesAtuais = wrappersAtuais.map(w => w.getAttribute('data-nome'));
+      const nomesDesejados = jogadoresOrdenados.map(j => j.nome);
 
-        html += `
-          <div class="wrapper-jogador-rodizio" data-nome="${j.nome}">
-            <div class="item-rodizio-jogador" draggable="true" title="${j.nome}" onclick="clicarAtletaRodizio(this, '${lado}', '${j.nome.replace(/'/g, "\\'")}')">
-              ${nome3Letras} (<span class="pts-atleta">${pts}</span>)
+      const eDiferente = nomesAtuais.length !== nomesDesejados.length || nomesAtuais.some((nome, idx) => nome !== nomesDesejados[idx]);
+
+      if (eDiferente || wrappersAtuais.length === 0) {
+        if (lado === 'esquerda') indiceSaqueAtualEsq = 0;
+        if (lado === 'direita') indiceSaqueAtualDir = 0;
+
+        let html = "";
+        jogadoresOrdenados.forEach((j, index) => {
+          let nome3Letras = (j.nome || '').trim().substring(0, 3).toUpperCase();
+          let pts = rodizioContadoresLocais[j.nome] || 0;
+          let setaAtiva = (lado === 'esquerda' && index === indiceSaqueAtualEsq) || (lado === 'direita' && index === indiceSaqueAtualDir);
+
+          html += `
+            <div class="wrapper-jogador-rodizio" data-nome="${j.nome}">
+              <div class="item-rodizio-jogador" draggable="true" title="${j.nome}" onclick="clicarAtletaRodizio(this, '${lado}', '${j.nome.replace(/'/g, "\\'")}')">
+                ${nome3Letras} (<span class="pts-atleta">${pts}</span>)
+              </div>
+              <div class="indicador-saque-seta ${setaAtiva ? 'ativo' : ''}">▲</div>
             </div>
-            <div class="indicador-saque-seta ${setaAtiva ? 'ativo' : ''}">▲</div>
-          </div>
-        `;
-      });
-      container.innerHTML = html;
-
-      configurarDragAndDrop(container, lado, cor);
+          `;
+        });
+        container.innerHTML = html;
+        configurarDragAndDrop(container, lado, cor);
+      }
     }
 
     function atualizarContadoresEValoresRodizio(lado) {
@@ -1810,6 +1841,18 @@
       });
 
       atualizarEstadoBloqueioVisual(lado);
+    }
+
+    function atualizarEstadoBloqueioVisual(lado) {
+      const coluna = document.getElementById(`coluna-rodizio-${lado}`);
+      const bloqueado = (lado === 'esquerda') ? rodizioBloqueadoEsq : rodizioBloqueadoDir;
+      if (!coluna) return;
+
+      if (bloqueado) {
+        coluna.classList.add('bloqueado');
+      } else {
+        coluna.classList.remove('bloqueado');
+      }
     }
 
     function salvarOrdemAtualRodizio(container, cor) {
@@ -1971,8 +2014,6 @@
         elencoGlobal = [];
       }
       atualizarBotoesIntegrantes();
-      corAnteriorEsquerdaRodizio = null;
-      corAnteriorDireitaRodizio = null;
       atualizarRodizioSaque();
     });
 
@@ -1995,6 +2036,8 @@
 
         const bolaEsq = document.getElementById('bola-esquerda');
         const bolaDir = document.getElementById('bola-direita');
+        const bolaCtrlEsq = document.getElementById('bola-ctrl-esquerda');
+        const bolaCtrlDir = document.getElementById('bola-ctrl-direita');
 
         if(elemEsq) elemEsq.innerText = placarLocal.esquerda || 0;
         if(elemDir) elemDir.innerText = placarLocal.direita || 0;
@@ -2006,16 +2049,22 @@
         if(ctrlSelEsq) ctrlSelEsq.value = placarLocal.corEsquerda || "";
         if(ctrlSelDir) ctrlSelDir.value = placarLocal.corDireita || "";
 
-        if (bolaEsq && bolaDir) {
+        if (bolaEsq && bolaDir && bolaCtrlEsq && bolaCtrlDir) {
           if (placarLocal.ultimoPontuador === 'esquerda') {
             bolaEsq.classList.add('ativo');
             bolaDir.classList.remove('ativo');
+            bolaCtrlEsq.classList.add('ativo');
+            bolaCtrlDir.classList.remove('ativo');
           } else if (placarLocal.ultimoPontuador === 'direita') {
             bolaDir.classList.add('ativo');
             bolaEsq.classList.remove('ativo');
+            bolaCtrlDir.classList.add('ativo');
+            bolaCtrlEsq.classList.remove('ativo');
           } else {
             bolaEsq.classList.remove('ativo');
             bolaDir.classList.remove('ativo');
+            bolaCtrlEsq.classList.remove('ativo');
+            bolaCtrlDir.classList.remove('ativo');
           }
         }
 
@@ -2125,9 +2174,8 @@
     }
 
     function zerarRanking() {
-      if (confirm("Deseja zerar todo o ranking de pontuadores e resetar as ordens de rodízio salvas?")) {
+      if (confirm("Deseja zerar todo o ranking de pontuadores?")) {
         placarLocal.ranking = {};
-        placarLocal.ordensRodizio = {}; // Reseta também as ordens salvas por time para o padrão alfabético
         placarRef.set(placarLocal);
       }
     }
