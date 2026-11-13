@@ -103,33 +103,6 @@
     }
     input[type="file"] { padding: 7px; }
 
-    .form-inline {
-      display: flex;
-      gap: 8px;
-      width: 100%;
-    }
-
-    .form-inline input {
-      flex: 2; /* Campo de texto menor proporcionalmente */
-    }
-
-    /* Botão de selecionar foto com a mesma formatação do botão Add */
-    .btn-selecionar-foto-inline {
-      padding: 10px 16px;
-      background-color: #d9b246;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 14px;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: background 0.2s;
-    }
-    .btn-selecionar-foto-inline:hover { 
-      background-color: #af8a23; 
-    }
-
     /* Formulário específico para o bloco de Registros */
     .form-registros {
       display: flex;
@@ -207,16 +180,6 @@
       overflow-y: auto;
     }
 
-    .item-fidelidade {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 10px;
-      background-color: #f7f5f2;
-      border-radius: 8px;
-      border-left: 3px solid #d9b246;
-    }
-
     /* Estilo específico para itens do bloco Registros */
     .item-registro {
       display: flex;
@@ -280,55 +243,6 @@
       color: #12364e;
     }
 
-    .nome-diarista {
-      font-size: 12px;
-      font-weight: 500;
-      color: #12364e;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-    .nome-diarista:hover {
-      color: #d9b246;
-      text-decoration: underline;
-    }
-
-    .bloco-controles {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .botoes-setas { 
-      display: flex; 
-      align-items: center; 
-      gap: 4px; 
-    }
-
-    .btn-seta-up, .btn-seta-down {
-      background: none;
-      border: none;
-      color: #d9b246;
-      font-size: 14px;
-      padding: 2px;
-      line-height: 1;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .valor-presenca {
-      font-size: 12px;
-      font-weight: bold;
-      background: #12364e;
-      color: white;
-      padding: 2px 6px;
-      border-radius: 4px;
-      min-width: 26px;
-      text-align: center;
-    }
-
     .btn-deletar-ranking {
       background: none;
       border: none;
@@ -348,16 +262,6 @@
       padding: 2px;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
-    }
-
-    .label-presencas-topo {
-      font-size: 10px;
-      font-weight: bold;
-      text-transform: uppercase;
-      color: #12364e;
-      opacity: 0.7;
-      text-align: center;
-      min-width: 26px;
     }
 
     /* Estilos de Avatar / Foto */
@@ -387,18 +291,6 @@
       flex-shrink: 0;
     }
 
-    /* Rodapé Informativo do Bloco */
-    .bloco-legenda {
-      font-size: 11px;
-      color: #12364e;
-      opacity: 0.7;
-      text-align: center;
-      margin-top: 10px;
-      border-top: 1px solid rgba(0,0,0,0.06);
-      padding-top: 8px;
-      line-height: 1.4;
-    }
-
     /* Modais Overlay */
     .modal-overlay {
       position: fixed;
@@ -424,13 +316,14 @@
       flex-direction: column;
       gap: 12px;
       box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      overflow-y: auto;
     }
 
     .galeria-fotos-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      max-height: 250px;
+      max-height: 200px;
       overflow-y: auto;
       padding: 4px;
     }
@@ -496,31 +389,6 @@
 
   <main class="main-container">
     
-    <!-- Bloco Novo Diarista -->
-    <div class="bloco-card">
-      <div class="titulo-secao">Novo Diarista</div>
-      <form id="form-nova-diarista" class="form-inline">
-        <input type="text" id="nome-novo" placeholder="Nome do Diarista" required>
-        <button type="button" class="btn-selecionar-foto-inline" onclick="abrirModalFotosParaNovoDiarista()" title="Selecionar foto inicial">Selecionar foto</button>
-        <button type="submit" class="btn-add-tabela">Add</button>
-      </form>
-    </div>
-
-    <!-- Bloco de Presenças -->
-    <div class="bloco-card">
-      <div class="header-resultado-linha">
-        <div class="titulo-secao">Presenças</div>
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <div class="label-presencas-topo">Qtd</div>
-          <div class="label-presencas-topo" style="color: #d9b246;" title="Total de Diárias Grátis">Grátis</div>
-        </div>
-      </div>
-      <div class="lista-fidelidade" id="tabela-diaristas"></div>
-      <div class="bloco-legenda">
-        Dica: Clique na foto para alterá-la ou no nome do diarista para visualizá-la em tamanho maior.
-      </div>
-    </div>
-
     <!-- Bloco de Registros -->
     <div class="bloco-card">
       <div class="header-resultado-linha">
@@ -531,7 +399,7 @@
       </div>
       <form id="form-novo-registro" class="form-registros">
         <div class="form-registros-linha">
-          <input type="text" id="reg-nome" placeholder="Nome do Diarista" required>
+          <input type="text" id="reg-nome" placeholder="Nome do diarista" required>
           <button type="submit" class="btn-add-tabela">Add</button>
         </div>
         <div class="datas-grid">
@@ -563,7 +431,7 @@
 
   </main>
 
-  <!-- Modal para Seleção e Upload de Fotos -->
+  <!-- Modal para Seleção e Upload de Fotos (Usado na Edição de Registro) -->
   <div class="modal-overlay" id="modal-fotos">
     <div class="modal-content">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px;">
@@ -571,7 +439,6 @@
         <button onclick="fecharModalFotos()" style="background:none; border:none; font-size:16px; font-weight:bold; cursor:pointer; color:#12364e;">✕</button>
       </div>
       
-      <!-- Seção de Upload de Nova Foto -->
       <div style="background-color: #f7f5f2; padding: 10px; border-radius: 8px; display: flex; flex-direction: column; gap: 6px;">
         <label for="input-upload-nova-foto" style="font-size: 11px; font-weight: bold; color: #12364e; text-transform: uppercase;">Enviar nova foto do dispositivo</label>
         <div style="display: flex; gap: 8px; align-items: center;">
@@ -581,9 +448,7 @@
       </div>
 
       <div style="font-size: 11px; font-weight: bold; color: #12364e; margin-top: 4px;">Ou selecione do banco de arquivos:</div>
-      <div id="lista-fotos-galeria" class="galeria-fotos-grid">
-        <!-- Fotos carregadas do banco de dados arquivos_enviados -->
-      </div>
+      <div id="lista-fotos-galeria" class="galeria-fotos-grid"></div>
     </div>
   </div>
 
@@ -591,22 +456,35 @@
   <div class="modal-overlay" id="modal-ver-foto">
     <div class="modal-content" style="align-items: center; text-align: center;">
       <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px;">
-        <span id="titulo-ver-foto" class="titulo-secao" style="margin:0; border:none; padding:0;">Foto da Diarista</span>
+        <span id="titulo-ver-foto" class="titulo-secao" style="margin:0; border:none; padding:0;">Foto do Diarista</span>
         <button onclick="fecharModalVerFoto()" style="background:none; border:none; font-size:16px; font-weight:bold; cursor:pointer; color:#12364e;">✕</button>
       </div>
-      <div id="conteudo-ver-foto" style="width: 100%; display: flex; justify-content: center; padding: 10px 0;">
-        <!-- Imagem ampliada ou aviso -->
-      </div>
+      <div id="conteudo-ver-foto" style="width: 100%; display: flex; justify-content: center; padding: 10px 0;"></div>
     </div>
   </div>
 
-  <!-- Modal para Edição de Registro -->
+  <!-- Modal para Edição de Registro (Incluindo alteração de Foto) -->
   <div class="modal-overlay" id="modal-editar-registro">
     <div class="modal-content">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 6px;">
-        <span class="titulo-secao" style="margin:0; border:none; padding:0;">Editar Registro</span>
+        <span class="titulo-secao" style="margin:0; border:none; padding:0;">Editar Registro e Foto</span>
         <button onclick="fecharModalEditarRegistro()" style="background:none; border:none; font-size:16px; font-weight:bold; cursor:pointer; color:#12364e;">✕</button>
       </div>
+
+      <!-- Seção de Foto dentro do Modal de Edição -->
+      <div style="display: flex; align-items: center; gap: 12px; background: #f7f5f2; padding: 10px; border-radius: 8px;">
+        <div id="preview-foto-edicao-container"></div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+          <label style="font-size: 11px; font-weight: bold; color: #12364e; text-transform: uppercase;">Foto do Diarista</label>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" class="btn-add-tabela" onclick="abrirSeletorGaleriaEdicao()" style="padding: 6px 10px; font-size: 11px; flex: 1;">SELECIONAR DO BANCO</button>
+            <label class="btn-add-tabela" style="padding: 6px 10px; font-size: 11px; flex: 1; text-align: center; cursor: pointer; background-color: #12364e;">
+              SELECIONAR DO DISPOSITIVO <input type="file" id="input-upload-edicao" accept="image/*" style="display: none;" onchange="fazerUploadFotoEdicao(this)">
+            </label>
+          </div>
+        </div>
+      </div>
+
       <form id="form-editar-registro" class="form-registros">
         <input type="hidden" id="edit-reg-id">
         <div class="campo-data-grupo" style="align-items: flex-start;">
@@ -635,7 +513,7 @@
             </div>
           </div>
         </div>
-        <button type="submit" class="btn-add-tabela" style="margin-top: 8px;">Salvar Alterações</button>
+        <button type="submit" class="btn-add-tabela" style="margin-top: 8px;">Salvar alterações</button>
       </form>
     </div>
   </div>
@@ -649,7 +527,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getDatabase, ref, onValue, set, get, child, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, onValue, set, get, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDj8QWo0f_n5Tn56ka7UzIGSUo9OmpGv9U",
@@ -661,7 +539,6 @@
     const db = getDatabase(app);
     setPersistence(auth, browserSessionPersistence).catch(console.error);
 
-    // Função centralizada para registrar histórico de alterações na tabela compartilhada
     function registrarAcaoNoHistorico(descricaoAcao) {
       let nomeUsuario = "Desconhecido";
       if (auth.currentUser) {
@@ -682,7 +559,6 @@
         let historicoAtual = dadosAtuais.historico || [];
 
         historicoAtual.unshift(novaAlteracao);
-
         if (historicoAtual.length > 50) {
           historicoAtual = historicoAtual.slice(0, 50);
         }
@@ -700,28 +576,14 @@
       }
     });
 
-    let BD_Diaristas = {
-      "Ana Beatriz": { presencas: 0, foto: "" },
-      "Camila Souza": { presencas: 0, foto: "" },
-      "Fernanda Lima": { presencas: 0, foto: "" },
-      "Juliana Mendes": { presencas: 0, foto: "" },
-      "Larissa Oliveira": { presencas: 0, foto: "" },
-      "Mariana Costa": { presencas: 0, foto: "" },
-      "Patrícia Santos": { presencas: 0, foto: "" },
-      "Renata Almeida": { presencas: 0, foto: "" },
-      "Tatiane Rocha": { presencas: 0, foto: "" },
-      "Vanessa Martins": { presencas: 0, foto: "" }
-    };
-
-    let BD_DiariasGratis = {};
+    let BD_Diaristas = {};
     let BD_Registros = {};
     let BD_FotosDisponiveis = [];
     let diaristaSelecionadaParaFoto = null;
-    let fotoTemporariaNovoDiarista = "";
+    let fotoTemporariaEdicao = "";
 
     function salvarDados() {
       set(ref(db, 'diarista_fidelidade'), BD_Diaristas);
-      set(ref(db, 'diarias_gratis'), BD_DiariasGratis);
       set(ref(db, 'registros_diaristas'), BD_Registros);
     }
 
@@ -736,18 +598,8 @@
             BD_Diaristas[nome] = { presencas: val.presencas || 0, foto: val.foto || "" };
           }
         }
-      } else {
-        salvarDados();
       }
-      atualizarTabelaVisual();
-    });
-
-    onValue(ref(db, 'diarias_gratis'), (snapshot) => {
-      const dadosNuvem = snapshot.val();
-      if (dadosNuvem) {
-        BD_DiariasGratis = dadosNuvem;
-      }
-      atualizarTabelaVisual();
+      atualizarTabelaRegistrosVisual();
     });
 
     onValue(ref(db, 'registros_diaristas'), (snapshot) => {
@@ -763,11 +615,9 @@
       BD_FotosDisponiveis = [];
       if (val) {
         const listaArquivos = Array.isArray(val) ? val : Object.values(val);
-        
         listaArquivos.forEach(item => {
           if (!item) return;
           const urlOuBase64 = item.dadosBase64 || item.url || item.base64 || item.arquivo || (typeof item === 'string' ? item : null);
-          
           if (urlOuBase64) {
             const ehUrlOuBase64 = typeof urlOuBase64 === 'string' && (
               urlOuBase64.startsWith('data:image/') || 
@@ -775,7 +625,6 @@
               urlOuBase64.startsWith('https://') ||
               /\.(jpg|jpeg|png|gif|webp)$/i.test(urlOuBase64)
             );
-
             const ehTipoImagem = item.tipoMime && typeof item.tipoMime === 'string' && item.tipoMime.startsWith('image/');
 
             if (ehUrlOuBase64 || ehTipoImagem) {
@@ -806,20 +655,6 @@
       }
     }
 
-    window.abrirModalFotos = function(nomeDiarista) {
-      diaristaSelecionadaParaFoto = nomeDiarista;
-      document.getElementById('input-upload-nova-foto').value = '';
-      renderizarGaleriaFotosModal();
-      document.getElementById('modal-fotos').style.display = 'flex';
-    }
-
-    window.abrirModalFotosParaNovoDiarista = function() {
-      diaristaSelecionadaParaFoto = "__NOVO_DIARISTA__";
-      document.getElementById('input-upload-nova-foto').value = '';
-      renderizarGaleriaFotosModal();
-      document.getElementById('modal-fotos').style.display = 'flex';
-    }
-
     window.fecharModalFotos = function() {
       document.getElementById('modal-fotos').style.display = 'none';
       diaristaSelecionadaParaFoto = null;
@@ -836,7 +671,6 @@
       const reader = new FileReader();
       reader.onload = function(e) {
         const base64Data = e.target.result;
-        
         const novoArquivoRef = push(ref(db, 'arquivos_enviados'));
         set(novoArquivoRef, {
           nome: file.name,
@@ -855,17 +689,51 @@
     }
 
     function selecionarFotoParaDiarista(url) {
-      if (diaristaSelecionadaParaFoto === "__NOVO_DIARISTA__") {
-        fotoTemporariaNovoDiarista = url;
-        const btnFoto = document.querySelector('.btn-selecionar-foto-inline');
-        btnFoto.innerText = "Foto selecionada ✓";
-        btnFoto.style.backgroundColor = '#2e7d32';
+      if (diaristaSelecionadaParaFoto === "__EDICAO_REGISTRO__") {
+        fotoTemporariaEdicao = url;
+        atualizarVisualPreviewEdicao(url);
         fecharModalFotos();
-      } else if (diaristaSelecionadaParaFoto && BD_Diaristas[diaristaSelecionadaParaFoto]) {
-        BD_Diaristas[diaristaSelecionadaParaFoto].foto = url;
-        salvarDados();
-        registrarAcaoNoHistorico(`atualizou a foto da diarista "${diaristaSelecionadaParaFoto}"`);
-        fecharModalFotos();
+      }
+    }
+
+    window.abrirSeletorGaleriaEdicao = function() {
+      diaristaSelecionadaParaFoto = "__EDICAO_REGISTRO__";
+      document.getElementById('input-upload-nova-foto').value = '';
+      renderizarGaleriaFotosModal();
+      document.getElementById('modal-fotos').style.display = 'flex';
+    }
+
+    window.fazerUploadFotoEdicao = function(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const base64Data = e.target.result;
+        const novoArquivoRef = push(ref(db, 'arquivos_enviados'));
+        set(novoArquivoRef, {
+          nome: file.name,
+          tipoMime: file.type,
+          dadosBase64: base64Data,
+          dataEnvio: new Date().toISOString()
+        }).then(() => {
+          fotoTemporariaEdicao = base64Data;
+          atualizarVisualPreviewEdicao(base64Data);
+          registrarAcaoNoHistorico(`enviou nova foto (${file.name}) ao banco via edição`);
+        }).catch((err) => {
+          console.error("Erro ao enviar foto:", err);
+          alert("Erro ao enviar a foto para o banco.");
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function atualizarVisualPreviewEdicao(url) {
+      const container = document.getElementById('preview-foto-edicao-container');
+      if (url) {
+        container.innerHTML = `<img src="${url}" class="avatar-circle" style="width: 42px; height: 42px;">`;
+      } else {
+        container.innerHTML = `<div class="avatar-placeholder" style="width: 42px; height: 42px; font-size: 10px;">Sem foto</div>`;
       }
     }
 
@@ -895,36 +763,6 @@
       document.getElementById('modal-ver-foto').style.display = 'none';
     }
 
-    window.renomearDiarista = function(nomeAntigo) {
-      const novoNome = prompt("Digite o novo nome para a diarista:", nomeAntigo);
-      if (!novoNome || novoNome.trim() === "") return;
-      const nomeFormatado = novoNome.trim();
-
-      if (nomeFormatado === nomeAntigo) return;
-
-      if (BD_Diaristas.hasOwnProperty(nomeFormatado)) {
-        alert("Já existe uma diarista com este nome!");
-        return;
-      }
-
-      BD_Diaristas[nomeFormatado] = BD_Diaristas[nomeAntigo];
-      delete BD_Diaristas[nomeAntigo];
-
-      if (BD_DiariasGratis.hasOwnProperty(nomeAntigo)) {
-        BD_DiariasGratis[nomeFormatado] = BD_DiariasGratis[nomeAntigo];
-        delete BD_DiariasGratis[nomeAntigo];
-      }
-
-      for (let id in BD_Registros) {
-        if (BD_Registros[id].nome === nomeAntigo) {
-          BD_Registros[id].nome = nomeFormatado;
-        }
-      }
-
-      salvarDados();
-      registrarAcaoNoHistorico(`renomeou a diarista de "${nomeAntigo}" para "${nomeFormatado}"`);
-    };
-
     window.abrirModalEditarRegistro = function(id) {
       const reg = BD_Registros[id];
       if (!reg) return;
@@ -935,6 +773,10 @@
       document.getElementById('edit-reg-p2').value = reg.p2 || '';
       document.getElementById('edit-reg-p3').value = reg.p3 || '';
       document.getElementById('edit-reg-gratis').value = reg.gratis || '';
+
+      const nomeDiarista = reg.nome;
+      fotoTemporariaEdicao = (BD_Diaristas[nomeDiarista] && BD_Diaristas[nomeDiarista].foto) ? BD_Diaristas[nomeDiarista].foto : '';
+      atualizarVisualPreviewEdicao(fotoTemporariaEdicao);
 
       document.getElementById('modal-editar-registro').style.display = 'flex';
     }
@@ -949,6 +791,8 @@
       if (!id || !BD_Registros[id]) return;
 
       const nomeDiarista = document.getElementById('edit-reg-nome').value.trim();
+      const nomeAntigo = BD_Registros[id].nome;
+
       BD_Registros[id] = {
         nome: nomeDiarista,
         p1: document.getElementById('edit-reg-p1').value,
@@ -957,53 +801,23 @@
         gratis: document.getElementById('edit-reg-gratis').value
       };
 
-      salvarDados();
-      registrarAcaoNoHistorico(`editou o registro da diarista "${nomeDiarista}"`);
-      fecharModalEditarRegistro();
-    });
-
-    function atualizarTabelaVisual() {
-      const container = document.getElementById('tabela-diaristas');
-      container.innerHTML = '';
-
-      const diaristasOrdenadas = Object.entries(BD_Diaristas).sort();
-
-      if (diaristasOrdenadas.length === 0) {
-        container.innerHTML = `<div style="text-align:center; padding: 15px; font-size:12px; opacity:0.6;">Nenhuma diarista cadastrada.</div>`;
-      } else {
-        diaristasOrdenadas.forEach(([nome, dados]) => {
-          const presencas = dados.presencas;
-          const foto = dados.foto;
-          const totalGratis = BD_DiariasGratis[nome] || 0;
-          const item = document.createElement('div');
-          item.className = 'item-fidelidade';
-          
-          let elementoFoto = foto 
-            ? `<img src="${foto}" class="avatar-circle" onclick="abrirModalFotos('${nome}')" title="Alterar foto">` 
-            : `<div class="avatar-placeholder" onclick="abrirModalFotos('${nome}')" title="Adicionar foto">+Foto</div>`;
-
-          item.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; margin-right: 6px;">
-              ${elementoFoto}
-              <span class="nome-diarista" onclick="abrirModalVerFoto('${nome}')" title="Ver foto de ${nome}">${nome}</span>
-              <button class="btn-editar-registro" onclick="renomearDiarista('${nome}')" title="Editar nome">✏️</button>
-            </div>
-            <div class="bloco-controles">
-              <div class="botoes-setas">
-                <button class="btn-seta-up" onclick="alterarPresenca('${nome}', 1)">▲</button>
-                <span class="valor-presenca" title="Presenças">${presencas}</span>
-                <button class="btn-seta-down" onclick="alterarPresenca('${nome}', -1)">▼</button>
-              </div>
-              <span class="valor-presenca" style="background-color: #d9b246;" title="Total de Diárias Grátis">${totalGratis}</span>
-              <button class="btn-deletar-ranking" onclick="excluirDiarista('${nome}')" title="Excluir diarista">✕</button>
-            </div>
-          `;
-          container.appendChild(item);
-        });
+      if (nomeAntigo && nomeAntigo !== nomeDiarista) {
+        if (BD_Diaristas[nomeAntigo]) {
+          BD_Diaristas[nomeDiarista] = BD_Diaristas[nomeAntigo];
+          delete BD_Diaristas[nomeAntigo];
+        }
       }
 
-      atualizarTabelaRegistrosVisual();
-    }
+      if (!BD_Diaristas[nomeDiarista]) {
+        BD_Diaristas[nomeDiarista] = { presencas: 0, foto: fotoTemporariaEdicao };
+      } else {
+        BD_Diaristas[nomeDiarista].foto = fotoTemporariaEdicao;
+      }
+
+      salvarDados();
+      registrarAcaoNoHistorico(`editou o registro e/ou foto do diarista "${nomeDiarista}"`);
+      fecharModalEditarRegistro();
+    });
 
     function formatarDataBR(dataStr) {
       if (!dataStr) return '-';
@@ -1047,7 +861,6 @@
 
         const fotoDiarista = (BD_Diaristas[reg.nome] && BD_Diaristas[reg.nome].foto) ? BD_Diaristas[reg.nome].foto : '';
         
-        // No bloco de registros, o clique na foto agora abre em tamanho maior (abrirModalVerFoto)
         let elementoFotoRegistro = fotoDiarista 
           ? `<img src="${fotoDiarista}" class="avatar-circle" onclick="abrirModalVerFoto('${reg.nome}')" title="Ver foto de ${reg.nome}">` 
           : `<div class="avatar-placeholder" style="cursor: default; opacity: 0.5;" title="Sem foto">+Foto</div>`;
@@ -1059,7 +872,7 @@
             </div>
             <span class="nome-diarista-centralizado">${reg.nome}</span>
             <div style="display: flex; align-items: center; gap: 4px;">
-              <button class="btn-editar-registro" onclick="abrirModalEditarRegistro('${id}')" title="Editar registro">✏️</button>
+              <button class="btn-editar-registro" onclick="abrirModalEditarRegistro('${id}')" title="Editar registro e foto">✏️</button>
               <button class="btn-deletar-ranking" onclick="excluirRegistro('${id}')" title="Excluir registro">✕</button>
             </div>
           </div>
@@ -1086,49 +899,6 @@
       });
     }
 
-    window.alterarPresenca = function(nome, delta) {
-      let diarista = BD_Diaristas[nome];
-      if (!diarista) {
-        diarista = { presencas: 0, foto: "" };
-        BD_Diaristas[nome] = diarista;
-      }
-
-      let novoValor = diarista.presencas + delta;
-      if (novoValor < 0) novoValor = 0;
-
-      let ganhouGratis = false;
-      if (novoValor >= 3) {
-        novoValor = 0; 
-        BD_DiariasGratis[nome] = (BD_DiariasGratis[nome] || 0) + 1;
-        ganhouGratis = true;
-      }
-
-      diarista.presencas = novoValor;
-      salvarDados();
-      registrarAcaoNoHistorico(`alterou presença da diarista "${nome}" (presenças: ${diarista.presencas}${ganhouGratis ? ', ganhou 1 dia grátis' : ''})`);
-    }
-
-    document.getElementById('form-nova-diarista').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const input = document.getElementById('nome-novo');
-      const nome = input.value.trim();
-
-      if (BD_Diaristas.hasOwnProperty(nome)) {
-        alert("Esta diarista já está cadastrada!");
-        return;
-      }
-
-      BD_Diaristas[nome] = { presencas: 0, foto: fotoTemporariaNovoDiarista };
-      salvarDados();
-      registrarAcaoNoHistorico(`cadastrou a nova diarista "${nome}"`);
-
-      input.value = '';
-      fotoTemporariaNovoDiarista = "";
-      const btnFoto = document.querySelector('.btn-selecionar-foto-inline');
-      btnFoto.innerText = "Selecionar foto";
-      btnFoto.style.backgroundColor = '#d9b246';
-    });
-
     document.getElementById('form-novo-registro').addEventListener('submit', function(e) {
       e.preventDefault();
       const nome = document.getElementById('reg-nome').value.trim();
@@ -1140,6 +910,10 @@
       const idUnico = 'reg_' + Date.now();
       BD_Registros[idUnico] = { nome, p1, p2, p3, gratis };
 
+      if (!BD_Diaristas[nome]) {
+        BD_Diaristas[nome] = { presencas: 0, foto: "" };
+      }
+
       salvarDados();
       registrarAcaoNoHistorico(`adicionou registro de datas para a diarista "${nome}"`);
 
@@ -1149,15 +923,6 @@
       document.getElementById('reg-p3').value = '';
       document.getElementById('reg-gratis').value = '';
     });
-
-    window.excluirDiarista = function(nome) {
-      if (confirm(`Remover "${nome}" permanentemente da lista?`)) {
-        delete BD_Diaristas[nome];
-        delete BD_DiariasGratis[nome];
-        salvarDados();
-        registrarAcaoNoHistorico(`removeu a diarista "${nome}"`);
-      }
-    }
 
     window.excluirRegistro = function(id) {
       if (confirm(`Remover este registro?`)) {
