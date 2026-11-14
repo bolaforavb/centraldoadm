@@ -413,7 +413,7 @@
     /* Indicador de Setinha Azul Royal flutuante absoluto acima da pontuação */
     .indicador-seta-pontuador {
       position: absolute;
-      top: calc(50% - 225px); /* Posicionado de forma fixa sobre o número */
+      top: calc(50% - 225px);
       font-size: 80px;
       line-height: 1;
       color: #12364e;
@@ -1377,6 +1377,25 @@
       .then(decoded => { audioBufferFinal = decoded; })
       .catch(err => console.error("Erro ao carregar anuncio_finais.wav:", err));
 
+    function salvarPlacarSeguro() {
+      const payloadSeguro = {
+        esquerda: placarLocal.esquerda || 0,
+        direita: placarLocal.direita || 0,
+        corEsquerda: placarLocal.corEsquerda || "",
+        corDireita: placarLocal.corDireita || "",
+        fase: placarLocal.fase || null,
+        tema: placarLocal.tema || "padrao",
+        ultimoPontuador: placarLocal.ultimoPontuador || null,
+        ranking: placarLocal.ranking || {},
+        dataRanking: placarLocal.dataRanking || obterDataAtualBrasil(),
+        ordensRodizio: placarLocal.ordensRodizio || {},
+        ultimoJogadorEsquerda: placarLocal.ultimoJogadorEsquerda || null,
+        ultimoJogadorDireita: placarLocal.ultimoJogadorDireita || null
+      };
+      placarLocal = payloadSeguro;
+      return placarRef.set(payloadSeguro).catch(err => console.error("Erro ao salvar no Firebase:", err));
+    }
+
     function tocarAudioUnico(buffer) {
       if (!buffer) return;
       try {
@@ -1495,10 +1514,10 @@
       if (placarLocal.dataRanking && placarLocal.dataRanking !== hojeStr) {
         placarLocal.ranking = {};
         placarLocal.dataRanking = hojeStr;
-        placarRef.set(placarLocal);
+        salvarPlacarSeguro();
       } else if (!placarLocal.dataRanking) {
         placarLocal.dataRanking = hojeStr;
-        placarRef.set(placarLocal);
+        salvarPlacarSeguro();
       }
     }
 
@@ -1563,7 +1582,7 @@
     function zerarOrdemRodizio() {
       if (confirm("Deseja resetar a ordem personalizada do rodízio de saque para a ordem alfabética padrão?")) {
         placarLocal.ordensRodizio = {};
-        placarRef.set(placarLocal);
+        salvarPlacarSeguro();
       }
     }
 
@@ -1620,8 +1639,11 @@
         for (let option of sel.options) {
           if (option.value === "") {
             option.style.display = "block";
+            option.disabled = false;
           } else {
-            option.style.display = (option.value === valDir) ? "none" : "block";
+            const emUsoNoOutroLado = (option.value === valDir);
+            option.style.display = emUsoNoOutroLado ? "none" : "block";
+            option.disabled = emUsoNoOutroLado;
           }
         }
       });
@@ -1631,8 +1653,11 @@
         for (let option of sel.options) {
           if (option.value === "") {
             option.style.display = "block";
+            option.disabled = false;
           } else {
-            option.style.display = (option.value === valEsq) ? "none" : "block";
+            const emUsoNoOutroLado = (option.value === valEsq);
+            option.style.display = emUsoNoOutroLado ? "none" : "block";
+            option.disabled = emUsoNoOutroLado;
           }
         }
       });
@@ -1656,7 +1681,7 @@
       const seletorTema = document.getElementById('seletorTema');
       if (seletorTema) {
         placarLocal.tema = seletorTema.value;
-        placarRef.set(placarLocal);
+        salvarPlacarSeguro();
       }
     }
 
@@ -1840,8 +1865,8 @@
       const eDiferente = nomesAtuais.length !== nomesDesejados.length || nomesAtuais.some((nome, idx) => nome !== nomesDesejados[idx]);
 
       if (eDiferente || wrappersAtuais.length === 0) {
-        if (lado === 'esquerda') indiceSaqueAtualEsq = 0;
-        if (lado === 'direita') indiceSaqueAtualDir = 0;
+        if (lado === 'esquerda' && indiceSaqueAtualEsq >= jogadoresOrdenados.length) indiceSaqueAtualEsq = 0;
+        if (lado === 'direita' && indiceSaqueAtualDir >= jogadoresOrdenados.length) indiceSaqueAtualDir = 0;
 
         let html = "";
         jogadoresOrdenados.forEach((j, index) => {
@@ -1922,7 +1947,7 @@
         placarLocal.ordensRodizio = {};
       }
       placarLocal.ordensRodizio[cor] = novaOrdem;
-      placarRef.set(placarLocal);
+      salvarPlacarSeguro();
     }
 
     function clicarAtletaRodizio(elementoBotao, lado, nomeJogador) {
@@ -2074,7 +2099,20 @@
     placarRef.on('value', (snapshot) => {
       const dadosNuvem = snapshot.val();
       if (dadosNuvem) {
-        placarLocal = dadosNuvem;
+        placarLocal = {
+          esquerda: dadosNuvem.esquerda || 0,
+          direita: dadosNuvem.direita || 0,
+          corEsquerda: dadosNuvem.corEsquerda || "",
+          corDireita: dadosNuvem.corDireita || "",
+          fase: dadosNuvem.fase || null,
+          tema: dadosNuvem.tema || "padrao",
+          ultimoPontuador: dadosNuvem.ultimoPontuador || null,
+          ranking: dadosNuvem.ranking || {},
+          dataRanking: dadosNuvem.dataRanking || "",
+          ordensRodizio: dadosNuvem.ordensRodizio || {},
+          ultimoJogadorEsquerda: dadosNuvem.ultimoJogadorEsquerda || null,
+          ultimoJogadorDireita: dadosNuvem.ultimoJogadorDireita || null
+        };
         
         verificarViradaDeDia();
 
@@ -2093,15 +2131,18 @@
         const bolaCtrlEsq = document.getElementById('bola-ctrl-esquerda');
         const bolaCtrlDir = document.getElementById('bola-ctrl-direita');
 
-        if(elemEsq) elemEsq.innerText = placarLocal.esquerda || 0;
-        if(elemDir) elemDir.innerText = placarLocal.direita || 0;
-        if(ctrlElemEsq) ctrlElemEsq.innerText = placarLocal.esquerda || 0;
-        if(ctrlElemDir) ctrlElemDir.innerText = placarLocal.direita || 0;
+        if(elemEsq) elemEsq.innerText = placarLocal.esquerda;
+        if(elemDir) elemDir.innerText = placarLocal.direita;
+        if(ctrlElemEsq) ctrlElemEsq.innerText = placarLocal.esquerda;
+        if(ctrlElemDir) ctrlElemDir.innerText = placarLocal.direita;
 
-        if(selEsq) selEsq.value = placarLocal.corEsquerda || "";
-        if(selDir) selDir.value = placarLocal.corDireita || "";
-        if(ctrlSelEsq) ctrlSelEsq.value = placarLocal.corEsquerda || "";
-        if(ctrlSelDir) ctrlSelDir.value = placarLocal.corDireita || "";
+        // Libera opções antes de atribuir o value aos selects
+        atualizarOpcoesDisponiveis();
+
+        if(selEsq) selEsq.value = placarLocal.corEsquerda;
+        if(selDir) selDir.value = placarLocal.corDireita;
+        if(ctrlSelEsq) ctrlSelEsq.value = placarLocal.corEsquerda;
+        if(ctrlSelDir) ctrlSelDir.value = placarLocal.corDireita;
 
         if (setaEsq && setaDir && bolaCtrlEsq && bolaCtrlDir) {
           if (placarLocal.ultimoPontuador === 'esquerda') {
@@ -2122,30 +2163,15 @@
           }
         }
 
-        atualizarAparenciaSeletor('esquerda', placarLocal.corEsquerda || "");
-        atualizarAparenciaSeletor('direita', placarLocal.corDireita || "");
-        atualizarOpcoesDisponiveis();
-        atualizarVisualFase(placarLocal.fase || null);
-        aplicarTemaVisual(placarLocal.tema || 'padrao');
+        atualizarAparenciaSeletor('esquerda', placarLocal.corEsquerda);
+        atualizarAparenciaSeletor('direita', placarLocal.corDireita);
+        atualizarVisualFase(placarLocal.fase);
+        aplicarTemaVisual(placarLocal.tema);
         atualizarBotoesIntegrantes();
         atualizarRankingVisual();
         atualizarRodizioSaque();
       } else {
-        const estadoInicial = { 
-          esquerda: 0, 
-          direita: 0, 
-          corEsquerda: "", 
-          corDireita: "", 
-          fase: null, 
-          tema: "padrao", 
-          ultimoPontuador: null, 
-          ranking: {}, 
-          dataRanking: obterDataAtualBrasil(), 
-          ordensRodizio: {},
-          ultimoJogadorEsquerda: null,
-          ultimoJogadorDireita: null
-        };
-        placarRef.set(estadoInicial);
+        salvarPlacarSeguro();
       }
     });
 
@@ -2167,7 +2193,7 @@
         placarLocal.ultimoJogadorDireita = null;
       }
 
-      placarRef.set(placarLocal);
+      salvarPlacarSeguro();
     }
 
     function adicionarPontoComJogador(lado, nomeJogador) {
@@ -2192,7 +2218,7 @@
       placarLocal.ranking[nomeJogador] = (placarLocal.ranking[nomeJogador] || 0) + 1;
       placarLocal.dataRanking = obterDataAtualBrasil();
 
-      placarRef.set(placarLocal);
+      salvarPlacarSeguro();
     }
 
     function subtrairPonto(lado) {
@@ -2223,39 +2249,55 @@
           }
         }
 
-        placarRef.set(placarLocal);
+        salvarPlacarSeguro();
       }
     }
 
     function mudarCor(lado) {
       placarLocal.corEsquerda = document.getElementById('cor-esquerda').value;
       placarLocal.corDireita = document.getElementById('cor-direita').value;
-      placarRef.set(placarLocal);
+      salvarPlacarSeguro();
     }
 
     function mudarCorLocal(lado) {
       placarLocal.corEsquerda = document.getElementById('ctrl-cor-esquerda').value;
       placarLocal.corDireita = document.getElementById('ctrl-cor-direita').value;
-      placarRef.set(placarLocal);
+      salvarPlacarSeguro();
     }
 
     function inverterLados() {
-      const corEsquerdaTemp = placarLocal.corEsquerda;
+      const corEsquerdaTemp = placarLocal.corEsquerda || "";
+      const corDireitaTemp = placarLocal.corDireita || "";
       
-      placarLocal.corEsquerda = placarLocal.corDireita;
+      placarLocal.corEsquerda = corDireitaTemp;
       placarLocal.corDireita = corEsquerdaTemp;
 
-      const ultimoEsqTemp = placarLocal.ultimoJogadorEsquerda;
-      placarLocal.ultimoJogadorEsquerda = placarLocal.ultimoJogadorDireita;
+      const ptsEsquerdaTemp = placarLocal.esquerda || 0;
+      placarLocal.esquerda = placarLocal.direita || 0;
+      placarLocal.direita = ptsEsquerdaTemp;
+
+      const ultimoEsqTemp = placarLocal.ultimoJogadorEsquerda || null;
+      placarLocal.ultimoJogadorEsquerda = placarLocal.ultimoJogadorDireita || null;
       placarLocal.ultimoJogadorDireita = ultimoEsqTemp;
 
       if (placarLocal.ultimoPontuador === 'esquerda') {
         placarLocal.ultimoPontuador = 'direita';
       } else if (placarLocal.ultimoPontuador === 'direita') {
         placarLocal.ultimoPontuador = 'esquerda';
+      } else {
+        placarLocal.ultimoPontuador = null;
       }
 
-      placarRef.set(placarLocal);
+      const tempIndiceSaque = indiceSaqueAtualEsq;
+      indiceSaqueAtualEsq = indiceSaqueAtualDir;
+      indiceSaqueAtualDir = tempIndiceSaque;
+
+      const tempBloqueio = rodizioBloqueadoEsq;
+      rodizioBloqueadoEsq = rodizioBloqueadoDir;
+      rodizioBloqueadoDir = tempBloqueio;
+
+      atualizarOpcoesDisponiveis();
+      salvarPlacarSeguro();
     }
 
     function zerarPlacar() {
@@ -2276,14 +2318,14 @@
         rodizioBloqueadoEsq = false;
         rodizioBloqueadoDir = false;
 
-        placarRef.set(placarLocal);
+        salvarPlacarSeguro();
       }
     }
 
     function zerarRanking() {
       if (confirm("Deseja zerar todo o ranking de pontuadores?")) {
         placarLocal.ranking = {};
-        placarRef.set(placarLocal);
+        salvarPlacarSeguro();
       }
     }
 
@@ -2305,7 +2347,7 @@
         rodizioBloqueadoEsq = false;
         rodizioBloqueadoDir = false;
       }
-      placarRef.set(placarLocal);
+      salvarPlacarSeguro();
     }
 
     function alternarModoControle() {
