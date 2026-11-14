@@ -410,6 +410,21 @@
     .op-rosa { background-color: #e91e63 !important; color: #fff !important; }
     .op-padrao { background-color: #f7f5f2 !important; color: #12364e !important; }
 
+    /* Indicador de Setinha Azul Royal flutuante absoluto acima da pontuação */
+    .indicador-seta-pontuador {
+      position: absolute;
+      top: calc(50% - 225px); /* Posicionado de forma fixa sobre o número */
+      font-size: 80px;
+      line-height: 1;
+      color: #12364e;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      z-index: 4;
+      pointer-events: none;
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
+    }
+    .indicador-seta-pontuador.ativo { opacity: 1; }
+
     .numero-pontos {
       font-size: clamp(290px, 32vh, 340px);
       font-weight: bold;
@@ -417,27 +432,6 @@
       margin: 0;
       line-height: 1;
     }
-
-    /* Bolinha do Placar Principal */
-    .bola-volei-indicador {
-      position: absolute;
-      bottom: 28px; 
-      font-size: 28px;
-      line-height: 28px;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-      z-index: 4; 
-      filter: drop-shadow(1px 1px 0 #12364e) 
-              drop-shadow(-1px -1px 0 #12364e) 
-              drop-shadow(1px -1px 0 #12364e) 
-              drop-shadow(-1px 1px 0 #12364e) 
-              drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-      pointer-events: none;
-    }
-
-    .bola-volei-indicador.ativo { opacity: 1; }
-    #bola-esquerda { left: 12px; }
-    #bola-direita { right: 12px; }
 
     /* --- BOLINHA EXCLUSIVA DO MODO CONTROLE (10px e bottom 95px) --- */
     .bola-volei-controle {
@@ -594,6 +588,29 @@
       display: flex;
     }
 
+    .controle-header {
+      background-color: #12364e;
+      color: #e1d8cd;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      font-size: 13px;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .controle-conteudo {
+      display: none;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .controle-conteudo.aberto {
+      display: flex;
+    }
+
     .corpo-painel-controle {
       display: flex;
       flex-direction: row;
@@ -724,15 +741,6 @@
       background-color: #f0f4f8;
       border: 1.5px dashed #b0c4de;
       border-radius: 8px;
-    }
-
-    .titulo-secao-integrantes {
-      font-size: 10px;
-      font-weight: bold;
-      color: #12364e;
-      text-transform: uppercase;
-      text-align: center;
-      margin-bottom: 1px;
     }
 
     .grid-botoes-integrantes {
@@ -929,18 +937,25 @@
       position: relative;
     }
 
-    /* Indicador de Cadeado Vermelho na Borda Inferior Externa da Coluna */
+    /* Indicador/Botão de Cadeado na Borda Inferior Externa da Coluna (Clicável) */
     .cadeado-bloqueio {
       position: absolute;
-      bottom: -4px;
+      bottom: -6px;
       right: 6px;
-      font-size: 12px;
+      font-size: 14px;
+      cursor: pointer;
       display: none;
       filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
       z-index: 5;
+      padding: 2px;
+      transition: transform 0.1s;
     }
 
-    .coluna-rodizio.bloqueado .cadeado-bloqueio {
+    .cadeado-bloqueio:active {
+      transform: scale(0.85);
+    }
+
+    .coluna-rodizio.ativo-exibir-cadeado .cadeado-bloqueio {
       display: block;
     }
 
@@ -998,6 +1013,13 @@
       transition: background-color 0.2s, transform 0.15s, box-shadow 0.15s;
       touch-action: none;
       white-space: nowrap;
+      
+      /* Bloqueio total de seleção de texto para fixar o drag and drop */
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
     }
 
     .item-rodizio-jogador:active {
@@ -1055,76 +1077,80 @@
   <!-- PAINEL DE CONTROLE VERTICAL (MODO CONTROLE LOCAL) -->
   <div class="container-placar-global">
     <div class="painel-controle-vertical" id="painelControleVertical">
-      <div class="corpo-painel-controle">
-        
-        <!-- BOTÕES CENTRAIS NO MODO CONTROLE (INVERTER E ZERAR) -->
-        <div class="botoes-centrais-controle">
-          <button class="btn-inverter-controle" onclick="inverterLados()" title="Inverter Cores">⇄</button>
-          <button class="btn-zerar-controle" onclick="zerarPlacar()" title="Zerar Placar">🔄</button>
-        </div>
-
-        <!-- TIME ESQUERDO -->
-        <div class="coluna-controle-time" id="col-ctrl-esquerda">
-          <span class="bola-volei-controle" id="bola-ctrl-esquerda">🏐</span>
-          <div class="linha-controle-seletor">
-            <select id="ctrl-cor-esquerda" onchange="mudarCorLocal('esquerda')">
-              <option value="" class="op-padrao">Cor Esquerda</option>
-              <option value="Amarelo" class="op-amarelo">Amarelo</option>
-              <option value="Azul" class="op-azul">Azul</option>
-              <option value="Roxo" class="op-roxo">Roxo</option>
-              <option value="Rosa" class="op-rosa">Rosa</option>
-            </select>
+      <div class="controle-header" onclick="toggleControle()">
+        <span>🎮 Placar de Controle</span>
+        <span id="iconeToggleControle">▼</span>
+      </div>
+      <div class="controle-conteudo" id="controleConteudo">
+        <div class="corpo-painel-controle">
+          
+          <!-- BOTÕES CENTRAIS NO MODO CONTROLE (INVERTER E ZERAR) -->
+          <div class="botoes-centrais-controle">
+            <button class="btn-inverter-controle" onclick="inverterLados()" title="Inverter Cores">⇄</button>
+            <button class="btn-zerar-controle" onclick="zerarPlacar()" title="Zerar Placar">🔄</button>
           </div>
 
-          <!-- 4 Botões Individuais Lado a Lado (Esq) -->
-          <div class="secao-integrantes-time">
-            <div class="titulo-secao-integrantes">Integrantes (Esq)</div>
-            <div class="grid-botoes-integrantes" id="botoes-integrantes-esquerda">
-              <button class="btn-jogador-individual vazio">-</button>
-              <button class="btn-jogador-individual vazio">-</button>
-              <button class="btn-jogador-individual vazio">-</button>
-              <button class="btn-jogador-individual vazio">-</button>
+          <!-- TIME ESQUERDO -->
+          <div class="coluna-controle-time" id="col-ctrl-esquerda">
+            <span class="bola-volei-controle" id="bola-ctrl-esquerda">🏐</span>
+            <div class="linha-controle-seletor">
+              <select id="ctrl-cor-esquerda" onchange="mudarCorLocal('esquerda')">
+                <option value="" class="op-padrao">Cor Esquerda</option>
+                <option value="Amarelo" class="op-amarelo">Amarelo</option>
+                <option value="Azul" class="op-azul">Azul</option>
+                <option value="Roxo" class="op-roxo">Roxo</option>
+                <option value="Rosa" class="op-rosa">Rosa</option>
+              </select>
+            </div>
+
+            <!-- 4 Botões Individuais Lado a Lado (Esq) -->
+            <div class="secao-integrantes-time">
+              <div class="grid-botoes-integrantes" id="botoes-integrantes-esquerda">
+                <button class="btn-jogador-individual vazio">-</button>
+                <button class="btn-jogador-individual vazio">-</button>
+                <button class="btn-jogador-individual vazio">-</button>
+                <button class="btn-jogador-individual vazio">-</button>
+              </div>
+            </div>
+
+            <div class="linha-controle-pontos" id="ctrl-pts-esquerda">0</div>
+            <div class="linha-controle-botoes">
+              <button class="btn-acao-mais" onclick="adicionarPonto('esquerda')">+1</button>
+              <button class="btn-acao-menos" onclick="subtrairPonto('esquerda')">-1</button>
             </div>
           </div>
 
-          <div class="linha-controle-pontos" id="ctrl-pts-esquerda">0</div>
-          <div class="linha-controle-botoes">
-            <button class="btn-acao-mais" onclick="adicionarPonto('esquerda')">+1</button>
-            <button class="btn-acao-menos" onclick="subtrairPonto('esquerda')">-1</button>
-          </div>
-        </div>
+          <!-- TIME DIREITO -->
+          <div class="coluna-controle-time" id="col-ctrl-direita">
+            <span class="bola-volei-controle" id="bola-ctrl-direita">🏐</span>
+            <div class="linha-controle-seletor">
+              <select id="ctrl-cor-direita" onchange="mudarCorLocal('direita')">
+                <option value="" class="op-padrao">Cor Direita</option>
+                <option value="Amarelo" class="op-amarelo">Amarelo</option>
+                <option value="Azul" class="op-azul">Azul</option>
+                <option value="Roxo" class="op-roxo">Roxo</option>
+                <option value="Rosa" class="op-rosa">Rosa</option>
+              </select>
+            </div>
 
-        <!-- TIME DIREITO -->
-        <div class="coluna-controle-time" id="col-ctrl-direita">
-          <span class="bola-volei-controle" id="bola-ctrl-direita">🏐</span>
-          <div class="linha-controle-seletor">
-            <select id="ctrl-cor-direita" onchange="mudarCorLocal('direita')">
-              <option value="" class="op-padrao">Cor Direita</option>
-              <option value="Amarelo" class="op-amarelo">Amarelo</option>
-              <option value="Azul" class="op-azul">Azul</option>
-              <option value="Roxo" class="op-roxo">Roxo</option>
-              <option value="Rosa" class="op-rosa">Rosa</option>
-            </select>
-          </div>
+            <!-- 4 Botões Individuais Lado a Lado (Dir) -->
+            <div class="secao-integrantes-time">
+              <div class="grid-botoes-integrantes" id="botoes-integrantes-direita">
+                <button class="btn-jogador-individual vazio">-</button>
+                <button class="btn-jogador-individual vazio">-</button>
+                <button class="btn-jogador-individual vazio">-</button>
+                <button class="btn-jogador-individual vazio">-</button>
+              </div>
+            </div>
 
-          <!-- 4 Botões Individuais Lado a Lado (Dir) -->
-          <div class="secao-integrantes-time">
-            <div class="titulo-secao-integrantes">Integrantes (Dir)</div>
-            <div class="grid-botoes-integrantes" id="botoes-integrantes-direita">
-              <button class="btn-jogador-individual vazio">-</button>
-              <button class="btn-jogador-individual vazio">-</button>
-              <button class="btn-jogador-individual vazio">-</button>
-              <button class="btn-jogador-individual vazio">-</button>
+            <div class="linha-controle-pontos" id="ctrl-pts-direita">0</div>
+            <div class="linha-controle-botoes">
+              <button class="btn-acao-mais" onclick="adicionarPonto('direita')">+1</button>
+              <button class="btn-acao-menos" onclick="subtrairPonto('direita')">-1</button>
             </div>
           </div>
 
-          <div class="linha-controle-pontos" id="ctrl-pts-direita">0</div>
-          <div class="linha-controle-botoes">
-            <button class="btn-acao-mais" onclick="adicionarPonto('direita')">+1</button>
-            <button class="btn-acao-menos" onclick="subtrairPonto('direita')">-1</button>
-          </div>
         </div>
-
       </div>
     </div>
   </div>
@@ -1162,7 +1188,7 @@
           <div class="lista-rodizio-drag" id="lista-rodizio-esquerda">
             <div class="ranking-vazio">Selecione a cor</div>
           </div>
-          <div class="cadeado-bloqueio" title="Rodízio bloqueado após o primeiro saque">🔒</div>
+          <div class="cadeado-bloqueio" id="btn-cadeado-esquerda" onclick="alternarBloqueioRodizio('esquerda')" title="Clique para bloquear/desbloquear">🔒</div>
         </div>
         <!-- Coluna Direita -->
         <div class="coluna-rodizio" id="coluna-rodizio-direita">
@@ -1170,7 +1196,7 @@
           <div class="lista-rodizio-drag" id="lista-rodizio-direita">
             <div class="ranking-vazio">Selecione a cor</div>
           </div>
-          <div class="cadeado-bloqueio" title="Rodízio bloqueado após o primeiro saque">🔒</div>
+          <div class="cadeado-bloqueio" id="btn-cadeado-direita" onclick="alternarBloqueioRodizio('direita')" title="Clique para bloquear/desbloquear">🔒</div>
         </div>
       </div>
     </div>
@@ -1211,7 +1237,6 @@
       <!-- LADO ESQUERDO -->
       <div class="lado-placar">
         <div class="faixa-base-time" id="faixa-esquerda"></div>
-        <span class="bola-volei-indicador" id="bola-esquerda">🏐</span>
         <select class="seletor-cor-time" id="cor-esquerda" onclick="event.stopPropagation()" onchange="mudarCor('esquerda')">
           <option value="" class="op-padrao">Cor</option>
           <option value="Amarelo" class="op-amarelo">Amarelo</option>
@@ -1220,6 +1245,7 @@
           <option value="Rosa" class="op-rosa">Rosa</option>
         </select>
         <div class="area-ponto" onclick="adicionarPonto('esquerda', event)">
+          <div class="indicador-seta-pontuador" id="seta-esquerda">▼</div>
           <div class="numero-pontos" id="pts-esquerda">0</div>
         </div>
         <div class="controles-lado">
@@ -1230,7 +1256,6 @@
       <!-- LADO DIREITO -->
       <div class="lado-placar">
         <div class="faixa-base-time" id="faixa-direita"></div>
-        <span class="bola-volei-indicador" id="bola-direita">🏐</span>
         <select class="seletor-cor-time" id="cor-direita" onclick="event.stopPropagation()" onchange="mudarCor('direita')">
           <option value="" class="op-padrao">Cor</option>
           <option value="Amarelo" class="op-amarelo">Amarelo</option>
@@ -1239,6 +1264,7 @@
           <option value="Rosa" class="op-rosa">Rosa</option>
         </select>
         <div class="area-ponto" onclick="adicionarPonto('direita', event)">
+          <div class="indicador-seta-pontuador" id="seta-direita">▼</div>
           <div class="numero-pontos" id="pts-direita">0</div>
         </div>
         <div class="controles-lado">
@@ -1302,7 +1328,9 @@
       ultimoPontuador: null,
       ranking: {},
       dataRanking: "",
-      ordensRodizio: {}
+      ordensRodizio: {},
+      ultimoJogadorEsquerda: null,
+      ultimoJogadorDireita: null
     };
 
     let elencoGlobal = [];
@@ -1499,6 +1527,17 @@
       container.style.display = 'none';
     }
 
+    function toggleControle() {
+      const conteudo = document.getElementById('controleConteudo');
+      const icone = document.getElementById('iconeToggleControle');
+      conteudo.classList.toggle('aberto');
+      if (conteudo.classList.contains('aberto')) {
+        icone.innerText = "▲";
+      } else {
+        icone.innerText = "▼";
+      }
+    }
+
     function toggleRanking() {
       const conteudo = document.getElementById('rankingConteudo');
       const icone = document.getElementById('iconeToggleRanking');
@@ -1526,6 +1565,15 @@
         placarLocal.ordensRodizio = {};
         placarRef.set(placarLocal);
       }
+    }
+
+    function alternarBloqueioRodizio(lado) {
+      if (lado === 'esquerda') {
+        rodizioBloqueadoEsq = !rodizioBloqueadoEsq;
+      } else {
+        rodizioBloqueadoDir = !rodizioBloqueadoDir;
+      }
+      atualizarEstadoBloqueioVisual(lado);
     }
 
     function atualizarAparenciaSeletor(lado, cor) {
@@ -1798,13 +1846,12 @@
         let html = "";
         jogadoresOrdenados.forEach((j, index) => {
           let nome3Letras = (j.nome || '').trim().substring(0, 3).toUpperCase();
-          let pts = rodizioContadoresLocais[j.nome] || 0;
           let setaAtiva = (lado === 'esquerda' && index === indiceSaqueAtualEsq) || (lado === 'direita' && index === indiceSaqueAtualDir);
 
           html += `
             <div class="wrapper-jogador-rodizio" data-nome="${j.nome}">
               <div class="item-rodizio-jogador" draggable="true" title="${j.nome}" onclick="clicarAtletaRodizio(this, '${lado}', '${j.nome.replace(/'/g, "\\'")}')">
-                ${nome3Letras} (<span class="pts-atleta">${pts}</span>)
+                ${nome3Letras}
               </div>
               <div class="indicador-saque-seta ${setaAtiva ? 'ativo' : ''}">▲</div>
             </div>
@@ -1822,13 +1869,7 @@
       const wrappers = container.querySelectorAll('.wrapper-jogador-rodizio');
 
       wrappers.forEach((wrapper, index) => {
-        const nome = wrapper.getAttribute('data-nome');
-        const spanPts = wrapper.querySelector('.pts-atleta');
         const seta = wrapper.querySelector('.indicador-saque-seta');
-
-        if (spanPts) {
-          spanPts.innerText = rodizioContadoresLocais[nome] || 0;
-        }
 
         if (seta) {
           let setaAtiva = (lado === 'esquerda' && index === indiceSaqueAtualEsq) || (lado === 'direita' && index === indiceSaqueAtualDir);
@@ -1845,13 +1886,26 @@
 
     function atualizarEstadoBloqueioVisual(lado) {
       const coluna = document.getElementById(`coluna-rodizio-${lado}`);
+      const btnCadeado = document.getElementById(`btn-cadeado-${lado}`);
+      const cor = (lado === 'esquerda') ? placarLocal.corEsquerda : placarLocal.corDireita;
       const bloqueado = (lado === 'esquerda') ? rodizioBloqueadoEsq : rodizioBloqueadoDir;
-      if (!coluna) return;
+      
+      if (!coluna || !btnCadeado) return;
+
+      if (cor) {
+        coluna.classList.add('ativo-exibir-cadeado');
+      } else {
+        coluna.classList.remove('ativo-exibir-cadeado');
+      }
 
       if (bloqueado) {
         coluna.classList.add('bloqueado');
+        btnCadeado.innerText = "🔒";
+        btnCadeado.title = "Clique para desbloquear o rodízio";
       } else {
         coluna.classList.remove('bloqueado');
+        btnCadeado.innerText = "🔓";
+        btnCadeado.title = "Clique para bloquear o rodízio";
       }
     }
 
@@ -2034,8 +2088,8 @@
         const ctrlSelEsq = document.getElementById('ctrl-cor-esquerda');
         const ctrlSelDir = document.getElementById('ctrl-cor-direita');
 
-        const bolaEsq = document.getElementById('bola-esquerda');
-        const bolaDir = document.getElementById('bola-direita');
+        const setaEsq = document.getElementById('seta-esquerda');
+        const setaDir = document.getElementById('seta-direita');
         const bolaCtrlEsq = document.getElementById('bola-ctrl-esquerda');
         const bolaCtrlDir = document.getElementById('bola-ctrl-direita');
 
@@ -2049,20 +2103,20 @@
         if(ctrlSelEsq) ctrlSelEsq.value = placarLocal.corEsquerda || "";
         if(ctrlSelDir) ctrlSelDir.value = placarLocal.corDireita || "";
 
-        if (bolaEsq && bolaDir && bolaCtrlEsq && bolaCtrlDir) {
+        if (setaEsq && setaDir && bolaCtrlEsq && bolaCtrlDir) {
           if (placarLocal.ultimoPontuador === 'esquerda') {
-            bolaEsq.classList.add('ativo');
-            bolaDir.classList.remove('ativo');
+            setaEsq.classList.add('ativo');
+            setaDir.classList.remove('ativo');
             bolaCtrlEsq.classList.add('ativo');
             bolaCtrlDir.classList.remove('ativo');
           } else if (placarLocal.ultimoPontuador === 'direita') {
-            bolaDir.classList.add('ativo');
-            bolaEsq.classList.remove('ativo');
+            setaDir.classList.add('ativo');
+            setaEsq.classList.remove('ativo');
             bolaCtrlDir.classList.add('ativo');
             bolaCtrlEsq.classList.remove('ativo');
           } else {
-            bolaEsq.classList.remove('ativo');
-            bolaDir.classList.remove('ativo');
+            setaEsq.classList.remove('ativo');
+            setaDir.classList.remove('ativo');
             bolaCtrlEsq.classList.remove('ativo');
             bolaCtrlDir.classList.remove('ativo');
           }
@@ -2077,7 +2131,20 @@
         atualizarRankingVisual();
         atualizarRodizioSaque();
       } else {
-        const estadoInicial = { esquerda: 0, direita: 0, corEsquerda: "", corDireita: "", fase: null, tema: "padrao", ultimoPontuador: null, ranking: {}, dataRanking: obterDataAtualBrasil(), ordensRodizio: {} };
+        const estadoInicial = { 
+          esquerda: 0, 
+          direita: 0, 
+          corEsquerda: "", 
+          corDireita: "", 
+          fase: null, 
+          tema: "padrao", 
+          ultimoPontuador: null, 
+          ranking: {}, 
+          dataRanking: obterDataAtualBrasil(), 
+          ordensRodizio: {},
+          ultimoJogadorEsquerda: null,
+          ultimoJogadorDireita: null
+        };
         placarRef.set(estadoInicial);
       }
     });
@@ -2093,6 +2160,13 @@
 
       placarLocal[lado] = (placarLocal[lado] || 0) + 1;
       placarLocal.ultimoPontuador = lado;
+
+      if (lado === 'esquerda') {
+        placarLocal.ultimoJogadorEsquerda = null;
+      } else {
+        placarLocal.ultimoJogadorDireita = null;
+      }
+
       placarRef.set(placarLocal);
     }
 
@@ -2105,6 +2179,12 @@
 
       placarLocal[lado] = (placarLocal[lado] || 0) + 1;
       placarLocal.ultimoPontuador = lado;
+
+      if (lado === 'esquerda') {
+        placarLocal.ultimoJogadorEsquerda = nomeJogador;
+      } else {
+        placarLocal.ultimoJogadorDireita = nomeJogador;
+      }
 
       if (!placarLocal.ranking) {
         placarLocal.ranking = {};
@@ -2122,6 +2202,27 @@
 
       if (placarLocal[lado] > 0) {
         placarLocal[lado] -= 1;
+
+        const ultimoJogador = (lado === 'esquerda') ? placarLocal.ultimoJogadorEsquerda : placarLocal.ultimoJogadorDireita;
+        if (ultimoJogador) {
+          if (placarLocal.ranking && placarLocal.ranking[ultimoJogador] > 0) {
+            placarLocal.ranking[ultimoJogador] -= 1;
+            if (placarLocal.ranking[ultimoJogador] <= 0) {
+              delete placarLocal.ranking[ultimoJogador];
+            }
+          }
+
+          if (rodizioContadoresLocais[ultimoJogador] && rodizioContadoresLocais[ultimoJogador] > 0) {
+            rodizioContadoresLocais[ultimoJogador] -= 1;
+          }
+
+          if (lado === 'esquerda') {
+            placarLocal.ultimoJogadorEsquerda = null;
+          } else {
+            placarLocal.ultimoJogadorDireita = null;
+          }
+        }
+
         placarRef.set(placarLocal);
       }
     }
@@ -2144,6 +2245,10 @@
       placarLocal.corEsquerda = placarLocal.corDireita;
       placarLocal.corDireita = corEsquerdaTemp;
 
+      const ultimoEsqTemp = placarLocal.ultimoJogadorEsquerda;
+      placarLocal.ultimoJogadorEsquerda = placarLocal.ultimoJogadorDireita;
+      placarLocal.ultimoJogadorDireita = ultimoEsqTemp;
+
       if (placarLocal.ultimoPontuador === 'esquerda') {
         placarLocal.ultimoPontuador = 'direita';
       } else if (placarLocal.ultimoPontuador === 'direita') {
@@ -2162,6 +2267,8 @@
         placarLocal.fase = null;
         placarLocal.tema = "padrao";
         placarLocal.ultimoPontuador = null;
+        placarLocal.ultimoJogadorEsquerda = null;
+        placarLocal.ultimoJogadorDireita = null;
         
         rodizioContadoresLocais = {};
         indiceSaqueAtualEsq = 0;
@@ -2189,6 +2296,8 @@
         placarLocal.esquerda = 0;
         placarLocal.direita = 0;
         placarLocal.ultimoPontuador = null;
+        placarLocal.ultimoJogadorEsquerda = null;
+        placarLocal.ultimoJogadorDireita = null;
 
         rodizioContadoresLocais = {};
         indiceSaqueAtualEsq = 0;
