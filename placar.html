@@ -1950,47 +1950,36 @@
       salvarPlacarSeguro();
     }
 
-    function clicarAtletaRodizio(elementoBotao, lado, nomeJogador) {
+    function avancarSetaRodizioAutomatico(lado) {
       const container = document.getElementById(`lista-rodizio-${lado}`);
       if (!container) return;
-      
-      const wrapperClicado = elementoBotao.closest('.wrapper-jogador-rodizio');
+
       const wrappers = [...container.querySelectorAll('.wrapper-jogador-rodizio')];
-      const indexClicadoVisual = wrappers.indexOf(wrapperClicado);
-      const indiceAtualSetar = (lado === 'esquerda') ? indiceSaqueAtualEsq : indiceSaqueAtualDir;
+      const total = wrappers.length;
+      if (total === 0) return;
 
-      if (indexClicadoVisual === indiceAtualSetar) {
-        if ("vibrate" in navigator) navigator.vibrate(40);
-        
-        if (lado === 'esquerda') {
-          rodizioBloqueadoEsq = true;
-        } else {
-          rodizioBloqueadoDir = true;
+      const indiceAtual = (lado === 'esquerda') ? indiceSaqueAtualEsq : indiceSaqueAtualDir;
+      const wrapperAtual = wrappers[indiceAtual];
+      if (wrapperAtual) {
+        const nomeJogador = wrapperAtual.getAttribute('data-nome');
+        if (nomeJogador) {
+          rodizioContadoresLocais[nomeJogador] = (rodizioContadoresLocais[nomeJogador] || 0) + 1;
         }
-
-        rodizioContadoresLocais[nomeJogador] = (rodizioContadoresLocais[nomeJogador] || 0) + 1;
-
-        const total = wrappers.length;
-        if (total > 0) {
-          if (lado === 'esquerda') {
-            indiceSaqueAtualEsq = (indiceSaqueAtualEsq + 1) % total;
-          } else {
-            indiceSaqueAtualDir = (indiceSaqueAtualDir + 1) % total;
-          }
-        }
-
-        atualizarContadoresEValoresRodizio(lado);
-      } else {
-        if ("vibrate" in navigator) navigator.vibrate([30, 50, 30]);
-        
-        elementoBotao.classList.remove('erro-saque');
-        void elementoBotao.offsetWidth;
-        elementoBotao.classList.add('erro-saque');
-        
-        setTimeout(() => {
-          elementoBotao.classList.remove('erro-saque');
-        }, 600);
       }
+
+      if (lado === 'esquerda') {
+        rodizioBloqueadoEsq = true;
+        indiceSaqueAtualEsq = (indiceSaqueAtualEsq + 1) % total;
+      } else {
+        rodizioBloqueadoDir = true;
+        indiceSaqueAtualDir = (indiceSaqueAtualDir + 1) % total;
+      }
+
+      atualizarContadoresEValoresRodizio(lado);
+    }
+
+    function clicarAtletaRodizio(elementoBotao, lado, nomeJogador) {
+      // A setinha avança automaticamente a cada virada de posse de saque (side-out)
     }
 
     function configurarDragAndDrop(container, lado, cor) {
@@ -2184,13 +2173,20 @@
 
       tocarBipPonto();
 
-      placarLocal[lado] = (placarLocal[lado] || 0) + 1;
+      const pontosAnteriores = placarLocal[lado] || 0;
+      const ultimoPontuadorAnterior = placarLocal.ultimoPontuador;
+
+      placarLocal[lado] = pontosAnteriores + 1;
       placarLocal.ultimoPontuador = lado;
 
       if (lado === 'esquerda') {
         placarLocal.ultimoJogadorEsquerda = null;
       } else {
         placarLocal.ultimoJogadorDireita = null;
+      }
+
+      if (pontosAnteriores > 0 && ultimoPontuadorAnterior !== null && ultimoPontuadorAnterior !== lado) {
+        avancarSetaRodizioAutomatico(lado);
       }
 
       salvarPlacarSeguro();
@@ -2203,7 +2199,10 @@
 
       tocarBipPonto();
 
-      placarLocal[lado] = (placarLocal[lado] || 0) + 1;
+      const pontosAnteriores = placarLocal[lado] || 0;
+      const ultimoPontuadorAnterior = placarLocal.ultimoPontuador;
+
+      placarLocal[lado] = pontosAnteriores + 1;
       placarLocal.ultimoPontuador = lado;
 
       if (lado === 'esquerda') {
@@ -2217,6 +2216,10 @@
       }
       placarLocal.ranking[nomeJogador] = (placarLocal.ranking[nomeJogador] || 0) + 1;
       placarLocal.dataRanking = obterDataAtualBrasil();
+
+      if (pontosAnteriores > 0 && ultimoPontuadorAnterior !== null && ultimoPontuadorAnterior !== lado) {
+        avancarSetaRodizioAutomatico(lado);
+      }
 
       salvarPlacarSeguro();
     }
