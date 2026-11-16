@@ -812,6 +812,28 @@
       cursor: pointer;
     }
 
+    .ranking-header-acoes {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-whatsapp-ranking {
+      background: transparent;
+      border: none;
+      color: #25D366;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 2px;
+      transition: transform 0.1s;
+    }
+
+    .btn-whatsapp-ranking:active {
+      transform: scale(0.85);
+    }
+
     .ranking-conteudo {
       display: none;
       flex-direction: column;
@@ -1160,7 +1182,14 @@
     <div class="painel-ranking" id="painelRanking">
       <div class="ranking-header" onclick="toggleRanking()">
         <span>🏆 Ranking de Pontuadores</span>
-        <span id="iconeToggleRanking">▼</span>
+        <div class="ranking-header-acoes">
+          <button type="button" class="btn-whatsapp-ranking" onclick="event.stopPropagation(); compartilharRankingWhatsApp()" title="Compartilhar Ranking no WhatsApp">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zM12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.978-1.418C8.445 21.464 10.163 22 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/>
+            </svg>
+          </button>
+          <span id="iconeToggleRanking">▼</span>
+        </div>
       </div>
       <div class="ranking-conteudo" id="rankingConteudo">
         <div id="listaRanking" style="display: flex; flex-direction: column; gap: 6px;">
@@ -1567,6 +1596,37 @@
       } else {
         icone.innerText = "▼";
       }
+    }
+
+    function compartilharRankingWhatsApp() {
+      const rankingObj = placarLocal.ranking || {};
+      const entradas = Object.entries(rankingObj);
+
+      if (entradas.length === 0) {
+        alert("Nenhum ponto registrado para compartilhar no ranking.");
+        return;
+      }
+
+      entradas.sort((a, b) => b[1] - a[1]);
+
+      const dataParts = (placarLocal.dataRanking || obterDataAtualBrasil()).split('-');
+      const dataFormatada = dataParts.length === 3 ? `${dataParts[2]}/${dataParts[1]}/${dataParts[0]}` : '';
+
+      let texto = `🏆 *RANKING DE PONTUADORES - BOLA FORA* 🏆\n`;
+      if (dataFormatada) texto += `📅 Data: ${dataFormatada}\n`;
+      texto += `\n`;
+
+      entradas.forEach(([nome, pts], index) => {
+        let medalha = `${index + 1}º`;
+        if (index === 0) medalha = "🥇 1º";
+        else if (index === 1) medalha = "🥈 2º";
+        else if (index === 2) medalha = "🥉 3º";
+
+        texto += `${medalha} - *${nome}*: ${pts} pt${pts > 1 ? 's' : ''}\n`;
+      });
+
+      const urlWhatsApp = `https://wa.me/?text=${encodeURIComponent(texto)}`;
+      window.open(urlWhatsApp, '_blank');
     }
 
     function toggleRodizio() {
