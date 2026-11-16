@@ -1340,6 +1340,7 @@
     let indiceSaqueAtualEsq = 0;
     let indiceSaqueAtualDir = 0;
     let rodizioContadoresLocais = {};
+    let historicoPontos = [];
     
     let rodizioBloqueadoEsq = false;
     let rodizioBloqueadoDir = false;
@@ -1978,6 +1979,32 @@
       atualizarContadoresEValoresRodizio(lado);
     }
 
+    function retrocederSetaRodizioAutomatico(lado) {
+      const container = document.getElementById(`lista-rodizio-${lado}`);
+      if (!container) return;
+
+      const wrappers = [...container.querySelectorAll('.wrapper-jogador-rodizio')];
+      const total = wrappers.length;
+      if (total === 0) return;
+
+      if (lado === 'esquerda') {
+        indiceSaqueAtualEsq = (indiceSaqueAtualEsq - 1 + total) % total;
+      } else {
+        indiceSaqueAtualDir = (indiceSaqueAtualDir - 1 + total) % total;
+      }
+
+      const indiceRetrocedido = (lado === 'esquerda') ? indiceSaqueAtualEsq : indiceSaqueAtualDir;
+      const wrapperRetrocedido = wrappers[indiceRetrocedido];
+      if (wrapperRetrocedido) {
+        const nomeJogador = wrapperRetrocedido.getAttribute('data-nome');
+        if (nomeJogador && rodizioContadoresLocais[nomeJogador] > 0) {
+          rodizioContadoresLocais[nomeJogador] -= 1;
+        }
+      }
+
+      atualizarContadoresEValoresRodizio(lado);
+    }
+
     function clicarAtletaRodizio(elementoBotao, lado, nomeJogador) {
       // A setinha avança automaticamente a cada virada de posse de saque (side-out)
     }
@@ -2185,9 +2212,18 @@
         placarLocal.ultimoJogadorDireita = null;
       }
 
+      let rodizioAvancou = false;
       if (pontosAnteriores > 0 && ultimoPontuadorAnterior !== null && ultimoPontuadorAnterior !== lado) {
         avancarSetaRodizioAutomatico(lado);
+        rodizioAvancou = true;
       }
+
+      historicoPontos.push({
+        lado: lado,
+        rodizioAvancou: rodizioAvancou,
+        ultimoPontuadorAnterior: ultimoPontuadorAnterior,
+        jogador: null
+      });
 
       salvarPlacarSeguro();
     }
@@ -2217,9 +2253,18 @@
       placarLocal.ranking[nomeJogador] = (placarLocal.ranking[nomeJogador] || 0) + 1;
       placarLocal.dataRanking = obterDataAtualBrasil();
 
+      let rodizioAvancou = false;
       if (pontosAnteriores > 0 && ultimoPontuadorAnterior !== null && ultimoPontuadorAnterior !== lado) {
         avancarSetaRodizioAutomatico(lado);
+        rodizioAvancou = true;
       }
+
+      historicoPontos.push({
+        lado: lado,
+        rodizioAvancou: rodizioAvancou,
+        ultimoPontuadorAnterior: ultimoPontuadorAnterior,
+        jogador: nomeJogador
+      });
 
       salvarPlacarSeguro();
     }
@@ -2231,6 +2276,28 @@
 
       if (placarLocal[lado] > 0) {
         placarLocal[lado] -= 1;
+
+        let idxUltimoPontoDoLado = -1;
+        for (let i = historicoPontos.length - 1; i >= 0; i--) {
+          if (historicoPontos[i].lado === lado) {
+            idxUltimoPontoDoLado = i;
+            break;
+          }
+        }
+
+        if (idxUltimoPontoDoLado !== -1) {
+          const eventoRemovido = historicoPontos.splice(idxUltimoPontoDoLado, 1)[0];
+
+          if (eventoRemovido.rodizioAvancou) {
+            retrocederSetaRodizioAutomatico(lado);
+          }
+
+          if (historicoPontos.length > 0) {
+            placarLocal.ultimoPontuador = historicoPontos[historicoPontos.length - 1].lado;
+          } else {
+            placarLocal.ultimoPontuador = null;
+          }
+        }
 
         const ultimoJogador = (lado === 'esquerda') ? placarLocal.ultimoJogadorEsquerda : placarLocal.ultimoJogadorDireita;
         if (ultimoJogador) {
@@ -2299,6 +2366,15 @@
       rodizioBloqueadoEsq = rodizioBloqueadoDir;
       rodizioBloqueadoDir = tempBloqueio;
 
+      historicoPontos.forEach(item => {
+        item.lado = (item.lado === 'esquerda') ? 'direita' : 'esquerda';
+        if (item.ultimoPontuadorAnterior === 'esquerda') {
+          item.ultimoPontuadorAnterior = 'direita';
+        } else if (item.ultimoPontuadorAnterior === 'direita') {
+          item.ultimoPontuadorAnterior = 'esquerda';
+        }
+      });
+
       atualizarOpcoesDisponiveis();
       salvarPlacarSeguro();
     }
@@ -2315,6 +2391,7 @@
         placarLocal.ultimoJogadorEsquerda = null;
         placarLocal.ultimoJogadorDireita = null;
         
+        historicoPontos = [];
         rodizioContadoresLocais = {};
         indiceSaqueAtualEsq = 0;
         indiceSaqueAtualDir = 0;
@@ -2344,6 +2421,7 @@
         placarLocal.ultimoJogadorEsquerda = null;
         placarLocal.ultimoJogadorDireita = null;
 
+        historicoPontos = [];
         rodizioContadoresLocais = {};
         indiceSaqueAtualEsq = 0;
         indiceSaqueAtualDir = 0;
